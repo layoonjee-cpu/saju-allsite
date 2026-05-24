@@ -20,7 +20,9 @@ const CONCERN_OPTIONS = ["연애", "결혼", "직장", "재물", "건강", "학�
 export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [gender, setGender] = useState<"male" | "female">("male");
@@ -34,10 +36,26 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!birthDate) {
-      toast.error("생년월일을 입력해 주세요");
+    const y = parseInt(birthYear);
+    const m = parseInt(birthMonth);
+    const d = parseInt(birthDay);
+    if (!birthYear || !birthMonth || !birthDay) {
+      toast.error("생년월일을 모두 입력해 주세요");
       return;
     }
+    if (y < 1900 || y > new Date().getFullYear()) {
+      toast.error("올바른 년도를 입력해 주세요");
+      return;
+    }
+    if (m < 1 || m > 12) {
+      toast.error("올바른 월을 입력해 주세요 (1~12)");
+      return;
+    }
+    if (d < 1 || d > 31) {
+      toast.error("올바른 일을 입력해 주세요 (1~31)");
+      return;
+    }
+    const birthDate = `${String(y)}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders/create", {
@@ -72,8 +90,41 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="birthDate">생년월일</Label>
-          <Input id="birthDate" type="date" required value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          <Label>생년월일</Label>
+          <div className="flex gap-1 items-center">
+            <Input
+              id="birthYear"
+              type="number"
+              placeholder="년도"
+              min={1900}
+              max={new Date().getFullYear()}
+              value={birthYear}
+              onChange={(e) => setBirthYear(e.target.value)}
+              className="w-20 text-center"
+            />
+            <span className="text-sm text-muted-foreground">/</span>
+            <Input
+              id="birthMonth"
+              type="number"
+              placeholder="월"
+              min={1}
+              max={12}
+              value={birthMonth}
+              onChange={(e) => setBirthMonth(e.target.value)}
+              className="w-14 text-center"
+            />
+            <span className="text-sm text-muted-foreground">/</span>
+            <Input
+              id="birthDay"
+              type="number"
+              placeholder="일"
+              min={1}
+              max={31}
+              value={birthDay}
+              onChange={(e) => setBirthDay(e.target.value)}
+              className="w-14 text-center"
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="birthTime">출생 시각</Label>

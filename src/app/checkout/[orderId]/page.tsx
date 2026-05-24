@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { TossWidget } from "@/components/checkout/TossWidget";
+import { TestPayButton } from "@/components/checkout/TestPayButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatKRW } from "@/lib/utils";
 
@@ -56,6 +57,9 @@ export default async function CheckoutPage({
             productName={product?.name ?? "사주 상품"}
             customerEmail={email}
           />
+          {process.env.NODE_ENV !== "production" && (
+            <TestPayButton orderId={order.order_id} />
+          )}
         </CardContent>
       </Card>
     </div>

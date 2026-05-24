@@ -2,30 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ollama-inspired design system — see DESIGN.md
-   Paper-white canvas, pure black primary, no shadows, hairline borders,
-   full-rounded pill geometry on interactive elements. */
-
 @layer base {
   :root {
-    --background: 0 0% 100%;          /* canvas #ffffff */
-    --foreground: 0 0% 0%;            /* ink #000000 */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --primary: 0 0% 0%;               /* pure black */
+    --card-foreground: 0 0% 10%;
+    --primary: 263 70% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 98%;            /* surface-soft #fafafa */
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 0 0% 10%;
     --muted: 0 0% 98%;
-    --muted-foreground: 0 0% 45%;     /* body #737373 */
-    --accent: 0 0% 98%;
-    --accent-foreground: 0 0% 0%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 263 70% 96%;
+    --accent-foreground: 263 70% 40%;
     --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;               /* hairline #e5e5e5 */
-    --input: 0 0% 90%;
-    --ring: 217 91% 60%;              /* focus-ring blue */
-    --radius: 0.75rem;                /* lg used for cards */
+    --border: 263 30% 88%;
+    --input: 263 30% 88%;
+    --ring: 263 70% 58%;
+    --radius: 1rem;
   }
 }
 
@@ -42,19 +38,59 @@
     font-family:
       "SF Pro Rounded", -apple-system, BlinkMacSystemFont, ui-sans-serif,
       system-ui, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(216, 180, 254, 0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 80% 10%, rgba(186, 230, 253, 0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(253, 164, 175, 0.2) 0%, transparent 60%);
+    background-attachment: fixed;
   }
   code, pre, kbd, samp {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
       Consolas, "Liberation Mono", monospace;
   }
-  /* Heading: SF Pro Rounded weight 500–600. Centered hero handled inline. */
   h1, h2, h3 {
     @apply tracking-tight;
-    font-weight: 600;
+    font-weight: 700;
   }
 }
 
-/* Markdown result body — flat type scale, body neutral on white. */
+@layer components {
+  /* 글래스모피즘 카드 */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 24px rgba(139, 92, 246, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.14), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* 그라디언트 텍스트 */
+  .gradient-text {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* 그라디언트 버튼 */
+  .btn-gradient {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    transition: all 0.2s ease;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    transform: translateY(-1px);
+  }
+}
+
+/* Markdown result body */
 @layer components {
   .prose-saju h2 {
     @apply mt-10 mb-3 text-2xl font-semibold text-foreground;

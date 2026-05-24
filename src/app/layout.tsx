@@ -34,25 +34,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   );
 }
 
-// Ollama: 56px utility nav, primary nav on canvas, no shadow.
 function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <header className="border-b border-hairline bg-canvas">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
       <div className="container flex h-14 items-center justify-between">
-        <Link href="/" className="font-semibold text-[15px] text-ink">
+        <Link href="/" className="font-bold text-[16px] gradient-text">
           {siteConfig.name}
         </Link>
         <nav className="flex items-center gap-6 text-[13px] font-medium">
-          <Link href="/products" className="text-ink hover:text-body">상품</Link>
+          <Link href="/products" className="text-foreground/70 hover:text-violet-600 transition-colors">상품</Link>
           {isLoggedIn ? (
             <>
-              <Link href="/mypage" className="text-ink hover:text-body">마이페이지</Link>
+              <Link href="/mypage" className="text-foreground/70 hover:text-violet-600 transition-colors">마이페이지</Link>
               <form action="/api/auth/signout" method="post">
-                <button type="submit" className="text-ink hover:text-body">로그아웃</button>
+                <button type="submit" className="text-foreground/70 hover:text-violet-600 transition-colors">로그아웃</button>
               </form>
             </>
           ) : (
-            <Link href="/login" className="text-ink hover:text-body">로그인</Link>
+            <Link href="/login" className="inline-flex items-center justify-center h-8 px-4 rounded-full text-xs font-semibold btn-gradient">로그인</Link>
           )}
         </nav>
       </div>
