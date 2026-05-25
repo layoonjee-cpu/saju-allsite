@@ -173,12 +173,23 @@ export function formatSajuToManseryeok(
   return [head, ...sections].join("\n\n");
 }
 
-// API 호출 + 텍스트 변환을 한 번에 실행 (전체 fields 자동 요청)
+// LLM 풀이에 필요한 핵심 필드만 요청 (월운·귀인·살 제외 → 토큰 절감)
+export const LLM_CORE_FIELDS: AnalysisField[] = [
+  "ganji",        // 사주 원국 (필수)
+  "sipseong",     // 십성
+  "sinStrength",  // 신강/신약
+  "gyeokguk",     // 격국 (억부용신)
+  "twelveFortune",// 12운성
+  "daeun",        // 대운
+  "seun",         // 세운
+];
+
+// API 호출 + 텍스트 변환을 한 번에 실행
 export async function generateManseryeok(
   birthInfo: BirthInfo,
   options: FetchSajuOptions = {},
 ): Promise<string> {
-  const analysis = await fetchSajuAnalysis(birthInfo, [], options); // [] = 전체
+  const analysis = await fetchSajuAnalysis(birthInfo, LLM_CORE_FIELDS, options);
   return formatSajuToManseryeok(analysis, birthInfo);
 }
 

@@ -13,6 +13,7 @@ import {
   formatSajuToManseryeok,
   ganjiToMyeongsik,
   isSajuApiConfigured,
+  LLM_CORE_FIELDS,
   type BirthInfo,
 } from "@/lib/saju/saju-api";
 import { buildSajuPrompt } from "@/lib/saju/prompt";
@@ -57,7 +58,7 @@ export default async function DemoPage({ searchParams }: { searchParams: SearchP
   } else {
     const t0 = Date.now();
     try {
-      const analysis = await fetchSajuAnalysis(birthInfo, [], { source: "demo" });
+      const analysis = await fetchSajuAnalysis(birthInfo, LLM_CORE_FIELDS, { source: "demo" });
       elapsedApi = Date.now() - t0;
       myeongsik = ganjiToMyeongsik(analysis);
       manseryeokText = formatSajuToManseryeok(analysis, birthInfo);
