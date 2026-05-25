@@ -85,7 +85,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
         });
         const freeJson = await freeRes.json();
         toast.dismiss("saju-loading");
-        if (!freeRes.ok) throw new Error(freeJson.error ?? "분석 실패");
+        if (!freeRes.ok) throw new Error((freeJson.error ?? "분석 실패") + (freeJson.detail ? `: ${freeJson.detail}` : ""));
         router.push(`/results/${freeJson.resultId}`);
       } else {
         // 유료 상품: 결제 페이지로 이동
