@@ -5,7 +5,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code  = searchParams.get("code");
   const next  = searchParams.get("state") ?? "/mypage";
-  const redirectUri = `${origin}/auth/kakao/callback`;
+  // NEXT_PUBLIC_SITE_URL 고정 사용 — www/non-www 불일치 방지
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? origin;
+  const redirectUri = `${siteUrl}/auth/kakao/callback`;
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=kakao_no_code`);

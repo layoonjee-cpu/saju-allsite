@@ -12,7 +12,9 @@ export function KakaoLoginButton({ redirectTo = "/mypage", label = "카카오로
       console.error("NEXT_PUBLIC_KAKAO_REST_API_KEY is not set");
       return;
     }
-    const callbackUri = `${window.location.origin}/auth/kakao/callback`;
+    // NEXT_PUBLIC_SITE_URL을 사용해 www/non-www 불일치 방지
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    const callbackUri = `${siteUrl}/auth/kakao/callback`;
     const kakaoAuthUrl =
       `https://kauth.kakao.com/oauth/authorize` +
       `?client_id=${restApiKey}` +
