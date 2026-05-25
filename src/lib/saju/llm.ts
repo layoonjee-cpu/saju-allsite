@@ -4,8 +4,6 @@
 // LLM_PROVIDER 환경변수로 openai | anthropic | gemini 선택.
 // 각 SDK는 lazy import 하여 미사용 패키지의 init 비용을 줄임.
 
-import { serverEnv } from "@/lib/env";
-
 export type LlmRequest = {
   system: string;
   user: string;
@@ -17,15 +15,19 @@ export type LlmResponse = {
   model: string;
 };
 
+// serverEnv() 전체 검증 우회 — 이 모듈에 필요한 키만 직접 읽음
+// TOSS_SECRET_KEY 등 무관한 변수가 Vercel에 없어도 LLM 호출에 영향 없음
 export async function generateInterpretation(req: LlmRequest): Promise<LlmResponse> {
-  const env = serverEnv();
-  switch (env.LLM_PROVIDER) {
+  const provider = (process.env.LLM_PROVIDER ?? "openai") as "openai" | "anthropic" | "gemini";
+  const model = process.env.LLM_MODEL ?? "gpt-4o";
+
+  switch (provider) {
     case "openai":
-      return callOpenAI(req, env.LLM_MODEL, env.OPENAI_API_KEY);
+      return callOpenAI(req, model, process.env.OPENAI_API_KEY);
     case "anthropic":
-      return callAnthropic(req, env.LLM_MODEL, env.ANTHROPIC_API_KEY);
+      return callAnthropic(req, model, process.env.ANTHROPIC_API_KEY);
     case "gemini":
-      return callGemini(req, env.LLM_MODEL, env.GOOGLE_GENERATIVE_AI_API_KEY);
+      return callGemini(req, model, process.env.GOOGLE_GENERATIVE_AI_API_KEY);
   }
 }
 
