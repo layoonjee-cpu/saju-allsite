@@ -16,7 +16,6 @@ type Props = {
   isLoggedIn: boolean;
 };
 
-const CONCERN_OPTIONS = ["연애", "결혼", "직장", "재물", "건강", "학업", "이직", "사업"];
 
 export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: Props) {
   const router = useRouter();
@@ -30,12 +29,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [gender, setGender] = useState<"male" | "female">("male");
   const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
-  const [concerns, setConcerns] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-
-  function toggleConcern(c: string) {
-    setConcerns((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +67,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
           timeUnknown,
           gender,
           calendar,
-          concerns,
+          concerns: [],
         }),
       });
       const createJson = await createRes.json();
@@ -202,22 +196,6 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
               </button>
             ))}
           </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>고민 (복수 선택)</Label>
-        <div className="flex flex-wrap gap-2">
-          {CONCERN_OPTIONS.map((c) => (
-            <button
-              type="button"
-              key={c}
-              onClick={() => toggleConcern(c)}
-              className={`px-5 h-11 rounded-full border text-[14px] font-medium transition-colors ${concerns.includes(c) ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
-            >
-              {c}
-            </button>
-          ))}
         </div>
       </div>
 
