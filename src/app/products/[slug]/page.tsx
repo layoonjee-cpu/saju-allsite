@@ -52,30 +52,12 @@ export default async function ProductDetailPage({
   return (
     <div className="container py-12 max-w-2xl">
       <header className="mb-10">
-        {product.slug === "dream-reading" ? (
-          <>
-            <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
-            <h1
-              className="text-[28px] font-bold tracking-tight leading-snug"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              꿈꾸는 시선
-            </h1>
-            <p className="mt-2 text-[15px] text-body leading-relaxed">
-              어제밤 꾼 꿈을 잊을 수 없다면, 제게 들려주세요.
-            </p>
-            <p className="mt-4 text-xl font-mono font-medium text-ink">
-              {formatKRW(product.price)}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
-            <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
-            <p className="mt-2 text-sm text-body">{product.description}</p>
-            <p className="mt-5 text-2xl font-mono font-medium text-ink">{formatKRW(product.price)}</p>
-          </>
-        )}
+        <>
+          <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
+          <p className="mt-2 text-sm text-body">{product.description}</p>
+          <p className="mt-5 text-2xl font-mono font-medium text-ink">{formatKRW(product.price)}</p>
+        </>
       </header>
 
       <section>

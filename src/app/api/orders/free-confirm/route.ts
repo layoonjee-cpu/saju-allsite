@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";
 import { buildSajuPrompt } from "@/lib/saju/prompt";
 import { generateInterpretation } from "@/lib/saju/llm";
@@ -65,7 +66,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
   }
 
-  const service = createServiceClient();
+  // serverEnv() 전체 검증 우회 — 이 라우트에 필요한 키만 직접 사용
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!supabaseUrl || !supabaseSecretKey) {
+    return NextResponse.json({ error: "서버 설정 오류" }, { status: 500 });
+  }
+  const service = createSupabaseClient(supabaseUrl, supabaseSecretKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   // 주문 조회 + 소유권 확인
   const { data: order, error: orderErr } = await service
