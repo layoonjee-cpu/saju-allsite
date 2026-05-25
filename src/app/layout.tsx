@@ -47,8 +47,19 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
       <div className="container flex h-16 items-center justify-between gap-4">
 
         {/* 로고 */}
-        <Link href="/" className="font-black text-[18px] gradient-text shrink-0 tracking-tight">
-          {siteConfig.name}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <OddEyeCatLogo />
+          <span
+            className="font-black text-[18px] tracking-tight"
+            style={{
+              background: "linear-gradient(135deg, #f472b6 0%, #a855f7 50%, #60a5fa 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {siteConfig.name}
+          </span>
         </Link>
 
         {/* 상품 메뉴 */}
@@ -90,6 +101,40 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
 }
 
 // Ollama: footer is a quiet caption-gray strip with hairline divider.
+function OddEyeCatLogo({ size = 38 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
+      {/* 귀 */}
+      <polygon points="7,24 13,5 20,23" fill="#1e1b4b" />
+      <polygon points="28,23 35,5 41,24" fill="#1e1b4b" />
+      <polygon points="9.5,22 13,9 17,22" fill="#fda4af" />
+      <polygon points="31,22 35,9 38.5,22" fill="#93c5fd" />
+      {/* 얼굴 */}
+      <ellipse cx="24" cy="30" rx="17" ry="16" fill="#1e1b4b" />
+      {/* 볼 흰 털 패치 */}
+      <ellipse cx="11" cy="34" rx="4.5" ry="2.8" fill="white" opacity="0.45" />
+      <ellipse cx="37" cy="34" rx="4.5" ry="2.8" fill="white" opacity="0.45" />
+      {/* 이마 초승달 (귀 사이) */}
+      <circle cx="29" cy="16" r="4.5" fill="#f59e0b" />
+      <circle cx="30.8" cy="15" r="3.4" fill="#1e1b4b" />
+      {/* 왼쪽 눈 */}
+      <ellipse cx="17" cy="27" rx="6" ry="6.5" fill="#f472b6" opacity="0.22" />
+      <ellipse cx="17" cy="27" rx="4.8" ry="5.2" fill="#f472b6" />
+      <ellipse cx="17" cy="27.5" rx="2.8" ry="3.3" fill="#0f0506" />
+      <circle cx="18.5" cy="25.5" r="1.2" fill="white" />
+      <circle cx="16" cy="28.5" r="0.65" fill="white" opacity="0.75" />
+      {/* 오른쪽 눈 */}
+      <ellipse cx="31" cy="27" rx="6" ry="6.5" fill="#60a5fa" opacity="0.22" />
+      <ellipse cx="31" cy="27" rx="4.8" ry="5.2" fill="#60a5fa" />
+      <ellipse cx="31" cy="27.5" rx="2.8" ry="3.3" fill="#05080f" />
+      <circle cx="32.5" cy="25.5" r="1.2" fill="white" />
+      <circle cx="30" cy="28.5" r="0.65" fill="white" opacity="0.75" />
+      {/* 코 */}
+      <path d="M22.5,35.5 L24,33.8 L25.5,35.5 L24,36.8 Z" fill="#fda4af" />
+    </svg>
+  );
+}
+
 function SiteFooter() {
   // 사업자정보 한 줄 — 운세위키 푸터 포맷: "회사 | 사업자등록번호: ... | 통신판매업 신고번호: ... | 대표: ... | 주소: ..."
   const businessLine = [

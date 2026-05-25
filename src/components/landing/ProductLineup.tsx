@@ -5,11 +5,13 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
 
 const cardGradients = [
-  "from-violet-400/20 to-purple-300/20",
-  "from-sky-400/20 to-blue-300/20",
-  "from-rose-400/20 to-pink-300/20",
-  "from-amber-400/20 to-orange-300/20",
+  "from-amber-100 to-orange-200",
+  "from-indigo-100 to-violet-200",
+  "from-rose-100 to-pink-200",
+  "from-violet-100 to-purple-200",
 ];
+
+const cardEmojis = ["☀️", "🌙", "💞", "⭐"];
 
 export async function ProductLineup() {
   let products: { slug: string; name: string; description: string; price: number }[] | null;
@@ -37,41 +39,37 @@ export async function ProductLineup() {
   }
 
   return (
-    <section className="container py-20">
-      <div className="text-center mb-12">
-        <p className="text-xs font-medium text-violet-500 uppercase tracking-widest mb-2">Products</p>
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-          상품 <span className="gradient-text">라인업</span>
-        </h2>
-        <p className="mt-3 text-muted-foreground text-sm">원하는 풀이를 골라보세요</p>
+    <section className="container py-16 md:py-20">
+      {/* 섹션 타이틀 */}
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-bold gradient-text tracking-tight">풀이 상품</h2>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         {products.map((p, i) => (
           <Link
             key={p.slug}
             href={`/products/${p.slug}`}
-            className="group block relative rounded-2xl p-6 glass-card transition-all duration-300 hover:-translate-y-1"
+            className="group block relative rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1 overflow-hidden"
           >
-            {/* 카드 상단 그라디언트 장식 */}
-            <div className={`absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl bg-gradient-to-r ${cardGradients[i % cardGradients.length].replace('/20', '')}`} />
-
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cardGradients[i % cardGradients.length]} flex items-center justify-center mb-4`}>
-              <span className="text-lg">
-                {["✨", "🌙", "💕", "🌟"][i % 4]}
-              </span>
+            {/* 비주얼 배너 (이모지 + 그라디언트 배경) */}
+            <div
+              className={`flex items-center justify-center bg-gradient-to-br ${cardGradients[i % cardGradients.length]} h-24 sm:h-28 md:h-32 text-4xl sm:text-5xl`}
+            >
+              {cardEmojis[i % 4]}
             </div>
 
-            <p className="text-base font-semibold text-foreground">{p.name}</p>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-2">
-              {p.description}
-            </p>
-            <p className="mt-5 text-xl font-bold gradient-text">
-              {formatKRW(p.price)}
-            </p>
-
-            <div className="mt-4 text-xs font-medium text-violet-500 group-hover:text-violet-700 transition-colors">
-              자세히 보기 →
+            {/* 카드 정보 */}
+            <div className="p-4 sm:p-5">
+              <p className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+                {p.name}
+              </p>
+              <p className="mt-2 text-lg sm:text-2xl font-bold gradient-text">
+                {formatKRW(p.price)}
+              </p>
+              <div className="mt-3 btn-gradient inline-flex items-center justify-center h-8 sm:h-9 px-4 rounded-full text-[11px] sm:text-xs font-semibold w-full">
+                자세히 보기
+              </div>
             </div>
           </Link>
         ))}

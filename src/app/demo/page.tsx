@@ -26,16 +26,27 @@ type SearchParams = Promise<{
   y?: string; m?: string; d?: string;
   h?: string; min?: string;
   cal?: string; g?: string;
+  product?: string;
 }>;
 
 const DEFAULTS = {
   y: "1990", m: "5", d: "15",
   h: "14", min: "30",
   cal: "양력" as const, g: "male" as const,
+  product: "basic-saju",
+};
+
+const PRODUCT_MAP: Record<string, string> = {
+  "basic-saju": "기본 사주 풀이",
+  "premium-saju": "프리미엄 종합 풀이",
+  "love-saju": "연애·궁합 리포트",
+  "today-fortune": "오늘의 운세",
 };
 
 export default async function DemoPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
+  const productSlug = sp.product && PRODUCT_MAP[sp.product] ? sp.product : DEFAULTS.product;
+  const productName = PRODUCT_MAP[productSlug];
   const birthInfo: BirthInfo = {
     birthYear: sp.y || DEFAULTS.y,
     birthMonth: sp.m || DEFAULTS.m,
@@ -77,8 +88,8 @@ export default async function DemoPage({ searchParams }: { searchParams: SearchP
   if (myeongsik && manseryeokText) {
     try {
       const { system, user } = buildSajuPrompt({
-        productSlug: "basic-saju",
-        productName: "데모 — 기본 사주 풀이",
+        productSlug,
+        productName: `데모 — ${productName}`,
         myeongsik,
         manseryeokText,
         birthDate: `${birthInfo.birthYear}-${birthInfo.birthMonth.padStart(2, "0")}-${birthInfo.birthDay.padStart(2, "0")}`,
@@ -181,6 +192,7 @@ function DemoForm({ initial }: { initial: Awaited<SearchParams> }) {
     min: initial.min || DEFAULTS.min,
     cal: initial.cal || DEFAULTS.cal,
     g: initial.g || DEFAULTS.g,
+    product: initial.product || DEFAULTS.product,
   };
   return (
     <form method="GET" className="rounded-lg border border-hairline p-5 bg-canvas">
@@ -202,6 +214,15 @@ function DemoForm({ initial }: { initial: Awaited<SearchParams> }) {
           <select name="g" defaultValue={v.g} className="w-full h-9 px-3 rounded border border-hairline bg-canvas text-ink">
             <option value="male">남성</option>
             <option value="female">여성</option>
+          </select>
+        </div>
+        <div className="space-y-1 col-span-2">
+          <label className="block text-[11px] font-mono uppercase tracking-wider text-mute">상품</label>
+          <select name="product" defaultValue={v.product} className="w-full h-9 px-3 rounded border border-hairline bg-canvas text-ink">
+            <option value="basic-saju">기본 사주 풀이</option>
+            <option value="premium-saju">프리미엄 종합 풀이</option>
+            <option value="love-saju">연애·궁합 리포트</option>
+            <option value="today-fortune">오늘의 운세</option>
           </select>
         </div>
         <button type="submit" className="h-9 px-4 rounded-full bg-ink text-canvas text-sm font-medium">
