@@ -111,10 +111,11 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* 생년월일 + 출생시각 — 모바일 1열 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>생년월일</Label>
-          <div className="flex gap-1 items-center">
+          <div className="flex gap-1.5 items-center">
             <Input
               id="birthYear"
               type="number"
@@ -123,9 +124,9 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
               max={new Date().getFullYear()}
               value={birthYear}
               onChange={(e) => setBirthYear(e.target.value)}
-              className="w-20 text-center"
+              className="flex-1 text-center text-base h-12"
             />
-            <span className="text-sm text-muted-foreground">/</span>
+            <span className="text-sm text-muted-foreground shrink-0">/</span>
             <Input
               id="birthMonth"
               type="number"
@@ -134,9 +135,9 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
               max={12}
               value={birthMonth}
               onChange={(e) => setBirthMonth(e.target.value)}
-              className="w-14 text-center"
+              className="w-16 text-center text-base h-12"
             />
-            <span className="text-sm text-muted-foreground">/</span>
+            <span className="text-sm text-muted-foreground shrink-0">/</span>
             <Input
               id="birthDay"
               type="number"
@@ -145,7 +146,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
               max={31}
               value={birthDay}
               onChange={(e) => setBirthDay(e.target.value)}
-              className="w-14 text-center"
+              className="w-16 text-center text-base h-12"
             />
           </div>
         </div>
@@ -157,10 +158,16 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
             value={birthTime}
             onChange={(e) => setBirthTime(e.target.value)}
             disabled={timeUnknown}
+            className="h-12 text-base"
           />
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input type="checkbox" checked={timeUnknown} onChange={(e) => setTimeUnknown(e.target.checked)} />
-            시 모름
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={timeUnknown}
+              onChange={(e) => setTimeUnknown(e.target.checked)}
+              className="w-4 h-4"
+            />
+            시간을 모릅니다
           </label>
         </div>
       </div>
@@ -174,7 +181,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
                 type="button"
                 key={g}
                 onClick={() => setGender(g)}
-                className={`flex-1 h-10 rounded-full border text-sm transition-colors ${gender === g ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
+                className={`flex-1 h-12 rounded-full border text-[15px] font-medium transition-colors ${gender === g ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
               >
                 {g === "male" ? "남성" : "여성"}
               </button>
@@ -189,7 +196,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
                 type="button"
                 key={c}
                 onClick={() => setCalendar(c)}
-                className={`flex-1 h-10 rounded-full border text-sm transition-colors ${calendar === c ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
+                className={`flex-1 h-12 rounded-full border text-[15px] font-medium transition-colors ${calendar === c ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
               >
                 {c === "solar" ? "양력" : "음력"}
               </button>
@@ -206,7 +213,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: P
               type="button"
               key={c}
               onClick={() => toggleConcern(c)}
-              className={`px-4 h-8 rounded-full border text-sm transition-colors ${concerns.includes(c) ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
+              className={`px-5 h-11 rounded-full border text-[14px] font-medium transition-colors ${concerns.includes(c) ? "border-ink bg-ink text-canvas" : "border-hairline text-ink hover:border-ink"}`}
             >
               {c}
             </button>

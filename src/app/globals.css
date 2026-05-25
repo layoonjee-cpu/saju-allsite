@@ -109,6 +109,15 @@
   }
 }
 
+/* ─── 스크롤바 숨김 ─── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── 상단 롤링 배너 마키 ─── */
 @keyframes marquee {
   from { transform: translateX(0); }

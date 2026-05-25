@@ -5,6 +5,7 @@ import { siteConfig, businessInfo } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
 import { TopBanner } from "@/components/banner/TopBanner";
+import { MobileMenu } from "@/components/layout/MobileMenu";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -71,8 +72,8 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </span>
         </Link>
 
-        {/* 상품 메뉴 */}
-        <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+        {/* 상품 메뉴 — 데스크톱만 표시 */}
+        <nav className="hidden md:flex items-center gap-0.5">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -90,8 +91,8 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           ))}
         </nav>
 
-        {/* 로그인 / 마이페이지 */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* 로그인 — 데스크톱 */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           {isLoggedIn ? (
             <>
               <Link href="/mypage" className="text-[13px] font-medium text-foreground/65 hover:text-teal-700 transition-colors px-2">마이페이지</Link>
@@ -100,11 +101,14 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
               </form>
             </>
           ) : (
-            <Link href="/login" className="inline-flex items-center justify-center h-9 px-5 rounded-full text-[13px] font-bold btn-gradient">
+            <Link href="/login" className="inline-flex items-center justify-center h-11 px-6 rounded-full text-[13px] font-bold btn-gradient">
               로그인
             </Link>
           )}
         </div>
+
+        {/* 햄버거 메뉴 — 모바일만 표시 */}
+        <MobileMenu navItems={navItems} isLoggedIn={isLoggedIn} />
       </div>
     </header>
   );

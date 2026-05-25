@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
 
-// 상품 slug → 이미지 경로 (null = 그라디언트 뱃지)
 const cardImages: Record<string, string | null> = {
   "today-fortune": null,
   "dream-reading": "/product-dream.png",
@@ -14,12 +13,10 @@ const cardImages: Record<string, string | null> = {
   "premium-saju": "/product-premium.png",
 };
 
-// 이미지 없는 카드용 그라디언트
 const cardGradients: Record<string, string> = {
   "today-fortune": "from-amber-100 to-teal-100",
 };
 
-// 이미지 없는 카드용 이모지
 const cardEmojis: Record<string, string> = {
   "today-fortune": "☀️",
 };
@@ -41,23 +38,72 @@ export async function ProductLineup() {
       .map(({ slug, name, description, price }) => ({ slug, name, description, price }));
   }
 
-  if (!products || products.length === 0) {
-    return (
-      <section className="container py-12 text-center">
-        <p className="text-sm text-muted-foreground">상품이 아직 없어요.</p>
-      </section>
-    );
-  }
+  if (!products || products.length === 0) return null;
 
   return (
-    <section className="container py-16 md:py-20">
+    <section className="py-6 md:py-10">
       {/* 섹션 타이틀 */}
-      <div className="text-center mb-10">
-        <h2 className="text-xl font-bold gradient-text tracking-tight">풀이 상품</h2>
-        <p className="mt-2 text-[13px] text-muted-foreground">당신이 가장 궁금한 자리에서 시작해요</p>
+      <div className="px-4 md:px-6 mb-4 flex items-center justify-between">
+        <h2 className="text-[16px] font-bold gradient-text tracking-tight">상품 둘러보기</h2>
+        <Link href="/products" className="text-[12px] text-muted-foreground hover:text-teal-700 transition-colors">
+          전체 보기 →
+        </Link>
       </div>
 
-      <div className="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      {/* 모바일: 가로 스크롤 / 데스크톱: 그리드 */}
+      <div className="md:hidden">
+        <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
+          {products.map((p) => {
+            const imageSrc = cardImages[p.slug] ?? null;
+            const gradient = cardGradients[p.slug] ?? "from-stone-100 to-amber-50";
+            const emoji = cardEmojis[p.slug] ?? "✨";
+            const isFree = p.price === 0;
+
+            return (
+              <Link
+                key={p.slug}
+                href={`/products/${p.slug}`}
+                className="group flex-none w-[160px] rounded-2xl glass-card overflow-hidden snap-start
+                  active:scale-[0.97] transition-transform duration-150"
+              >
+                {/* 이미지 */}
+                <div className="relative h-[180px] overflow-hidden">
+                  {imageSrc ? (
+                    <Image
+                      src={imageSrc}
+                      alt={p.name}
+                      fill
+                      className="object-cover object-top"
+                      sizes="160px"
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient} text-4xl`}>
+                      {emoji}
+                    </div>
+                  )}
+                  {isFree && (
+                    <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      무료
+                    </div>
+                  )}
+                </div>
+                {/* 정보 */}
+                <div className="p-3">
+                  <p className="text-[13px] font-semibold text-foreground leading-snug line-clamp-1">
+                    {p.name}
+                  </p>
+                  <p className="mt-1 text-[14px] font-bold gradient-text">
+                    {isFree ? "무료" : formatKRW(p.price)}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 데스크톱: 2~5열 그리드 */}
+      <div className="hidden md:grid gap-4 px-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {products.map((p) => {
           const imageSrc = cardImages[p.slug] ?? null;
           const gradient = cardGradients[p.slug] ?? "from-stone-100 to-amber-50";
@@ -70,37 +116,32 @@ export async function ProductLineup() {
               href={`/products/${p.slug}`}
               className="group block relative rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1.5 overflow-hidden"
             >
-              {/* 비주얼 배너 */}
-              <div className={`relative h-40 sm:h-44 md:h-48 overflow-hidden`}>
+              <div className="relative h-48 overflow-hidden">
                 {imageSrc ? (
                   <Image
                     src={imageSrc}
                     alt={p.name}
                     fill
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 1024px) 33vw, 20vw"
                   />
                 ) : (
                   <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient} text-5xl`}>
                     {emoji}
                   </div>
                 )}
-                {/* 무료 뱃지 */}
                 {isFree && (
                   <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     무료
                   </div>
                 )}
               </div>
-
-              {/* 카드 정보 */}
-              <div className="p-4 sm:p-5">
-                <p className="text-sm sm:text-[15px] font-semibold text-foreground leading-snug">
-                  {p.name}
-                </p>
-                <p className="mt-2 text-lg sm:text-xl font-bold gradient-text">
+              <div className="p-4">
+                <p className="text-[15px] font-semibold text-foreground leading-snug">{p.name}</p>
+                <p className="mt-2 text-xl font-bold gradient-text">
                   {isFree ? "무료" : formatKRW(p.price)}
                 </p>
-                <div className="mt-3 btn-gradient inline-flex items-center justify-center h-8 sm:h-9 px-4 rounded-full text-[11px] sm:text-xs font-semibold w-full">
+                <div className="mt-3 btn-gradient inline-flex items-center justify-center h-11 px-4 rounded-full text-[13px] font-semibold w-full">
                   {isFree ? "바로 보기" : "자세히 보기"}
                 </div>
               </div>
