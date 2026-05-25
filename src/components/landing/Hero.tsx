@@ -16,7 +16,7 @@ export function Hero() {
           <div className="order-1 md:order-2 shrink-0 flex justify-center">
             <div className="relative w-[220px] h-[242px] sm:w-[260px] sm:h-[286px] md:w-[310px] md:h-[341px] lg:w-[360px] lg:h-[396px]">
               <Image
-                src="/product-hero.png"
+                src="/profile_image.png"
                 alt="시선 캐릭터"
                 fill
                 className="object-contain drop-shadow-[0_8px_32px_rgba(26,23,48,0.18)]"

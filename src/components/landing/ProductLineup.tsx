@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
 
 const cardImages: Record<string, string | null> = {
-  "today-fortune": null,
+  "today-fortune": "/product-today.png",
   "dream-reading": "/product-dream.png",
   "basic-saju": "/product-basic.png",
   "love-saju": "/product-love.png",
