@@ -34,26 +34,56 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   );
 }
 
+const navItems = [
+  { label: "오늘의 운세", href: "/products/today-fortune" },
+  { label: "기본 사주", href: "/products/basic-saju" },
+  { label: "연애·궁합", href: "/products/love-saju", badge: "인기", badgeColor: "from-rose-500 to-pink-500" },
+  { label: "종합 풀이", href: "/products/premium-saju", badge: "추천", badgeColor: "from-violet-500 to-purple-500" },
+];
+
 function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
-      <div className="container flex h-14 items-center justify-between">
-        <Link href="/" className="font-bold text-[16px] gradient-text">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-[0_1px_12px_rgba(139,92,246,0.08)]">
+      <div className="container flex h-16 items-center justify-between gap-4">
+
+        {/* 로고 */}
+        <Link href="/" className="font-black text-[18px] gradient-text shrink-0 tracking-tight">
           {siteConfig.name}
         </Link>
-        <nav className="flex items-center gap-6 text-[13px] font-medium">
-          <Link href="/products" className="text-foreground/70 hover:text-violet-600 transition-colors">상품</Link>
+
+        {/* 상품 메뉴 */}
+        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold text-foreground/65 hover:text-violet-600 hover:bg-violet-50/70 transition-all duration-200 whitespace-nowrap"
+            >
+              {item.label}
+              {item.badge && (
+                <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r ${item.badgeColor} text-white leading-none`}>
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          ))}
+        </nav>
+
+        {/* 로그인 / 마이페이지 */}
+        <div className="flex items-center gap-2 shrink-0">
           {isLoggedIn ? (
             <>
-              <Link href="/mypage" className="text-foreground/70 hover:text-violet-600 transition-colors">마이페이지</Link>
+              <Link href="/mypage" className="text-[13px] font-medium text-foreground/65 hover:text-violet-600 transition-colors px-2">마이페이지</Link>
               <form action="/api/auth/signout" method="post">
-                <button type="submit" className="text-foreground/70 hover:text-violet-600 transition-colors">로그아웃</button>
+                <button type="submit" className="text-[13px] font-medium text-foreground/65 hover:text-violet-600 transition-colors px-2">로그아웃</button>
               </form>
             </>
           ) : (
-            <Link href="/login" className="inline-flex items-center justify-center h-8 px-4 rounded-full text-xs font-semibold btn-gradient">로그인</Link>
+            <Link href="/login" className="inline-flex items-center justify-center h-9 px-5 rounded-full text-[13px] font-bold btn-gradient">
+              로그인
+            </Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
