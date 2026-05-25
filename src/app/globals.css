@@ -109,6 +109,19 @@
   }
 }
 
+/* ─── 상단 롤링 배너 마키 ─── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+.marquee-track {
+  animation: marquee 28s linear infinite;
+  will-change: transform;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
 /* ─── Markdown result body ─── */
 @layer components {
   .prose-saju h2 {

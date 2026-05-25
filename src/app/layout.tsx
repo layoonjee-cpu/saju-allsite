@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { siteConfig, businessInfo } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
+import { TopBanner } from "@/components/banner/TopBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ko">
       <body suppressHydrationWarning>
+        <TopBanner />
         <SiteHeader isLoggedIn={isLoggedIn} />
         <main className="min-h-[calc(100vh-7rem)]">{children}</main>
         <SiteFooter />
