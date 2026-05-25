@@ -10,6 +10,7 @@ import {
   fetchSajuAnalysis,
   formatSajuToManseryeok,
   ganjiToMyeongsik,
+  ALL_FIELDS,
   type BirthInfo,
 } from "@/lib/saju/saju-api";
 
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest) {
     } else if (isSajuApiConfigured()) {
       try {
         const birthInfo = toBirthInfo(input);
-        const analysis = await fetchSajuAnalysis(birthInfo, [], { source: "confirm" }); // [] = 16종 전체
+        const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" }); // 16종 전체 (gyeokgukYongsin 포함)
         const converted = ganjiToMyeongsik(analysis);
         if (converted) {
           myeongsik = converted;
@@ -196,7 +197,7 @@ export async function POST(request: NextRequest) {
       if (isSajuApiConfigured()) {
         try {
           const partnerBirthInfo = toPartnerBirthInfo(input);
-          const partnerAnalysis = await fetchSajuAnalysis(partnerBirthInfo, [], { source: "confirm" });
+          const partnerAnalysis = await fetchSajuAnalysis(partnerBirthInfo, ALL_FIELDS, { source: "confirm" });
           const partnerConverted = ganjiToMyeongsik(partnerAnalysis);
           if (partnerConverted) {
             partnerMyeongsik = partnerConverted;

@@ -148,23 +148,25 @@ export function formatSajuToManseryeok(
     { key: "gyeokguk",        label: "격국 (억부용신)" },
     { key: "gyeokgukYongsin", label: "격국용신 (자평진전)" },
     { key: "twelveFortune",   label: "12운성" },
+    { key: "hapchung",        label: "합·충·형·해·파" },
     { key: "daeun",          label: "대운" },
     { key: "seun",           label: "세운" },
-    { key: "weolun",         label: "월운" },
+    { key: "weolun",         label: "월운 (현재+향후)" },
     { key: "guiin",          label: "귀인" },
     { key: "hongyeom",       label: "홍염살" },
     { key: "dohwa",          label: "도화살" },
     { key: "hwagae",         label: "화개살" },
     { key: "sibisinsals",    label: "12신살" },
     { key: "bigyeonGeobjae", label: "비견/겁재" },
-    { key: "hapchung",       label: "합·충·형·해·파" },
   ];
 
   const sections = order
     .map(({ key, label }) => {
       const value = analysis[key];
       if (value == null) return null;
-      return `[${label}]\n${stringifyValue(value)}`;
+      const body = formatField(key, value);
+      if (!body) return null;
+      return `[${label}]\n${body}`;
     })
     .filter((v): v is string => !!v);
 
@@ -180,6 +182,26 @@ export const LLM_CORE_FIELDS: AnalysisField[] = [
   "twelveFortune",// 12운성
   "daeun",        // 대운
   "seun",         // 세운
+];
+
+// 16종 전체 요청 — gyeokgukYongsin 은 명시 요청 시에만 반환되므로 반드시 포함
+export const ALL_FIELDS: AnalysisField[] = [
+  "ganji",
+  "sipseong",
+  "sinStrength",
+  "gyeokguk",
+  "gyeokgukYongsin",  // 자평진전 체계 — 명시 요청 필수
+  "twelveFortune",
+  "daeun",
+  "seun",
+  "weolun",
+  "hapchung",
+  "guiin",
+  "sibisinsals",
+  "bigyeonGeobjae",
+  "hongyeom",
+  "dohwa",
+  "hwagae",
 ];
 
 // API 호출 + 텍스트 변환을 한 번에 실행
@@ -220,6 +242,94 @@ export function ganjiToMyeongsik(analysis: SajuAnalysisResponse): SimpleMyeongsi
 }
 
 // ── helpers ───────────────────────────────────────────
+
+/** 필드별 전용 포맷터 — 가독성 최적화 */
+function formatField(key: AnalysisField, value: unknown): string {
+  switch (key) {
+    // ── 합충형해파: 배열을 한 줄 요약 형식으로 ──────────────────
+    case "hapchung": {
+      const arr = value as Array<{
+        type?: string;
+        source?: string;
+        target?: string;
+        sourcePosition?: string;
+        targetPosition?: string;
+        meaning?: string;
+      }>;
+      if (!Array.isArray(arr) || arr.length === 0) return "해당 없음";
+      return arr
+        .map((r) => {
+          const from = r.sourcePosition ? `${r.sourcePosition}(${r.source ?? ""})` : (r.source ?? "");
+          const to = r.targetPosition ? `${r.targetPosition}(${r.target ?? ""})` : (r.target ?? "");
+          return `- ${from} ↔ ${to}: ${r.type ?? ""} — ${r.meaning ?? ""}`;
+        })
+        .join("\n");
+    }
+
+    // ── 귀인: 비어있는 종류는 생략 ──────────────────────────────
+    case "guiin": {
+      const obj = value as Record<string, Array<{ position?: string; ji?: string; name?: string; description?: string }>>;
+      if (typeof obj !== "object" || obj === null) return stringifyValue(value);
+      const lines: string[] = [];
+      for (const items of Object.values(obj)) {
+        if (!Array.isArray(items) || items.length === 0) continue;
+        for (const item of items) {
+          lines.push(`- ${item.name ?? ""}(${item.position ?? ""} ${item.ji ?? ""}): ${item.description ?? ""}`);
+        }
+      }
+      return lines.length > 0 ? lines.join("\n") : "해당 없음";
+    }
+
+    // ── 월운: 현재 월 + 향후 5개월만 (과거 제외) ─────────────────
+    case "weolun": {
+      const w = value as {
+        currentWeolun?: { monthLabel?: string; ganji?: string; ganji_hanja?: string; ganElement?: string; jiElement?: string; sipseongRelation?: { gan?: string; ji?: string } };
+        upcomingWeoluns?: Array<{ monthLabel?: string; ganji?: string; ganji_hanja?: string; ganElement?: string; jiElement?: string; sipseongRelation?: { gan?: string; ji?: string } }>;
+      };
+      if (!w || typeof w !== "object") return stringifyValue(value);
+      const items = [
+        ...(w.currentWeolun ? [w.currentWeolun] : []),
+        ...((w.upcomingWeoluns ?? []).slice(0, 5)),
+      ];
+      if (items.length === 0) return stringifyValue(value);
+      return items
+        .map((m) => {
+          const sipseong = m.sipseongRelation
+            ? ` / 십성 천간:${m.sipseongRelation.gan ?? "-"} 지지:${m.sipseongRelation.ji ?? "-"}`
+            : "";
+          return `- ${m.monthLabel ?? ""}(${m.ganji ?? ""}/${m.ganji_hanja ?? ""}): 오행 천간·${m.ganElement ?? "-"} 지지·${m.jiElement ?? "-"}${sipseong}`;
+        })
+        .join("\n");
+    }
+
+    // ── 격국용신(자평진전): 핵심 정보만 압축 ─────────────────────
+    case "gyeokgukYongsin": {
+      if (value === null) return "해당 없음 (내격에만 적용)";
+      const g = value as {
+        geokgukType?: string;
+        geokgukCategory?: string;
+        geokgukYongsin?: { sipsin?: string; oheng?: string; reason?: string };
+        sangsin?: { primary?: { sipsin?: string; oheng?: string; role?: string }; existsInChart?: boolean };
+        gisin?: { primary?: { sipsin?: string; oheng?: string; reason?: string }; existsInChart?: boolean };
+        seongPaGeok?: { result?: string; grade?: string; reason?: string };
+        summary?: string;
+      };
+      const lines: string[] = [];
+      if (g.geokgukType) lines.push(`격국: ${g.geokgukType}${g.geokgukCategory ? ` (${g.geokgukCategory})` : ""}`);
+      if (g.seongPaGeok) lines.push(`성격·파격: ${g.seongPaGeok.result ?? ""} / ${g.seongPaGeok.grade ?? ""} — ${g.seongPaGeok.reason ?? ""}`);
+      if (g.geokgukYongsin) lines.push(`격국용신: ${g.geokgukYongsin.sipsin ?? ""}(${g.geokgukYongsin.oheng ?? ""})`);
+      if (g.sangsin?.primary) lines.push(`상신: ${g.sangsin.primary.sipsin ?? ""}(${g.sangsin.primary.oheng ?? ""}) — ${g.sangsin.primary.role ?? ""}`);
+      if (g.gisin?.primary) lines.push(`기신: ${g.gisin.primary.sipsin ?? ""}(${g.gisin.primary.oheng ?? ""}) — ${g.gisin.primary.reason ?? ""}`);
+      if (g.summary) lines.push(`종합: ${g.summary}`);
+      return lines.length > 0 ? lines.join("\n") : stringifyValue(value);
+    }
+
+    // ── 그 외: 기존 범용 포맷터 ─────────────────────────────────
+    default:
+      return stringifyValue(value);
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
