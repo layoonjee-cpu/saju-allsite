@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-import { publicEnv, serverEnv } from "@/lib/env";
+import { publicEnv } from "@/lib/env";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -30,10 +30,13 @@ export async function createClient() {
 }
 
 // secret 키 (구 service_role) 클라이언트 — 결제 confirm, 어드민 등 서버 전용 작업에서만
+// serverEnv() 전체 검증 우회 — TOSS_SECRET_KEY 등 무관한 변수가 없어도 동작
 export function createServiceClient() {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is not set");
   return createSupabaseClient<Database>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    serverEnv().SUPABASE_SECRET_KEY,
+    secretKey,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }
