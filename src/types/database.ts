@@ -50,12 +50,13 @@ type SajuInputRow = {
   id: string;
   order_id: string;
   name: string | null;
-  birth_date: string;
+  birth_date: string | null;
   birth_time: string | null;
   time_unknown: boolean;
   gender: GenderKind;
   calendar: CalendarKind;
   concerns: string[];
+  dream_content: string | null;
   created_at: string;
 };
 
@@ -141,12 +142,13 @@ export type Database = {
           id?: string;
           order_id: string;
           name?: string | null;
-          birth_date: string;
+          birth_date?: string | null;
           birth_time?: string | null;
           time_unknown?: boolean;
-          gender: GenderKind;
+          gender?: GenderKind;
           calendar?: CalendarKind;
           concerns?: string[];
+          dream_content?: string | null;
           created_at?: string;
         };
         Update: Partial<SajuInputRow>;

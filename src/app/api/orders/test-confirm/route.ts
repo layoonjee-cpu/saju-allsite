@@ -22,16 +22,18 @@ const bodySchema = z.object({
 });
 
 type SajuInputRow = {
-  birth_date: string;
+  birth_date: string | null;
   birth_time: string | null;
   time_unknown: boolean;
   calendar: "solar" | "lunar";
   gender: "male" | "female";
   concerns: string[];
+  dream_content?: string | null;
 };
 
 function toBirthInfo(input: SajuInputRow): BirthInfo {
-  const [y, m, d] = input.birth_date.split("-");
+  const date = input.birth_date ?? "1900-01-01";
+  const [y, m, d] = date.split("-");
   const hasTime = !input.time_unknown && !!input.birth_time;
   const [hh, mm] = hasTime ? input.birth_time!.split(":") : [undefined, undefined];
   return {
@@ -46,7 +48,7 @@ function toBirthInfo(input: SajuInputRow): BirthInfo {
 
 function toComputeInput(input: SajuInputRow) {
   return {
-    birthDate: input.birth_date,
+    birthDate: input.birth_date ?? "1900-01-01",
     birthTime: input.birth_time,
     timeUnknown: input.time_unknown,
     calendar: input.calendar,
@@ -140,11 +142,12 @@ export async function POST(request: NextRequest) {
       productName: product.name,
       myeongsik,
       manseryeokText,
-      birthDate: input.birth_date,
+      birthDate: input.birth_date ?? "",
       birthTime: input.birth_time,
       timeUnknown: input.time_unknown,
       gender: input.gender,
-      concerns: input.concerns,
+      concerns: input.concerns ?? [],
+      dreamContent: input.dream_content ?? undefined,
     });
 
     const llm = await generateInterpretation({ system, user });
