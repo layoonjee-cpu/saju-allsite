@@ -9,7 +9,7 @@ export async function createClient() {
 
   return createServerClient<Database>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
       cookies: {
         getAll() {
@@ -29,11 +29,11 @@ export async function createClient() {
   );
 }
 
-// service_role 클라이언트 — 결제 confirm, LLM 생성 등 서버 전용 작업에서만
+// secret 키 (구 service_role) 클라이언트 — 결제 confirm, 어드민 등 서버 전용 작업에서만
 export function createServiceClient() {
   return createSupabaseClient<Database>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    serverEnv().SUPABASE_SERVICE_ROLE_KEY,
+    serverEnv().SUPABASE_SECRET_KEY,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }

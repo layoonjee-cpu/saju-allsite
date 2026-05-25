@@ -1,15 +1,15 @@
 // pnpm seed:products
 // src/config/products.seed.ts 의 내용을 DB에 upsert합니다.
-// .env.local 또는 .env 의 NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 필요.
+// .env.local 또는 .env 의 NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY 필요.
 
 import { createClient } from "@supabase/supabase-js";
 import { productsSeed } from "../src/config/products.seed";
 
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) {
-    console.error("✗ NEXT_PUBLIC_SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 없습니다.");
+    console.error("✗ NEXT_PUBLIC_SUPABASE_URL 또는 SUPABASE_SECRET_KEY가 없습니다.");
     process.exit(1);
   }
   const supabase = createClient(url, key);

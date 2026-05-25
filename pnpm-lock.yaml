@@ -12,8 +12,8 @@ importers:
         specifier: ^0.30.1
         version: 0.30.1
       '@google/generative-ai':
-        specifier: ^0.21.0
-        version: 0.21.0
+        specifier: ^0.24.1
+        version: 0.24.1
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.76.1(react@19.2.6))
@@ -21,10 +21,10 @@ importers:
         specifier: ^0.10.3
         version: 0.10.3(@supabase/supabase-js@2.106.1)
       '@supabase/supabase-js':
-        specifier: ^2.46.1
+        specifier: ^2.106.1
         version: 2.106.1
       '@tosspayments/tosspayments-sdk':
-        specifier: ^2.3.6
+        specifier: ^2.7.0
         version: 2.7.0
       class-variance-authority:
         specifier: ^0.7.1
@@ -318,8 +318,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@google/generative-ai@0.21.0':
-    resolution: {integrity: sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg==}
+  '@google/generative-ai@0.24.1':
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
     engines: {node: '>=18.0.0'}
 
   '@hookform/resolvers@3.10.0':
@@ -2769,7 +2769,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@google/generative-ai@0.21.0': {}
+  '@google/generative-ai@0.24.1': {}
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.76.1(react@19.2.6))':
     dependencies:

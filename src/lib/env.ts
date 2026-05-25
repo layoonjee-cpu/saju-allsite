@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 const serverSchema = z.object({
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  // sb_secret_... (구 service_role JWT 도 동작 — 2026 말 deprecated)
+  SUPABASE_SECRET_KEY: z.string().min(1),
   TOSS_SECRET_KEY: z.string().min(1),
   MANSERYEOK_API_URL: z.string().url().optional().or(z.literal("")),
   MANSERYEOK_API_KEY: z.string().optional(),
@@ -18,14 +19,15 @@ const serverSchema = z.object({
 const publicSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  // sb_publishable_... (구 anon JWT 도 동작 — 2026 말 deprecated)
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_TOSS_CLIENT_KEY: z.string().min(1),
 });
 
 export const publicEnv = publicSchema.parse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_TOSS_CLIENT_KEY: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY,
 });
 
@@ -43,7 +45,7 @@ export function serverEnv() {
   }
   if (!_serverEnv) {
     _serverEnv = serverSchema.parse({
-      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
       TOSS_SECRET_KEY: process.env.TOSS_SECRET_KEY,
       MANSERYEOK_API_URL: process.env.MANSERYEOK_API_URL,
       MANSERYEOK_API_KEY: process.env.MANSERYEOK_API_KEY,
