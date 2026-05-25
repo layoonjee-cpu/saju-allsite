@@ -57,7 +57,7 @@ const SLIDES = [
   },
 ];
 
-const INTERVAL_MS = 2000;
+const INTERVAL_MS = 3500;
 
 export function HeroBanner() {
   const [current, setCurrent] = useState(0);
