@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { siteConfig } from "@/config/site";
 
 type Props = {
   productId: string;
@@ -111,66 +110,16 @@ export function DreamForm({ productId, isLoggedIn }: Props) {
 
       {/* ── 버튼 영역 ── */}
       {isLoggedIn ? (
-        <div className="space-y-3 pt-1">
-          {/* 카카오 무료 보기 버튼 */}
-          <a
-            href={siteConfig.kakaoChannelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-[15px] font-semibold transition-opacity hover:opacity-90 active:scale-[0.98]"
-            style={{ backgroundColor: "#FEE500", color: "#1a1a1a" }}
-          >
-            <svg
-              width="18"
-              height="17"
-              viewBox="0 0 18 17"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M9 0C4.029 0 0 3.09 0 6.9c0 2.46 1.611 4.624 4.047 5.874L3.09 16.21a.375.375 0 0 0 .54.413L8.4 13.73c.196.013.394.02.6.02 4.971 0 9-3.09 9-6.9S13.971 0 9 0Z"
-                fill="#1a1a1a"
-              />
-            </svg>
-            카카오로 꿈해몽 무료 보기
-          </a>
-
-          {/* 결제 버튼 */}
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full h-12 text-[15px] font-semibold"
-            disabled={submitting}
-          >
-            {submitting ? "주문 생성 중..." : "결제하고 꿈해몽 풀이 받기 ₩1,900"}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full h-12 text-[15px] font-semibold"
+          disabled={submitting}
+        >
+          {submitting ? "주문 생성 중..." : "결제하고 꿈해몽 풀이 받기 ₩1,900"}
+        </Button>
       ) : (
-        <div className="space-y-3 pt-1">
-          {/* 카카오 무료 보기 버튼 */}
-          <a
-            href={siteConfig.kakaoChannelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-full text-[15px] font-semibold transition-opacity hover:opacity-90 active:scale-[0.98]"
-            style={{ backgroundColor: "#FEE500", color: "#1a1a1a" }}
-          >
-            <svg
-              width="18"
-              height="17"
-              viewBox="0 0 18 17"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M9 0C4.029 0 0 3.09 0 6.9c0 2.46 1.611 4.624 4.047 5.874L3.09 16.21a.375.375 0 0 0 .54.413L8.4 13.73c.196.013.394.02.6.02 4.971 0 9-3.09 9-6.9S13.971 0 9 0Z"
-                fill="#1a1a1a"
-              />
-            </svg>
-            카카오로 꿈해몽 무료 보기
-          </a>
-
-          {/* 로그인 후 결제 버튼 */}
+        <div className="space-y-2 pt-1">
           <Link
             href={`/login?redirect=${encodeURIComponent(`/products/dream-reading`)}`}
             className={cn(
