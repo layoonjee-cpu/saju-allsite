@@ -7,7 +7,7 @@
 //
 // 자세한 응답 스키마는 운세위키 API 문서 참고: https://luckyloveme.com/api-service
 
-import { serverEnv } from "@/lib/env";
+// serverEnv() 전체 검증 우회 — 이 모듈에 필요한 키만 process.env 직접 사용
 import { recordSajuApiCall, type SajuApiSource } from "./usage";
 
 export type AnalysisField =
@@ -55,8 +55,7 @@ export class SajuApiError extends Error {
 }
 
 export function isSajuApiConfigured(): boolean {
-  const env = serverEnv();
-  return !!(env.SAJU_API_URL && env.SAJU_API_KEY);
+  return !!(process.env.SAJU_API_URL && process.env.SAJU_API_KEY);
 }
 
 export type FetchSajuOptions = {
@@ -69,13 +68,12 @@ export async function fetchSajuAnalysis(
   fields: AnalysisField[] = [],
   options: FetchSajuOptions = {},
 ): Promise<SajuAnalysisResponse> {
-  const env = serverEnv();
   const source: SajuApiSource = options.source ?? "manual";
-  if (!env.SAJU_API_URL || !env.SAJU_API_KEY) {
+  const url = process.env.SAJU_API_URL;
+  const apiKey = process.env.SAJU_API_KEY;
+  if (!url || !apiKey) {
     throw new SajuApiError("SAJU_API_URL / SAJU_API_KEY 환경변수가 설정되지 않았습니다.");
   }
-  const url = env.SAJU_API_URL;
-  const apiKey = env.SAJU_API_KEY;
 
   const body = JSON.stringify({ ...birthInfo, fields });
   let lastError: unknown;

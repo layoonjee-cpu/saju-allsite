@@ -4,7 +4,7 @@
 // 외부 만세력 API가 있으면 호출, 없으면 mock(데모) 반환.
 // 수강생은 본인이 쓰는 API에 맞춰 callExternalManseryeok() 만 갈아끼우면 됩니다.
 
-import { serverEnv } from "@/lib/env";
+// serverEnv() 전체 검증 우회 — 만세력 API URL만 process.env 직접 사용
 
 export type Pillar = {
   cheongan: string; // 천간
@@ -27,9 +27,10 @@ export type ManseryeokInput = {
 };
 
 export async function computeMyeongsik(input: ManseryeokInput): Promise<Myeongsik> {
-  const env = serverEnv();
-  if (env.MANSERYEOK_API_URL) {
-    return callExternalManseryeok(input, env.MANSERYEOK_API_URL, env.MANSERYEOK_API_KEY);
+  const manseryeokUrl = process.env.MANSERYEOK_API_URL;
+  const manseryeokKey = process.env.MANSERYEOK_API_KEY;
+  if (manseryeokUrl) {
+    return callExternalManseryeok(input, manseryeokUrl, manseryeokKey);
   }
   return mockMyeongsik(input);
 }

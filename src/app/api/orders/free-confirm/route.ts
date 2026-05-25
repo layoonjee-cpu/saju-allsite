@@ -179,8 +179,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ resultId: result.id });
   } catch (err) {
+    const detail = err instanceof Error
+      ? (err.message || err.toString())
+      : (typeof err === "string" ? err : JSON.stringify(err));
+    console.error("[free-confirm] 생성 실패:", detail, err);
     return NextResponse.json(
-      { error: "사주 해석 생성 실패", detail: err instanceof Error ? err.message : String(err) },
+      { error: "사주 해석 생성 실패", detail },
       { status: 500 },
     );
   }
