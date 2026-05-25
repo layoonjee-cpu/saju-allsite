@@ -19,6 +19,15 @@ export type PromptInput = {
   concerns: string[];
   // 꿈해몽 전용 — 있으면 사주 대신 꿈해몽 프롬프트를 빌드
   dreamContent?: string;
+  // 연인/궁합(love-saju) 전용 — 파트너 정보가 있으면 2인 궁합 프롬프트를 빌드
+  name?: string;
+  partnerMyeongsik?: Myeongsik;
+  partnerManseryeokText?: string;
+  partnerName?: string;
+  partnerBirthDate?: string;
+  partnerBirthTime?: string | null;
+  partnerTimeUnknown?: boolean;
+  partnerGender?: "male" | "female";
 };
 
 const SYSTEM_BASE = `당신은 15년 이상 경력을 쌓아온 정통 명리학 전문가입니다.
@@ -48,6 +57,10 @@ export function buildSajuPrompt(input: PromptInput): { system: string; user: str
   // 꿈해몽 전용 분기
   if (input.productSlug === "dream-reading" && input.dreamContent) {
     return buildDreamPrompt(input);
+  }
+  // 연인/궁합 2인 분기
+  if (input.productSlug === "love-saju" && input.partnerMyeongsik) {
+    return buildLoveCouplePrompt(input);
   }
 
   const m = input.myeongsik;
@@ -245,6 +258,111 @@ ${sajuInfo}
 위 정보를 바탕으로 마크다운 리포트를 작성해 주세요.`;
     }
   }
+
+  return { system: SYSTEM_BASE, user };
+}
+
+// ── 연인/궁합 2인 전용 프롬프트 빌더 ─────────────────────────
+function buildLoveCouplePrompt(input: PromptInput): { system: string; user: string } {
+  const m = input.myeongsik;
+  const pm = input.partnerMyeongsik!;
+  const pillar = (p: { cheongan: string; jiji: string } | null) =>
+    p ? `${p.cheongan}${p.jiji}` : "(시 미상)";
+
+  const nameA = input.name?.trim() || "나";
+  const nameB = input.partnerName?.trim() || "상대방";
+  const genderA = input.gender === "male" ? "남성" : "여성";
+  const genderB = input.partnerGender === "male" ? "남성" : "여성";
+  const birthTextA = `${input.birthDate}${
+    input.timeUnknown ? " (시 미상)" : input.birthTime ? ` ${input.birthTime}` : ""
+  }`;
+  const birthTextB = `${input.partnerBirthDate ?? ""}${
+    input.partnerTimeUnknown ? " (시 미상)" : input.partnerBirthTime ? ` ${input.partnerBirthTime}` : ""
+  }`;
+
+  const sajuA = input.manseryeokText
+    ? `[${nameA} — 풀 명식]\n${input.manseryeokText}`
+    : [
+        `[${nameA} — 사주 4기둥]`,
+        `- 년주: ${pillar(m.year)}`,
+        `- 월주: ${pillar(m.month)}`,
+        `- 일주: ${pillar(m.day)}`,
+        `- 시주: ${pillar(m.hour)}`,
+      ].join("\n");
+
+  const sajuB = input.partnerManseryeokText
+    ? `[${nameB} — 풀 명식]\n${input.partnerManseryeokText}`
+    : [
+        `[${nameB} — 사주 4기둥]`,
+        `- 년주: ${pillar(pm.year)}`,
+        `- 월주: ${pillar(pm.month)}`,
+        `- 일주: ${pillar(pm.day)}`,
+        `- 시주: ${pillar(pm.hour)}`,
+      ].join("\n");
+
+  const concernText = (input.concerns ?? []).length > 0 ? input.concerns.join(", ") : "(없음)";
+  const manseryeokNote = (input.manseryeokText || input.partnerManseryeokText)
+    ? "\n※ 풀 명식 데이터(천간지지·십성·대운·세운·합충형해파 등)를 적극 활용하여 깊이 있게 해석하세요."
+    : "";
+
+  const combinedInfo = `${sajuA}
+
+[${nameA} 기본 정보]
+- 생년월일: ${birthTextA}
+- 성별: ${genderA}
+
+${sajuB}
+
+[${nameB} 기본 정보]
+- 생년월일: ${birthTextB}
+- 성별: ${genderB}
+
+[두 사람의 고민·관심 키워드]: ${concernText}${manseryeokNote}`;
+
+  const user = `[상품] ${input.productName} (₩15,000) — A4 10장 분량 목표 (5,500~7,000자)
+
+${combinedInfo}
+
+아래 구성으로 두 사람의 궁합 마크다운 리포트를 작성하세요.
+각 섹션마다 최소 3~5개 문단으로 깊이 있게 서술하여 전체 5,500자 이상을 반드시 채우세요.
+두 사람의 이름(${nameA}, ${nameB})을 적극 활용해 개인화된 내용으로 작성합니다.
+단순 나열 대신 흐름 있는 문단(paragraph)으로 풍부하게 서술합니다.
+
+## 두 사람의 사주 명식 개요
+
+${nameA}와 ${nameB} 각자의 사주 구조를 소개합니다. 각 일주(日柱)의 특성, 오행 에너지의 방향성, 주요 십성 구성을 비교하며 설명하고, 두 사주가 담고 있는 기질과 삶의 에너지 패턴을 독자가 이해하기 쉽게 서술합니다.
+
+## 합충형해파(合沖刑害破) 분석
+
+두 사람의 천간·지지 간에 발생하는 합(合)·충(沖)·형(刑)·해(害)·파(破) 관계를 상세히 분석합니다. 어떤 기둥(년주·월주·일주·시주)에서 어떤 관계가 형성되는지 구체적으로 명시하고, 그 관계가 두 사람 사이에 어떤 에너지를 가져오는지 풀이합니다. 합이 많으면 서로 끌어당기는 인연의 힘이 있고, 충이 있으면 에너지 충돌 가능성이 있음을 설명하되, 충도 의식적으로 다루면 성장의 계기가 될 수 있다는 관점도 함께 서술합니다.
+
+## 오행(五行) 상생·상극과 에너지 궁합
+
+두 사람의 오행(목·화·토·금·수) 구성을 비교하여 서로의 에너지가 어떻게 작용하는지 분석합니다. 상생(相生) 관계가 있다면 어떤 영역에서 서로에게 힘이 되는지, 상극(相克) 관계가 있다면 어떤 부분에서 마찰이 생기기 쉬운지 구체적으로 서술합니다. 전체적인 오행 에너지 균형과 그것이 두 사람 관계의 흐름에 미치는 영향을 풀어드립니다.
+
+## 성격·기질 궁합 — 두 사람이 만나면
+
+각자의 일간 기질이 만났을 때 어떤 화학반응이 일어나는지 분석합니다. 서로의 강점이 시너지를 내는 부분, 서로의 약점이 보완되는 부분, 반대로 마찰이 생기기 쉬운 부분을 구체적인 일상 상황으로 서술합니다. 의사소통 스타일, 감정 표현 방식, 생활 리듬의 차이가 관계에 미치는 영향을 담습니다.
+
+## 갈등의 패턴과 근본 원인
+
+두 사람이 반복적으로 갈등하게 되는 주요 패턴을 명리학적 관점에서 분석합니다. 어떤 오행 충돌·십성 구조·합충 관계가 감정 마찰을 일으키는지, 그 갈등의 표면적 이유 이면에 있는 근본적인 에너지 차이를 설명합니다. ${nameA}와 ${nameB}가 갈등 상황에서 각각 보이는 전형적인 반응 패턴과 그 배경도 함께 서술합니다.
+
+## 갈등 해결 방안과 관계 개선 조언
+
+위 갈등 패턴을 바탕으로 두 사람이 실제로 적용할 수 있는 구체적인 관계 개선 방법을 제시합니다. 서로의 에너지 차이를 이해하고 존중하는 방법, 갈등이 생겼을 때 효과적인 소통 방식, 서로의 강점을 더 살릴 수 있는 관계 구조를 설명합니다. ${nameA}가 ${nameB}에게, ${nameB}가 ${nameA}에게 각각 어떻게 다가가면 좋을지 구체적으로 서술합니다.
+
+## 관계의 강점과 함께 성장하는 방향
+
+두 사람이 함께할 때 발휘되는 특별한 강점과, 이 관계가 각자를 어떻게 성장시킬 수 있는지 분석합니다. 어떤 공통점이 연대감과 신뢰를 형성하는지, 어떤 차이가 오히려 서로를 보완하는 자원이 되는지 긍정적 관점에서 서술합니다.
+
+## 연애·결혼 타이밍 분석
+
+두 사람의 대운·세운 흐름에서 관계가 중요한 전환점을 맞이할 수 있는 시기를 분석합니다. 결혼이나 동거, 또는 관계의 깊이가 달라지는 시기가 언제 올 수 있는지, 그 시기를 잘 준비하는 방법을 제시합니다. 지금 이 시점의 대운·세운이 두 사람 관계에 어떤 에너지를 가져오는지도 함께 서술합니다.
+
+## 두 사람을 위한 실천 제안
+
+모든 분석을 종합하여, 두 사람이 더 건강하고 깊은 관계를 만들어가기 위한 실질적이고 따뜻한 제안으로 마무리합니다. 고민 키워드에 담긴 현재 상황을 반영하여, 지금 이 시점에서 두 사람에게 가장 필요한 통찰과 응원의 메시지를 담습니다.`;
 
   return { system: SYSTEM_BASE, user };
 }

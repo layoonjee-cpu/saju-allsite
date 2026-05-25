@@ -12,8 +12,15 @@ const bodySchema = z.object({
   timeUnknown: z.boolean().optional(),
   gender: z.enum(["male", "female"]).optional(),
   calendar: z.enum(["solar", "lunar"]).optional(),
-  concerns: z.array(z.string().max(20)).max(20).optional(),
+  concerns: z.array(z.string().max(200)).max(20).optional(),
   dreamContent: z.string().max(2000).optional(),
+  // 연인/궁합(love-saju) 전용 파트너 필드
+  partnerName: z.string().max(50).optional(),
+  partnerBirthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  partnerBirthTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  partnerTimeUnknown: z.boolean().optional(),
+  partnerGender: z.enum(["male", "female"]).optional(),
+  partnerCalendar: z.enum(["solar", "lunar"]).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -72,6 +79,13 @@ export async function POST(request: NextRequest) {
     calendar: body.calendar ?? "solar",
     concerns: body.concerns ?? [],
     dream_content: body.dreamContent ?? null,
+    // 연인/궁합 파트너 정보
+    partner_name: body.partnerName ?? null,
+    partner_birth_date: body.partnerBirthDate ?? null,
+    partner_birth_time: body.partnerBirthTime ?? null,
+    partner_time_unknown: body.partnerTimeUnknown ?? false,
+    partner_gender: body.partnerGender ?? null,
+    partner_calendar: body.partnerCalendar ?? null,
   });
 
   if (inputErr) {

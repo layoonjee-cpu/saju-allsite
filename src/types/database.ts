@@ -57,6 +57,13 @@ type SajuInputRow = {
   calendar: CalendarKind;
   concerns: string[];
   dream_content: string | null;
+  // 연인/궁합 전용
+  partner_name: string | null;
+  partner_birth_date: string | null;
+  partner_birth_time: string | null;
+  partner_time_unknown: boolean;
+  partner_gender: string | null;
+  partner_calendar: string | null;
   created_at: string;
 };
 
@@ -149,6 +156,12 @@ export type Database = {
           calendar?: CalendarKind;
           concerns?: string[];
           dream_content?: string | null;
+          partner_name?: string | null;
+          partner_birth_date?: string | null;
+          partner_birth_time?: string | null;
+          partner_time_unknown?: boolean;
+          partner_gender?: string | null;
+          partner_calendar?: string | null;
           created_at?: string;
         };
         Update: Partial<SajuInputRow>;

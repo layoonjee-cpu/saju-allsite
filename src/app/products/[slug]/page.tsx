@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { SajuForm } from "@/components/saju/SajuForm";
 import { DreamForm } from "@/components/saju/DreamForm";
+import { LoveForm } from "@/components/saju/LoveForm";
 import { formatKRW, formatDate } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
@@ -68,6 +69,17 @@ export default async function ProductDetailPage({
             productPrice={product.price}
             isLoggedIn={!!user}
           />
+        ) : product.slug === "love-saju" ? (
+          <>
+            <h2 className="text-sm font-semibold mb-4 text-ink">두 사람의 사주 정보 입력</h2>
+            <p className="text-xs text-body mb-4">정확한 생년월일일수록 더 정밀한 결과가 나옵니다.</p>
+            <LoveForm
+              productId={product.id}
+              productSlug={product.slug}
+              productPrice={product.price}
+              isLoggedIn={!!user}
+            />
+          </>
         ) : (
           <>
             <h2 className="text-sm font-semibold mb-4 text-ink">사주 정보 입력</h2>

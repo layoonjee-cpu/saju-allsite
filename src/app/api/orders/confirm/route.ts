@@ -21,6 +21,7 @@ const bodySchema = z.object({
 
 // saju_inputs row → BirthInfo (luckyloveme 입력 형식)
 type SajuInputRow = {
+  name?: string | null;
   birth_date: string | null;     // "YYYY-MM-DD" — dream-reading은 null
   birth_time: string | null;     // "HH:mm"
   time_unknown: boolean;
@@ -28,6 +29,13 @@ type SajuInputRow = {
   gender: "male" | "female";
   concerns: string[];
   dream_content?: string | null;
+  // 연인/궁합 파트너
+  partner_name?: string | null;
+  partner_birth_date?: string | null;
+  partner_birth_time?: string | null;
+  partner_time_unknown?: boolean;
+  partner_gender?: string | null;
+  partner_calendar?: string | null;
 };
 
 function toBirthInfo(input: SajuInputRow): BirthInfo {
@@ -52,6 +60,32 @@ function toComputeInput(input: SajuInputRow) {
     timeUnknown: input.time_unknown,
     calendar: input.calendar,
     gender: input.gender,
+  };
+}
+
+// 파트너 정보 → BirthInfo
+function toPartnerBirthInfo(input: SajuInputRow): BirthInfo {
+  const date = input.partner_birth_date ?? "1900-01-01";
+  const [y, m, d] = date.split("-");
+  const hasTime = !(input.partner_time_unknown ?? false) && !!input.partner_birth_time;
+  const [hh, mm] = hasTime ? input.partner_birth_time!.split(":") : [undefined, undefined];
+  return {
+    birthYear: y,
+    birthMonth: String(parseInt(m, 10)),
+    birthDay: String(parseInt(d, 10)),
+    ...(hasTime ? { birthHour: String(parseInt(hh!, 10)), birthMinute: String(parseInt(mm!, 10)) } : {}),
+    calendarType: input.partner_calendar === "lunar" ? "음력" : "양력",
+    gender: (input.partner_gender ?? "female") as "male" | "female",
+  };
+}
+
+function toPartnerComputeInput(input: SajuInputRow) {
+  return {
+    birthDate: input.partner_birth_date ?? "1900-01-01",
+    birthTime: input.partner_birth_time ?? null,
+    timeUnknown: input.partner_time_unknown ?? false,
+    calendar: (input.partner_calendar ?? "solar") as "solar" | "lunar",
+    gender: (input.partner_gender ?? "female") as "male" | "female",
   };
 }
 
@@ -129,7 +163,10 @@ export async function POST(request: NextRequest) {
 
     // 꿈해몽은 사주 API 불필요 — 생년월일 없이 꿈 내용만으로 풀이
     const isDreamReading = product.slug === "dream-reading";
+    const isLoveSaju = product.slug === "love-saju";
+    const hasPartner = isLoveSaju && !!input.partner_birth_date;
 
+    // ── 본인 명식 계산 ────────────────────────────────────
     if (isDreamReading) {
       myeongsik = { year: null, month: null, day: null, hour: null } as unknown as Myeongsik;
     } else if (isSajuApiConfigured()) {
@@ -141,16 +178,39 @@ export async function POST(request: NextRequest) {
           myeongsik = converted;
           manseryeokText = formatSajuToManseryeok(analysis, birthInfo);
         } else {
-          // ganji 필드 누락 — mock 으로 폴백
           myeongsik = await computeMyeongsik(toComputeInput(input));
         }
       } catch (apiErr) {
-        // luckyloveme 호출 실패 — 결제는 이미 승인됐으므로 mock 으로 폴백해서 결과지는 무조건 생성
         console.error("[saju-api] fallback to mock:", apiErr);
         myeongsik = await computeMyeongsik(toComputeInput(input));
       }
     } else {
       myeongsik = await computeMyeongsik(toComputeInput(input));
+    }
+
+    // ── 파트너 명식 계산 (love-saju 전용) ─────────────────
+    let partnerMyeongsik: Myeongsik | undefined;
+    let partnerManseryeokText: string | undefined;
+
+    if (hasPartner) {
+      if (isSajuApiConfigured()) {
+        try {
+          const partnerBirthInfo = toPartnerBirthInfo(input);
+          const partnerAnalysis = await fetchSajuAnalysis(partnerBirthInfo, [], { source: "confirm" });
+          const partnerConverted = ganjiToMyeongsik(partnerAnalysis);
+          if (partnerConverted) {
+            partnerMyeongsik = partnerConverted;
+            partnerManseryeokText = formatSajuToManseryeok(partnerAnalysis, partnerBirthInfo);
+          } else {
+            partnerMyeongsik = await computeMyeongsik(toPartnerComputeInput(input));
+          }
+        } catch (partnerErr) {
+          console.error("[saju-api] partner fallback to mock:", partnerErr);
+          partnerMyeongsik = await computeMyeongsik(toPartnerComputeInput(input));
+        }
+      } else {
+        partnerMyeongsik = await computeMyeongsik(toPartnerComputeInput(input));
+      }
     }
 
     const { system, user } = buildSajuPrompt({
@@ -164,6 +224,15 @@ export async function POST(request: NextRequest) {
       gender: input.gender,
       concerns: input.concerns ?? [],
       dreamContent: input.dream_content ?? undefined,
+      // 연인/궁합 파트너 정보
+      name: input.name ?? undefined,
+      partnerMyeongsik,
+      partnerManseryeokText,
+      partnerName: input.partner_name ?? undefined,
+      partnerBirthDate: input.partner_birth_date ?? undefined,
+      partnerBirthTime: input.partner_birth_time ?? null,
+      partnerTimeUnknown: input.partner_time_unknown ?? false,
+      partnerGender: (input.partner_gender ?? undefined) as "male" | "female" | undefined,
     });
 
     const llm = await generateInterpretation({ system, user });
