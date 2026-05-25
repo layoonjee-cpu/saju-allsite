@@ -80,16 +80,22 @@ function SiteFooter() {
     .join(" | ");
 
   return (
-    <footer className="border-t border-hairline mt-20">
-      <div className="container py-10 text-xs text-body space-y-4">
-        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-          <Link href="/legal/terms" className="hover:text-ink">이용약관</Link>
-          <Link href="/legal/privacy" className="hover:text-ink">개인정보처리방침</Link>
-          <Link href="/legal/refund-policy" className="hover:text-ink">환불정책</Link>
+    <footer className="border-t border-white/60 mt-20 bg-white/40 backdrop-blur-sm">
+      <div className="container py-10 space-y-4">
+        {/* 슬로건 */}
+        <p className="text-sm font-semibold text-center text-foreground/70 tracking-wide">
+          당신의 운세를 쉽고 정확하게 알려드립니다
+        </p>
+        {/* 링크 */}
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-xs">
+          <Link href="/legal/terms" className="text-muted-foreground hover:text-violet-600 transition-colors">이용약관</Link>
+          <Link href="/legal/privacy" className="text-muted-foreground hover:text-violet-600 transition-colors">개인정보처리방침</Link>
+          <Link href="/legal/refund-policy" className="text-muted-foreground hover:text-violet-600 transition-colors">환불정책</Link>
         </div>
-        <p className="text-mute leading-relaxed">{businessLine}</p>
-        <p className="text-mute leading-relaxed">{contactLine}</p>
-        <p className="text-mute">© {new Date().getFullYear()} {siteConfig.name}</p>
+        {/* 사업자 정보 */}
+        <p className="text-[11px] text-muted-foreground leading-relaxed text-center">{businessLine}</p>
+        <p className="text-[11px] text-muted-foreground leading-relaxed text-center">{contactLine}</p>
+        <p className="text-[11px] text-muted-foreground text-center">© {new Date().getFullYear()} {siteConfig.name}</p>
       </div>
     </footer>
   );

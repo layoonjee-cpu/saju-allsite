@@ -4,25 +4,24 @@
 // 운영 전 본인 정보로 반드시 교체하세요. 아래는 모두 더미 데이터입니다.
 
 export const siteConfig = {
-  name: "오늘의 사주",
-  tagline: "AI가 풀어주는 나의 사주",
+  name: "운명론자",
+  tagline: "나의 사주",
   description: "정통 만세력과 AI 해석이 만나, 가볍게 보는 오늘의 운세부터 깊이 있는 종합 풀이까지.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  email: "support@example.com",
+  email: "unmyung.official@gmail.com",
 };
 
 // 통신판매업 / 사업자 정보 — 법적 페이지 및 푸터에 노출됩니다.
-// ※ 아래 값은 모두 더미입니다. 운영 전 본인 사업자 정보로 반드시 교체하세요.
 export const businessInfo = {
-  companyName: "(예시) 회사명",
-  representative: "(예시) 홍길동",
-  businessNumber: "000-00-00000",
-  mailOrderNumber: "0000-지역-0000",
-  address: "(예시) 서울특별시 OO구 OO로 OO, OO호",
-  phone: "010-0000-0000",
-  phoneNote: "문자만", // 비우면 푸터에서 부가표시 없이 노출
-  email: "support@example.com",
-  privacyOfficer: "(예시) 홍길동",
+  companyName: "운명론자",
+  representative: "나윤지",
+  businessNumber: "555-52-01094",
+  mailOrderNumber: "2025-서울서초-3940",
+  address: "서울시 서초구 사임당로9길 13, 제일빌딩 4층 402호",
+  phone: "",
+  phoneNote: "",
+  email: "unmyung.official@gmail.com",
+  privacyOfficer: "나윤지",
   // 호스팅 / 주요 처리 위탁 업체 — 개인정보처리방침에 노출
   hostingProvider: "Vercel Inc.",
   // 시행일 — 약관 / 개인정보처리방침 / 환불정책에 공통 노출
