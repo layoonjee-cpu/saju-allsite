@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
       client_id: restApiKey,
       redirect_uri: `${siteUrl}/auth/kakao/callback`,
       code,
+      // Client Secret 활성화 시 필요 (Kakao 콘솔 → 보안 → Client Secret)
+      ...(process.env.KAKAO_CLIENT_SECRET
+        ? { client_secret: process.env.KAKAO_CLIENT_SECRET }
+        : {}),
     }),
   });
   const tokenData = await tokenRes.json();
