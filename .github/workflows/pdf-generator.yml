@@ -1,0 +1,55 @@
+name: VIP PDF Generator
+
+on:
+  schedule:
+    # 5분마다 실행 (UTC 기준, 한국시간 +9)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (LLM/PDF 호출 없이 HTML만 생성)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  generate:
+    name: Generate VIP Reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: generator/requirements.txt
+
+      - name: Install Python dependencies
+        run: pip install -r generator/requirements.txt
+
+      - name: Install Playwright Chromium
+        run: playwright install chromium --with-deps
+
+      - name: Run VIP PDF generator
+        working-directory: generator
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python generate_vip.py --dry-run
+          else
+            python generate_vip.py
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          SAJU_API_KEY: ${{ secrets.SAJU_API_KEY }}
+          SAJU_API_URL: ${{ secrets.SAJU_API_URL }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}

@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
     // 꿈해몽은 사주 API 불필요 — 생년월일 없이 꿈 내용만으로 풀이
     const isDreamReading = product.slug === "dream-reading";
     const isLoveSaju = product.slug === "love-saju";
+    const isPremiumVip = product.slug === "premium-saju";
     const hasPartner = isLoveSaju && !!input.partner_birth_date;
 
     // ── 본인 명식 계산 ────────────────────────────────────
@@ -214,6 +215,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── 깊은 시선 VIP: 비동기 PDF 생성 (인라인 LLM 호출 건너뜀) ────
+    if (isPremiumVip) {
+      const { data: result, error: resultErr } = await service
+        .from("saju_results")
+        .insert({
+          order_id: order.id,
+          myeongsik: myeongsik as never,
+          interpretation_md: "",          // Python 제너레이터가 PDF로 대체
+          llm_provider: "claude",
+          llm_model: "claude-opus-4-5",
+          generation_status: "generating", // GitHub Actions cron이 처리
+          pdf_url: null,
+        })
+        .select("id")
+        .single();
+
+      if (resultErr || !result) {
+        return NextResponse.json({ error: "결과 저장 실패", detail: resultErr?.message }, { status: 500 });
+      }
+      return NextResponse.json({ resultId: result.id, generating: true });
+    }
+
+    // ── 일반 상품: 기존 인라인 LLM 호출 ────────────────────────
     const { system, user } = buildSajuPrompt({
       productSlug: product.slug,
       productName: product.name,

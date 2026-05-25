@@ -74,6 +74,8 @@ type SajuResultRow = {
   interpretation_md: string;
   llm_provider: string;
   llm_model: string;
+  generation_status: string;   // 'complete' | 'generating' | 'failed'
+  pdf_url: string | null;
   created_at: string;
 };
 
@@ -176,6 +178,8 @@ export type Database = {
           interpretation_md: string;
           llm_provider: string;
           llm_model: string;
+          generation_status?: string;
+          pdf_url?: string | null;
           created_at?: string;
         };
         Update: Partial<SajuResultRow>;

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { MyeongsikTable } from "@/components/saju/MyeongsikTable";
 import { ResultBody } from "@/components/saju/ResultBody";
+import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
+import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -17,7 +19,7 @@ export default async function ResultPage({
 
   const { data: result } = await service
     .from("saju_results")
-    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id")
+    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -33,6 +35,9 @@ export default async function ResultPage({
     : { data: null };
 
   const isDreamReading = product?.slug === "dream-reading";
+  const isPremiumVip = product?.slug === "premium-saju";
+  const isGenerating = result.generation_status === "generating";
+  const hasPdf = !!result.pdf_url;
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
 
@@ -44,16 +49,30 @@ export default async function ResultPage({
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
-      {!isDreamReading && (
+      {/* VIP 생성 중 배너 */}
+      {isPremiumVip && isGenerating && (
+        <VipGeneratingBanner resultId={resultId} />
+      )}
+
+      {/* VIP PDF 다운로드 버튼 */}
+      {isPremiumVip && hasPdf && (
+        <VipDownloadButton resultId={resultId} />
+      )}
+
+      {/* 사주 명식표 (꿈해몽·VIP 생성중 제외) */}
+      {!isDreamReading && !(isPremiumVip && isGenerating) && (
         <section className="mb-12">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
           <MyeongsikTable myeongsik={myeongsik} />
         </section>
       )}
 
-      <article>
-        <ResultBody markdown={result.interpretation_md} />
-      </article>
+      {/* 마크다운 결과 (VIP 생성중이면 숨김) */}
+      {!isGenerating && result.interpretation_md && (
+        <article>
+          <ResultBody markdown={result.interpretation_md} />
+        </article>
+      )}
     </div>
   );
 }

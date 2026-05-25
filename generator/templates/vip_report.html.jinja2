@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ name }}님의 깊은 시선 VIP 사주 보고서</title>
+<style>
+/* ── 한국 폰트 임포트 ── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+/* ── 페이지 설정 (A5) ── */
+@page {
+  size: 148mm 210mm;
+  margin: 14mm 12mm 16mm 12mm;
+  @bottom-center {
+    content: counter(page);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 8pt;
+    color: #999;
+  }
+}
+@page :first {
+  @bottom-center { content: none; }
+}
+
+/* ── 전역 스타일 ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 9.5pt;
+  line-height: 1.9;
+  color: #1A1A1A;
+  background: #F5F0E6;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── 표지 ── */
+.cover {
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 170mm;
+  text-align: center;
+  background: linear-gradient(160deg, #1A1A1A 0%, #2D5C5C 100%);
+  color: #F5F0E6;
+  padding: 20mm 10mm;
+  margin: -14mm -12mm;
+  padding-top: 25mm;
+  padding-bottom: 25mm;
+}
+.cover-brand {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 10pt;
+  letter-spacing: 0.3em;
+  color: #B8A060;
+  margin-bottom: 8mm;
+  text-transform: uppercase;
+}
+.cover-title {
+  font-size: 22pt;
+  font-weight: 700;
+  color: #F5F0E6;
+  line-height: 1.4;
+  margin-bottom: 4mm;
+}
+.cover-subtitle {
+  font-size: 12pt;
+  color: #C4D0C4;
+  margin-bottom: 10mm;
+}
+.cover-divider {
+  width: 30mm;
+  height: 1px;
+  background: #B8A060;
+  margin: 6mm auto;
+}
+.cover-name {
+  font-size: 18pt;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 3mm;
+}
+.cover-info {
+  font-size: 9pt;
+  color: #B0C0B0;
+  line-height: 2;
+}
+.cover-date {
+  margin-top: 10mm;
+  font-size: 8pt;
+  color: #7A9A8A;
+  letter-spacing: 0.1em;
+}
+.cover-slogan {
+  margin-top: 8mm;
+  font-size: 8pt;
+  color: #7A9A8A;
+  font-style: italic;
+}
+
+/* ── 인사말 페이지 ── */
+.greeting-page {
+  page-break-after: always;
+  padding: 8mm 0;
+}
+.greeting-page h2 {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #2D5C5C;
+  margin-bottom: 5mm;
+  padding-bottom: 2mm;
+  border-bottom: 2px solid #2D5C5C;
+}
+.greeting-page p {
+  margin-bottom: 4mm;
+  text-align: justify;
+}
+
+/* ── 사주 원국표 페이지 ── */
+.chart-page {
+  page-break-after: always;
+  padding: 4mm 0;
+}
+.chart-page h2 {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11pt;
+  font-weight: 700;
+  text-align: center;
+  color: #1A1A1A;
+  margin-bottom: 6mm;
+  letter-spacing: 0.05em;
+}
+.chart-page .subtitle {
+  text-align: center;
+  font-size: 8pt;
+  color: #666;
+  margin-bottom: 6mm;
+}
+
+/* ── 사주 4기둥 표 ── */
+.saju-pillars {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6mm;
+  font-size: 9pt;
+}
+.saju-pillars th {
+  background: #2D5C5C;
+  color: #F5F0E6;
+  text-align: center;
+  padding: 3mm 2mm;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 500;
+  font-size: 8.5pt;
+}
+.saju-pillars td {
+  text-align: center;
+  padding: 3mm 2mm;
+  border: 1px solid #D0C8B8;
+  background: #FAFAF6;
+}
+.saju-pillars .cheongan {
+  font-size: 18pt;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.2;
+}
+.saju-pillars .jiji {
+  font-size: 18pt;
+  font-weight: 700;
+  color: #2D5C5C;
+  line-height: 1.2;
+}
+.saju-pillars .sipseong {
+  font-size: 8pt;
+  color: #666;
+}
+.saju-pillars .twelvef {
+  font-size: 8pt;
+  color: #B8362E;
+}
+
+/* ── 차트/그래프 영역 ── */
+.chart-section {
+  margin-bottom: 5mm;
+}
+.chart-section h3 {
+  font-size: 9pt;
+  font-weight: 700;
+  color: #2D5C5C;
+  margin-bottom: 3mm;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ── PART 표지 (간지 페이지) ── */
+.part-cover {
+  page-break-before: always;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 165mm;
+  text-align: center;
+  margin: -14mm -12mm;
+  padding: 20mm;
+}
+.part-cover-inner {
+  background: linear-gradient(135deg, #1A1A1A 0%, #2D4A4A 100%);
+  width: 100%;
+  height: 100%;
+  min-height: 165mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15mm;
+}
+.part-num {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 9pt;
+  letter-spacing: 0.4em;
+  color: #B8A060;
+  margin-bottom: 5mm;
+  text-transform: uppercase;
+}
+.part-title-ko {
+  font-size: 20pt;
+  font-weight: 700;
+  color: #F5F0E6;
+  margin-bottom: 3mm;
+  line-height: 1.4;
+}
+.part-title-hanja {
+  font-size: 11pt;
+  color: #9AC0A0;
+  margin-bottom: 6mm;
+  letter-spacing: 0.2em;
+}
+.part-desc {
+  font-size: 8.5pt;
+  color: #7A9A8A;
+  line-height: 1.8;
+  max-width: 80mm;
+  text-align: center;
+}
+.part-deco {
+  font-size: 24pt;
+  color: #B8A060;
+  margin: 8mm 0;
+  opacity: 0.6;
+}
+
+/* ── 챕터 ── */
+.chapter {
+  page-break-inside: avoid;
+  margin-bottom: 8mm;
+  padding-bottom: 6mm;
+  border-bottom: 0.5px solid #D0C8B8;
+}
+.chapter:last-child {
+  border-bottom: none;
+}
+.chapter-header {
+  margin-bottom: 4mm;
+}
+.chapter-num {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 7.5pt;
+  color: #B8362E;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  margin-bottom: 1.5mm;
+}
+.chapter-title {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12pt;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.4;
+  border-left: 3px solid #2D5C5C;
+  padding-left: 4mm;
+}
+.chapter-content {
+  text-align: justify;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.chapter-content p {
+  margin-bottom: 3mm;
+}
+.chapter-content h3 {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #2D5C5C;
+  margin: 4mm 0 2mm;
+}
+.chapter-content h4 {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 3mm 0 1.5mm;
+}
+.chapter-content ul, .chapter-content ol {
+  padding-left: 5mm;
+  margin-bottom: 3mm;
+}
+.chapter-content li {
+  margin-bottom: 1.5mm;
+}
+.chapter-content strong, .chapter-content b {
+  font-weight: 700;
+  color: #1A1A1A;
+}
+.chapter-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  margin: 3mm 0;
+}
+.chapter-content table th {
+  background: #2D5C5C;
+  color: #F5F0E6;
+  padding: 2mm 3mm;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 8pt;
+}
+.chapter-content table td {
+  padding: 2mm 3mm;
+  border: 0.5px solid #D0C8B8;
+  text-align: center;
+  vertical-align: middle;
+}
+.chapter-content table tr:nth-child(even) td {
+  background: #F8F5EE;
+}
+
+/* ── 재물운 파트 강조 ── */
+.wealth-chapter .chapter-title {
+  color: #B8362E;
+  border-left-color: #B8362E;
+}
+.wealth-badge {
+  display: inline-block;
+  background: #B8362E;
+  color: white;
+  font-size: 6.5pt;
+  padding: 0.5mm 2mm;
+  border-radius: 2px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  margin-left: 2mm;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+}
+
+/* ── 데이터 테이블 ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  margin: 3mm 0;
+}
+.data-table th {
+  background: #1A1A1A;
+  color: #F5F0E6;
+  padding: 2mm 3mm;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 8pt;
+}
+.data-table td {
+  padding: 2mm 3mm;
+  border: 0.5px solid #D0C8B8;
+  text-align: center;
+}
+.data-table tr:nth-child(even) td {
+  background: #F8F5EE;
+}
+
+/* ── 맺음말 ── */
+.closing {
+  page-break-before: always;
+  padding: 10mm 0;
+  text-align: center;
+}
+.closing h2 {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #2D5C5C;
+  margin-bottom: 6mm;
+}
+.closing p {
+  margin-bottom: 4mm;
+  text-align: justify;
+}
+.closing .signature {
+  margin-top: 10mm;
+  font-size: 10pt;
+  font-weight: 600;
+  color: #1A1A1A;
+  font-style: italic;
+}
+
+/* ── 인쇄 최적화 ── */
+@media print {
+  .cover, .part-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .chapter { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+{# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 표지 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ #}
+<div class="cover">
+  <div class="cover-brand">시선 (視線) — 깊은 시선 VIP</div>
+  <div class="cover-divider"></div>
+  <div class="cover-title">사주 명식 심층 분석<br>보고서</div>
+  <div class="cover-subtitle">THE DESTINY REPORT</div>
+  <div class="cover-divider"></div>
+  <div class="cover-name">{{ name }}님</div>
+  <div class="cover-info">
+    {{ birth_date_str }}<br>
+    {{ gender_text }} | {{ calendar_text }}<br>
+    {{ birth_time_str }}
+  </div>
+  <div class="cover-date">발행일: {{ report_date }}</div>
+  <div class="cover-slogan">운명을 점치지 않습니다. 당신의 지금을 함께 읽어드립니다.</div>
+</div>
+
+{# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 인사말 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ #}
+<div class="greeting-page">
+  <h2>시선(視線) 드림</h2>
+  <p>{{ name }}님, 안녕하세요.</p>
+  <p>이 보고서는 정통 명리학의 체계와 AI 분석 기술을 결합하여, {{ name }}님의 사주 명식을 가장 깊이 들여다본 결과물입니다. 단순히 운세를 예측하는 것이 아니라, 타고난 기질과 삶의 에너지 흐름을 명리학적 언어로 풀어 {{ name }}님 스스로 자신을 더 잘 이해할 수 있도록 돕는 것이 이 보고서의 목적입니다.</p>
+  <p>이 보고서는 PART 01부터 PART 10까지, 총 55개의 챕터로 구성됩니다. 특히 많은 분들이 가장 궁금해 하시는 재물운(PART 04)은 전체 분량의 40% 이상을 할애하여 타고난 재물 그릇부터 향후 10년 연도별 재물 흐름까지 상세히 다루었습니다.</p>
+  <p>명리학은 운명의 사슬이 아닙니다. 에너지의 흐름을 읽고, 그 흐름에 맞게 삶을 조율하는 지혜의 학문입니다. 이 보고서가 {{ name }}님의 삶에 실질적인 통찰과 따뜻한 나침반이 되길 바랍니다.</p>
+  <p style="text-align:right; margin-top: 8mm; font-style:italic;">시선(視線) 드림</p>
+</div>
+
+{# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 사주 원국표 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ #}
+<div class="chart-page">
+  <h2>THE DESTINY CHART — 사주 원국(命式)</h2>
+  <p class="subtitle">{{ name }}님 | {{ birth_date_str }} {{ birth_time_str }}</p>
+
+  <table class="saju-pillars">
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>시주(時柱)</th>
+        <th>일주(日柱)</th>
+        <th>월주(月柱)</th>
+        <th>년주(年柱)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-size:8pt;color:#666;font-family:'Noto Sans KR',sans-serif;">천간</td>
+        <td><div class="cheongan">{{ pillars.hour_gan }}</div><div class="sipseong">{{ pillars.hour_gan_sipseong }}</div></td>
+        <td><div class="cheongan">{{ pillars.day_gan }}</div><div class="sipseong">일간(日干)</div></td>
+        <td><div class="cheongan">{{ pillars.month_gan }}</div><div class="sipseong">{{ pillars.month_gan_sipseong }}</div></td>
+        <td><div class="cheongan">{{ pillars.year_gan }}</div><div class="sipseong">{{ pillars.year_gan_sipseong }}</div></td>
+      </tr>
+      <tr>
+        <td style="font-size:8pt;color:#666;font-family:'Noto Sans KR',sans-serif;">지지</td>
+        <td><div class="jiji">{{ pillars.hour_ji }}</div><div class="twelvef">{{ pillars.hour_ji_twelvef }}</div></td>
+        <td><div class="jiji">{{ pillars.day_ji }}</div><div class="twelvef">{{ pillars.day_ji_twelvef }}</div></td>
+        <td><div class="jiji">{{ pillars.month_ji }}</div><div class="twelvef">{{ pillars.month_ji_twelvef }}</div></td>
+        <td><div class="jiji">{{ pillars.year_ji }}</div><div class="twelvef">{{ pillars.year_ji_twelvef }}</div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="chart-section">
+    {{ ohaeng_svg | safe }}
+  </div>
+
+  <div class="chart-section">
+    <h3>대운(大運) 흐름표</h3>
+    {{ daeun_table | safe }}
+  </div>
+</div>
+
+{# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PART 01~08 챕터 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ #}
+
+{% for part in parts %}
+{# PART 표지 #}
+<div class="part-cover">
+  <div class="part-cover-inner">
+    <div class="part-deco">{{ part.deco }}</div>
+    <div class="part-num">PART {{ part.num }}</div>
+    <div class="part-title-ko">{{ part.title }}</div>
+    <div class="part-title-hanja">{{ part.hanja }}</div>
+    <div class="part-desc">{{ part.desc }}</div>
+  </div>
+</div>
+
+{# 챕터들 #}
+{% for chapter in part.chapters %}
+<div class="chapter {% if chapter.is_wealth %}wealth-chapter{% endif %}">
+  <div class="chapter-header">
+    <div class="chapter-num">{{ chapter.num }}</div>
+    <div class="chapter-title">
+      {{ chapter.title }}
+      {% if chapter.is_wealth %}<span class="wealth-badge">재물운 핵심</span>{% endif %}
+    </div>
+  </div>
+  <div class="chapter-content">
+    {{ chapter.content | safe }}
+  </div>
+</div>
+{% endfor %}
+{% endfor %}
+
+{# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 맺음말 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ #}
+<div class="closing">
+  <h2>마치며</h2>
+  <p>{{ name }}님의 사주 명식을 이 보고서에 담아드리며, 한 가지를 꼭 전하고 싶습니다. 사주는 운명의 감옥이 아닙니다. 타고난 에너지의 지도입니다. 지도를 가졌다고 해서 여정이 정해지는 것은 아닙니다. 어떤 길을 걷고, 어떤 속도로 나아가며, 어떤 곳에서 쉬어갈지는 여전히 {{ name }}님의 선택입니다.</p>
+  <p>이 보고서가 그 여정에서 흔들릴 때마다 꺼내보는 나침반이 되었으면 합니다. 언제든 더 이야기 나누고 싶은 부분이 있다면, 시선(視線)이 함께하겠습니다.</p>
+  <p>{{ name }}님의 삶에 좋은 바람이 불기를 진심으로 바랍니다.</p>
+  <div class="signature">— 시선(視線) 드림</div>
+</div>
+
+</body>
+</html>
