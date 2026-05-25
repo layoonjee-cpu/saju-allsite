@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     email,
     options: {
       data: { display_name: nickname },
-      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      redirectTo: `${siteUrl}/auth/kakao-session?next=${encodeURIComponent(next)}`,
     },
   });
 
