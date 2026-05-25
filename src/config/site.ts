@@ -4,9 +4,9 @@
 // 운영 전 본인 정보로 반드시 교체하세요. 아래는 모두 더미 데이터입니다.
 
 export const siteConfig = {
-  name: "오드아이 사주",
-  tagline: "나의 사주",
-  description: "정통 만세력과 AI 해석이 만나, 가볍게 보는 오늘의 운세부터 깊이 있는 종합 풀이까지.",
+  name: "시선",
+  tagline: "당신의 사주를 함께 읽다",
+  description: "정통 명리학과 AI가 만나는 곳. 운명을 점치지 않습니다. 당신의 지금을 함께 읽어드립니다.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   email: "unmyung.official@gmail.com",
 };

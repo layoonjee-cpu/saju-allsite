@@ -12,13 +12,16 @@ import { cn } from "@/lib/utils";
 type Props = {
   productId: string;
   productSlug: string;
+  productPrice: number;
   isLoggedIn: boolean;
 };
 
 const CONCERN_OPTIONS = ["연애", "결혼", "직장", "재물", "건강", "학업", "이직", "사업"];
 
-export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
+export function SajuForm({ productId, productSlug, productPrice, isLoggedIn }: Props) {
   const router = useRouter();
+  const isFree = productPrice === 0;
+
   const [name, setName] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
@@ -58,7 +61,8 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
     const birthDate = `${String(y)}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/orders/create", {
+      // 1단계: 주문 생성
+      const createRes = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,10 +76,29 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
           concerns,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "주문 생성 실패");
-      router.push(`/checkout/${json.orderId}`);
+      const createJson = await createRes.json();
+      if (!createRes.ok) throw new Error(createJson.error ?? "주문 생성 실패");
+
+      const { orderId, amount } = createJson;
+
+      if (amount === 0) {
+        // 무료 상품: 결제 스킵, 바로 생성
+        toast.loading("사주를 분석하고 있어요...", { id: "saju-loading" });
+        const freeRes = await fetch("/api/orders/free-confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        });
+        const freeJson = await freeRes.json();
+        toast.dismiss("saju-loading");
+        if (!freeRes.ok) throw new Error(freeJson.error ?? "분석 실패");
+        router.push(`/results/${freeJson.resultId}`);
+      } else {
+        // 유료 상품: 결제 페이지로 이동
+        router.push(`/checkout/${orderId}`);
+      }
     } catch (err) {
+      toast.dismiss("saju-loading");
       toast.error(err instanceof Error ? err.message : "오류가 발생했습니다");
       setSubmitting(false);
     }
@@ -193,7 +216,9 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
 
       {isLoggedIn ? (
         <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-          {submitting ? "주문 생성 중..." : "결제하러 가기"}
+          {submitting
+            ? (isFree ? "분석 중..." : "주문 생성 중...")
+            : (isFree ? "무료로 분석받기 →" : "결제하러 가기")}
         </Button>
       ) : (
         <div className="space-y-2">
@@ -201,7 +226,7 @@ export function SajuForm({ productId, productSlug, isLoggedIn }: Props) {
             href={`/login?redirect=${encodeURIComponent(`/products/${productSlug}`)}`}
             className={cn(buttonVariants({ size: "lg" }), "w-full")}
           >
-            로그인하고 결제하기
+            {isFree ? "로그인하고 무료로 보기" : "로그인하고 결제하기"}
           </Link>
           <p className="text-xs text-body text-center">
             결과는 로그인 후 <span className="text-ink">마이페이지</span> 에서 확인할 수 있어요.

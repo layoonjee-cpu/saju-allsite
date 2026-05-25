@@ -4,23 +4,23 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --primary: 263 70% 58%;
+    --background: 40 30% 97%;
+    --foreground: 240 20% 10%;
+    --card: 40 30% 97%;
+    --card-foreground: 240 20% 10%;
+    --primary: 180 43% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 98%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 98%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 263 70% 96%;
-    --accent-foreground: 263 70% 40%;
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 240 20% 10%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 240 10% 45%;
+    --accent: 180 30% 92%;
+    --accent-foreground: 180 43% 25%;
     --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 263 30% 88%;
-    --input: 263 30% 88%;
-    --ring: 263 70% 58%;
+    --border: 40 25% 84%;
+    --input: 40 25% 84%;
+    --ring: 180 43% 30%;
     --radius: 1rem;
   }
 }
@@ -38,10 +38,11 @@
     font-family:
       "SF Pro Rounded", -apple-system, BlinkMacSystemFont, ui-sans-serif,
       system-ui, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    /* 한지 크림 + 먹빛 코너 그라디언트 */
     background-image:
-      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(216, 180, 254, 0.35) 0%, transparent 60%),
-      radial-gradient(ellipse 70% 50% at 80% 10%, rgba(186, 230, 253, 0.35) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(253, 164, 175, 0.2) 0%, transparent 60%);
+      radial-gradient(ellipse 70% 50% at 0% 0%, rgba(26, 23, 48, 0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 45% at 100% 10%, rgba(43, 110, 110, 0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 40% at 50% 100%, rgba(196, 145, 58, 0.06) 0%, transparent 60%);
     background-attachment: fixed;
   }
   code, pre, kbd, samp {
@@ -55,37 +56,37 @@
 }
 
 @layer components {
-  /* 글래스모피즘 카드 */
+  /* 글래스모피즘 카드 — 한지 크림 톤 */
   .glass-card {
-    background: rgba(255, 255, 255, 0.65);
+    background: rgba(247, 243, 236, 0.72);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 4px 24px rgba(139, 92, 246, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid rgba(196, 145, 58, 0.22);
+    box-shadow: 0 4px 24px rgba(26, 23, 48, 0.07), 0 1px 4px rgba(0,0,0,0.04);
   }
   .glass-card:hover {
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.14), 0 2px 8px rgba(0,0,0,0.06);
+    background: rgba(247, 243, 236, 0.88);
+    box-shadow: 0 8px 32px rgba(26, 23, 48, 0.12), 0 2px 8px rgba(0,0,0,0.06);
   }
 
-  /* 그라디언트 텍스트 */
+  /* 그라디언트 텍스트 — 먹빛→청록 */
   .gradient-text {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    background: linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* 그라디언트 버튼 */
+  /* 그라디언트 버튼 — 먹빛 기반 */
   .btn-gradient {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    background: linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%);
     color: white;
     border: none;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 4px 15px rgba(26, 23, 48, 0.35);
     transition: all 0.2s ease;
   }
   .btn-gradient:hover {
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 6px 20px rgba(43, 110, 110, 0.4);
     transform: translateY(-1px);
   }
 }
@@ -108,6 +109,6 @@
     @apply font-semibold text-foreground;
   }
   .prose-saju code {
-    @apply rounded-md bg-[#fafafa] px-1.5 py-0.5 text-sm;
+    @apply rounded-md bg-[#fafaf8] px-1.5 py-0.5 text-sm;
   }
 }
