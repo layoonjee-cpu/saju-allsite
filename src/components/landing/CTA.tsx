@@ -18,7 +18,7 @@ export function CTA() {
             視線 — 지금 당신의 사주를 들여다보세요
           </div>
           <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white"
-            style={{ fontFamily: 'Georgia, "Nanum Myeongjo", serif' }}>
+            style={{ fontFamily: "var(--font-display)" }}>
             지금 나의 사주를 들여다보세요
           </h2>
           <p className="mt-3 text-sm text-white/70 max-w-sm mx-auto leading-relaxed">

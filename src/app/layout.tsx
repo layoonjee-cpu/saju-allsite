@@ -50,8 +50,9 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <SiseonLogo />
           <span
-            className="font-black text-[18px] tracking-tight"
+            className="font-bold text-[20px] tracking-tight"
             style={{
+              fontFamily: "var(--font-display)",
               background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -62,7 +63,7 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </span>
           <span
             className="hidden sm:block text-[11px] font-medium tracking-widest"
-            style={{ color: "#c4913a", fontFamily: "Georgia, serif", opacity: 0.8 }}
+            style={{ color: "#c4913a", fontFamily: "var(--font-display)", opacity: 0.8 }}
           >
             視線
           </span>
@@ -74,7 +75,8 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
             <Link
               key={item.href}
               href={item.href}
-              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-semibold text-foreground/65 hover:text-teal-700 hover:bg-teal-50/70 transition-all duration-200 whitespace-nowrap"
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] text-foreground/65 hover:text-teal-700 hover:bg-teal-50/70 transition-all duration-200 whitespace-nowrap"
+              style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}
             >
               {item.label}
               {"badge" in item && item.badge && (

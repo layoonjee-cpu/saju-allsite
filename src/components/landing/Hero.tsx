@@ -31,9 +31,9 @@ export function Hero() {
             {/* 브랜드 타이틀 */}
             <div className="mb-4">
               <h1
-                className="text-[52px] sm:text-[64px] md:text-[76px] font-black tracking-tight leading-none"
+                className="font-display text-[56px] sm:text-[68px] md:text-[80px] font-bold tracking-tight leading-none"
                 style={{
-                  fontFamily: 'Georgia, "Nanum Myeongjo", "Apple SD Gothic Neo", serif',
+                  fontFamily: "var(--font-display)",
                   color: "#1a1730",
                 }}
               >
@@ -43,7 +43,7 @@ export function Hero() {
                 className="text-[18px] sm:text-[20px] font-medium tracking-[0.3em] mt-1"
                 style={{
                   color: "#c4913a",
-                  fontFamily: "Georgia, serif",
+                  fontFamily: "var(--font-display)",
                 }}
               >
                 視線

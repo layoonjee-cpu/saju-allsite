@@ -1,3 +1,9 @@
+/* ─── 폰트 로드 ─────────────────────────────────────── */
+/* 마루부리 (로고·대제목) — Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Maru+Buri:wght@400;600;700&display=swap');
+/* Pretendard (본문·버튼·메뉴) — jsDelivr CDN */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,6 +28,11 @@
     --input: 40 25% 84%;
     --ring: 180 43% 30%;
     --radius: 1rem;
+
+    /* 폰트 변수 */
+    --font-display: 'Maru Buri', 'Nanum Myeongjo', Georgia, serif;
+    --font-body:    'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+                    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   }
 }
 
@@ -35,10 +46,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family:
-      "SF Pro Rounded", -apple-system, BlinkMacSystemFont, ui-sans-serif,
-      system-ui, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    /* 한지 크림 + 먹빛 코너 그라디언트 */
+    font-family: var(--font-body);
+    font-weight: 400;
     background-image:
       radial-gradient(ellipse 70% 50% at 0% 0%, rgba(26, 23, 48, 0.07) 0%, transparent 55%),
       radial-gradient(ellipse 60% 45% at 100% 10%, rgba(43, 110, 110, 0.08) 0%, transparent 55%),
@@ -49,14 +58,21 @@
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
       Consolas, "Liberation Mono", monospace;
   }
-  h1, h2, h3 {
+  /* 본문 제목 — Pretendard */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-body);
     @apply tracking-tight;
     font-weight: 700;
   }
 }
 
 @layer components {
-  /* 글래스모피즘 카드 — 한지 크림 톤 */
+  /* ─── 마루부리 디스플레이 (로고·Hero 대제목) ─── */
+  .font-display {
+    font-family: var(--font-display) !important;
+  }
+
+  /* ─── 글래스모피즘 카드 ─── */
   .glass-card {
     background: rgba(247, 243, 236, 0.72);
     backdrop-filter: blur(20px);
@@ -69,7 +85,7 @@
     box-shadow: 0 8px 32px rgba(26, 23, 48, 0.12), 0 2px 8px rgba(0,0,0,0.06);
   }
 
-  /* 그라디언트 텍스트 — 먹빛→청록 */
+  /* ─── 그라디언트 텍스트 ─── */
   .gradient-text {
     background: linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%);
     -webkit-background-clip: text;
@@ -77,8 +93,10 @@
     background-clip: text;
   }
 
-  /* 그라디언트 버튼 — 먹빛 기반 */
+  /* ─── 그라디언트 버튼 — Pretendard SemiBold ─── */
   .btn-gradient {
+    font-family: var(--font-body);
+    font-weight: 600;
     background: linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%);
     color: white;
     border: none;
@@ -91,16 +109,19 @@
   }
 }
 
-/* Markdown result body */
+/* ─── Markdown result body ─── */
 @layer components {
   .prose-saju h2 {
     @apply mt-10 mb-3 text-2xl font-semibold text-foreground;
+    font-family: var(--font-body);
   }
   .prose-saju h3 {
     @apply mt-6 mb-2 text-lg font-semibold text-foreground;
+    font-family: var(--font-body);
   }
   .prose-saju p {
     @apply my-3 leading-7 text-[#525252];
+    font-family: var(--font-body);
   }
   .prose-saju ul {
     @apply my-3 list-disc space-y-1 pl-6 text-[#525252];
