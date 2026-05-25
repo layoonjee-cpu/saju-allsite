@@ -1,20 +1,25 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
-
 type Props = {
   redirectTo?: string;
   label?: string;
 };
 
 export function KakaoLoginButton({ redirectTo = "/mypage", label = "카카오로 계속하기" }: Props) {
-  async function handleClick() {
-    const supabase = createClient();
-    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
-    await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: { redirectTo: callbackUrl },
-    });
+  function handleClick() {
+    const restApiKey = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
+    if (!restApiKey) {
+      console.error("NEXT_PUBLIC_KAKAO_REST_API_KEY is not set");
+      return;
+    }
+    const callbackUri = `${window.location.origin}/auth/kakao/callback`;
+    const kakaoAuthUrl =
+      `https://kauth.kakao.com/oauth/authorize` +
+      `?client_id=${restApiKey}` +
+      `&redirect_uri=${encodeURIComponent(callbackUri)}` +
+      `&response_type=code` +
+      `&state=${encodeURIComponent(redirectTo)}`;
+    window.location.href = kakaoAuthUrl;
   }
 
   return (
