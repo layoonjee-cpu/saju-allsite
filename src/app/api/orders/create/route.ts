@@ -6,12 +6,14 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 const bodySchema = z.object({
   productId: z.string().uuid(),
   name: z.string().max(50).optional(),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  birthTime: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
-  timeUnknown: z.boolean(),
-  gender: z.enum(["male", "female"]),
-  calendar: z.enum(["solar", "lunar"]),
-  concerns: z.array(z.string().max(20)).max(20),
+  // birthDate is optional for dream-reading
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  birthTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  timeUnknown: z.boolean().optional(),
+  gender: z.enum(["male", "female"]).optional(),
+  calendar: z.enum(["solar", "lunar"]).optional(),
+  concerns: z.array(z.string().max(20)).max(20).optional(),
+  dreamContent: z.string().max(2000).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -63,12 +65,13 @@ export async function POST(request: NextRequest) {
   const { error: inputErr } = await service.from("saju_inputs").insert({
     order_id: order.id,
     name: body.name ?? null,
-    birth_date: body.birthDate,
-    birth_time: body.birthTime,
-    time_unknown: body.timeUnknown,
-    gender: body.gender,
-    calendar: body.calendar,
-    concerns: body.concerns,
+    birth_date: body.birthDate ?? null,
+    birth_time: body.birthTime ?? null,
+    time_unknown: body.timeUnknown ?? false,
+    gender: body.gender ?? "male",
+    calendar: body.calendar ?? "solar",
+    concerns: body.concerns ?? [],
+    dream_content: body.dreamContent ?? null,
   });
 
   if (inputErr) {

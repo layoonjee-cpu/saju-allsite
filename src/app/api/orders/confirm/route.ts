@@ -122,11 +122,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 만세력/풀 분석: luckyloveme 키가 있으면 실제 API, 없거나 실패하면 mock 으로 fallback
     let myeongsik: Myeongsik;
     let manseryeokText: string | undefined;
 
-    if (isSajuApiConfigured()) {
+    // 꿈해몽은 사주 API 불필요 — 생년월일 없이 꿈 내용만으로 풀이
+    const isDreamReading = product.slug === "dream-reading";
+
+    if (isDreamReading) {
+      myeongsik = { year: null, month: null, day: null, hour: null } as unknown as Myeongsik;
+    } else if (isSajuApiConfigured()) {
       try {
         const birthInfo = toBirthInfo(input);
         const analysis = await fetchSajuAnalysis(birthInfo, [], { source: "confirm" }); // [] = 16종 전체
@@ -152,11 +156,12 @@ export async function POST(request: NextRequest) {
       productName: product.name,
       myeongsik,
       manseryeokText,
-      birthDate: input.birth_date,
+      birthDate: input.birth_date ?? "",
       birthTime: input.birth_time,
-      timeUnknown: input.time_unknown,
+      timeUnknown: input.time_unknown ?? false,
       gender: input.gender,
-      concerns: input.concerns,
+      concerns: input.concerns ?? [],
+      dreamContent: input.dream_content ?? undefined,
     });
 
     const llm = await generateInterpretation({ system, user });

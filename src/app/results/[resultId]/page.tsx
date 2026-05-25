@@ -29,8 +29,10 @@ export default async function ResultPage({
     .eq("id", result.order_id)
     .single();
   const { data: product } = order
-    ? await service.from("products").select("name").eq("id", order.product_id).single()
+    ? await service.from("products").select("name, slug").eq("id", order.product_id).single()
     : { data: null };
+
+  const isDreamReading = product?.slug === "dream-reading";
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
 
@@ -44,10 +46,12 @@ export default async function ResultPage({
         </p>
       </header>
 
-      <section className="mb-12">
-        <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
-        <MyeongsikTable myeongsik={myeongsik} />
-      </section>
+      {!isDreamReading && (
+        <section className="mb-12">
+          <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
+          <MyeongsikTable myeongsik={myeongsik} />
+        </section>
+      )}
 
       <article>
         <ResultBody markdown={result.interpretation_md} />

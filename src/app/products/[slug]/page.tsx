@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { SajuForm } from "@/components/saju/SajuForm";
+import { DreamForm } from "@/components/saju/DreamForm";
 import { formatKRW, formatDate } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
@@ -51,16 +52,52 @@ export default async function ProductDetailPage({
   return (
     <div className="container py-12 max-w-2xl">
       <header className="mb-10">
-        <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
-        <p className="mt-2 text-sm text-body">{product.description}</p>
-        <p className="mt-5 text-2xl font-mono font-medium text-ink">{formatKRW(product.price)}</p>
+        {product.slug === "dream-reading" ? (
+          <>
+            <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
+            <h1
+              className="text-[28px] font-bold tracking-tight leading-snug"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              꿈꾸는 시선
+            </h1>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              어제밤 꾼 꿈을 잊을 수 없다면, 제게 들려주세요.
+            </p>
+            <p className="mt-4 text-xl font-mono font-medium text-ink">
+              {formatKRW(product.price)}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
+            <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
+            <p className="mt-2 text-sm text-body">{product.description}</p>
+            <p className="mt-5 text-2xl font-mono font-medium text-ink">{formatKRW(product.price)}</p>
+          </>
+        )}
       </header>
 
       <section>
-        <h2 className="text-sm font-semibold mb-4 text-ink">사주 정보 입력</h2>
-        <p className="text-xs text-body mb-4">정확할수록 더 정밀한 결과가 나옵니다.</p>
-        <SajuForm productId={product.id} productSlug={product.slug} productPrice={product.price} isLoggedIn={!!user} />
+        {product.slug === "dream-reading" ? (
+          <DreamForm
+            productId={product.id}
+            productSlug={product.slug}
+            productPrice={product.price}
+            isLoggedIn={!!user}
+          />
+        ) : (
+          <>
+            <h2 className="text-sm font-semibold mb-4 text-ink">사주 정보 입력</h2>
+            <p className="text-xs text-body mb-4">정확할수록 더 정밀한 결과가 나옵니다.</p>
+            <SajuForm
+              productId={product.id}
+              productSlug={product.slug}
+              productPrice={product.price}
+              isLoggedIn={!!user}
+            />
+          </>
+        )}
       </section>
 
       {reviews && reviews.length > 0 && (
