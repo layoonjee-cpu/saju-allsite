@@ -36,7 +36,7 @@ SUPABASE_SECRET_KEY = os.environ["SUPABASE_SECRET_KEY"]
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@saju7.kr")
 SITE_URL = os.environ.get("SITE_URL", "https://www.saju7.kr")
-LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-4o")
+LLM_MODEL = os.environ.get("LLM_MODEL", "").strip() or "gpt-4o"
 
 DRY_RUN = "--dry-run" in sys.argv  # HTML만 생성, API 호출 없음
 GENERATOR_DIR = Path(__file__).parent
@@ -153,7 +153,8 @@ def format_birth_date_str(saju_input: dict) -> str:
     if time_unknown or not birth_time:
         time_str = "(시 미상)"
     else:
-        hh, mm = birth_time.split(":")
+        parts = birth_time.split(":")
+        hh, mm = parts[0], parts[1]  # 초(ss) 무시
         time_str = f"{int(hh)}시 {int(mm)}분"
 
     return f"{date_str} {time_str} ({calendar_type})"
