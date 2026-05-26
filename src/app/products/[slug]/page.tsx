@@ -62,22 +62,22 @@ export default async function ProductDetailPage({
   return (
     <div className="container py-12 max-w-2xl">
       {productImages[product.slug] && (
-        <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8">
+        <div className="relative w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6]">
           <Image
             src={productImages[product.slug]}
             alt={product.name}
             fill
-            className="object-cover object-top"
+            className="object-contain"
             priority
           />
         </div>
       )}
-      <header className="mb-10">
+      <header className="mb-10 text-center">
         <>
-          <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
-          <p className="mt-2 text-sm text-body">{product.description}</p>
-          <p className="mt-5 text-2xl font-mono font-medium text-ink">{formatKRW(product.price)}</p>
+          <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#1a1730]">{product.name}</h1>
+          <p className="mt-3 text-sm text-[#4a4a6a] leading-relaxed">{product.description}</p>
+          <p className="mt-4 text-2xl font-mono font-semibold text-[#2D5C5C]">{formatKRW(product.price)}</p>
         </>
       </header>
 

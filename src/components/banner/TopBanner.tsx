@@ -8,7 +8,8 @@ type BannerProduct = { slug?: string };
 
 // 광고 이미지 목록 — 이미지 추가 시 여기에만 추가하면 됩니다
 const AD_SLIDES = [
-  { src: "/seesun.png", alt: "시선 사주 — 정통 명리학 × AI", href: "/products" },
+  { src: "/logo.png", alt: "시선 로고", href: "/products", width: 180, height: 58 },
+  { src: "/seesun.png", alt: "시선 사주 — 정통 명리학 × AI", href: "/products", width: 64, height: 64 },
 ];
 
 // ── 롤링 광고 배너 (상단 이미지 슬라이드) ─────────────────────────────
@@ -42,9 +43,9 @@ function RollingAdBanner() {
           <Image
             src={slide.src}
             alt={slide.alt}
-            width={64}
-            height={64}
-            className="object-contain rounded-xl"
+            width={slide.width}
+            height={slide.height}
+            className="object-contain"
             style={{ filter: "drop-shadow(0 2px 8px rgba(196,145,58,0.35))" }}
             priority={i === 0}
           />

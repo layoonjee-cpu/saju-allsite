@@ -48,24 +48,24 @@ export default async function ProductsPage() {
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
-              className="group block rounded-lg overflow-hidden border border-hairline bg-canvas transition-colors hover:border-ink"
+              className="group block rounded-lg overflow-hidden border border-hairline bg-canvas transition-shadow hover:shadow-lg"
             >
               {productImages[p.slug] && (
-                <div className="relative h-48 overflow-hidden rounded-t-lg">
+                <div className="relative w-full aspect-[3/4] bg-[#F5F0E6]">
                   <Image
                     src={productImages[p.slug]}
                     alt={p.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
               )}
-              <div className="p-6">
-                <p className="text-base font-semibold text-ink">{p.name}</p>
-                <p className="mt-1.5 text-sm text-body leading-relaxed line-clamp-2">
+              <div className="p-5">
+                <p className="text-base font-semibold text-[#1a1730]">{p.name}</p>
+                <p className="mt-1.5 text-sm text-[#4a4a6a] leading-relaxed line-clamp-2">
                   {p.description}
                 </p>
-                <p className="mt-5 text-lg font-mono font-medium text-ink">{formatKRW(p.price)}</p>
+                <p className="mt-4 text-lg font-mono font-semibold text-[#2D5C5C]">{formatKRW(p.price)}</p>
               </div>
             </Link>
           ))}
