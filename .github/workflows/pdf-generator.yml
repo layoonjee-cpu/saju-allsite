@@ -1,9 +1,9 @@
 name: VIP PDF Generator
 
 on:
-  schedule:
-    # 5분마다 실행 (UTC 기준, 한국시간 +9)
-    - cron: '*/5 * * * *'
+  # 스케줄 비활성화 — 실패 반복으로 인해 중단
+  # schedule:
+  #   - cron: '*/5 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
