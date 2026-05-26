@@ -52,4 +52,4 @@ jobs:
           SAJU_API_KEY: ${{ secrets.SAJU_API_KEY }}
           SAJU_API_URL: ${{ secrets.SAJU_API_URL }}
           SITE_URL: ${{ secrets.SITE_URL }}
-          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_MODEL: gpt-4o
