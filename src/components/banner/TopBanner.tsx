@@ -7,8 +7,8 @@ import { useState, useEffect } from "react";
 type BannerProduct = { slug?: string };
 
 // 광고 이미지 목록 — 이미지 추가 시 여기에만 추가하면 됩니다
-const AD_SLIDES: { src: string; alt: string; href: string; width: number; height: number }[] = [
-  // 로고 이미지 준비 후 여기에 추가
+const AD_SLIDES = [
+  { src: "/seesun_logo1.png", alt: "시선 사주", href: "/products", width: 200, height: 60 },
 ];
 
 // ── 롤링 광고 배너 (상단 이미지 슬라이드) ─────────────────────────────
