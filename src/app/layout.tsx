@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { headers } from "next/headers";
+import Image from "next/image";
 import { Toaster } from "sonner";
 import { siteConfig, businessInfo } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
 import { TopBanner } from "@/components/banner/TopBanner";
 import { MobileMenu } from "@/components/layout/MobileMenu";
+import { ConditionalSiteLayout } from "@/components/layout/ConditionalSiteLayout";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,20 +23,18 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") ?? "";
-  const isAdmin = pathname.startsWith("/admin");
-
-  // 어드민 경로에서는 Supabase 세션 조회 불필요 (어드민 전용 헤더로 대체)
-  const isLoggedIn = !isAdmin && isSupabaseConfigured() ? !!(await getCurrentUser()) : false;
+  const isLoggedIn = isSupabaseConfigured() ? !!(await getCurrentUser()) : false;
 
   return (
     <html lang="ko">
       <body suppressHydrationWarning>
-        {!isAdmin && <TopBanner />}
-        {!isAdmin && <SiteHeader isLoggedIn={isLoggedIn} />}
-        <main className={isAdmin ? "" : "min-h-[calc(100vh-7rem)]"}>{children}</main>
-        {!isAdmin && <SiteFooter />}
+        <ConditionalSiteLayout
+          topBanner={<TopBanner />}
+          siteHeader={<SiteHeader isLoggedIn={isLoggedIn} />}
+          siteFooter={<SiteFooter />}
+        >
+          {children}
+        </ConditionalSiteLayout>
         <Toaster position="top-center" />
       </body>
     </html>
@@ -56,26 +55,15 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
       <div className="container flex h-16 items-center justify-between gap-4">
 
         {/* 로고 */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <SiseonLogo />
-          <span
-            className="font-bold text-[20px] tracking-tight"
-            style={{
-              fontFamily: "var(--font-display)",
-              background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {siteConfig.name}
-          </span>
-          <span
-            className="hidden sm:block text-[11px] font-medium tracking-widest"
-            style={{ color: "#c4913a", fontFamily: "var(--font-display)", opacity: 0.8 }}
-          >
-            視線
-          </span>
+        <Link href="/" className="flex items-center shrink-0">
+          <Image
+            src="/logo.png"
+            alt="시선"
+            width={120}
+            height={40}
+            className="object-contain h-10 w-auto"
+            priority
+          />
         </Link>
 
         {/* 상품 메뉴 — 데스크톱만 표시 */}
@@ -117,28 +105,6 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
         <MobileMenu navItems={navItems} isLoggedIn={isLoggedIn} />
       </div>
     </header>
-  );
-}
-
-function SiseonLogo({ size = 36 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
-      {/* 외부 원 — 먹빛 */}
-      <circle cx="24" cy="24" r="21" fill="#1a1730" />
-      {/* 눈 아몬드형 — 한지 크림 */}
-      <path d="M8,24 Q24,11 40,24 Q24,37 8,24 Z" fill="#f7f3ec" opacity="0.95" />
-      {/* 홍채 — 단청 청록 */}
-      <circle cx="24" cy="24" r="7.5" fill="#2b6e6e" />
-      {/* 동공 */}
-      <circle cx="24" cy="24" r="4.2" fill="#1a1730" />
-      {/* 하이라이트 */}
-      <circle cx="26.5" cy="21.5" r="1.6" fill="white" />
-      <circle cx="23" cy="26" r="0.8" fill="white" opacity="0.6" />
-      {/* 시선 라인 — 금빛 */}
-      <line x1="40" y1="24" x2="47" y2="24" stroke="#c4913a" strokeWidth="2.2" strokeLinecap="round" />
-      {/* 속눈썹 곡선 */}
-      <path d="M9,22 Q24,9 39,22" fill="none" stroke="#1a1730" strokeWidth="1.2" opacity="0.4" />
-    </svg>
   );
 }
 
