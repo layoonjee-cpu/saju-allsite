@@ -31,7 +31,7 @@ export const productsSeed: ProductSeed[] = [
   {
     slug: "basic-saju",
     name: "가벼운 시선",
-    description: "사주 명식과 기본 구조를 통해 간단히 알아보는 첫걸음. A4 3장",
+    description: "나의 사주로 읽는 타고난 성향과 운의 흐름 리포트",
     price: 4900,
     display_order: 20,
     is_active: true,
@@ -39,7 +39,7 @@ export const productsSeed: ProductSeed[] = [
   {
     slug: "love-saju",
     name: "연인의 시선",
-    description: "두 사람의 궁합과 애정운 분석. 갈등 구조 해결 조언. A4 10장",
+    description: "나와 연인·배우자의 궁합과 애정운 분석, 관계 조언",
     price: 15000,
     display_order: 30,
     is_active: true,

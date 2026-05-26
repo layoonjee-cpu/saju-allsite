@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { SajuForm } from "@/components/saju/SajuForm";
@@ -7,6 +8,14 @@ import { LoveForm } from "@/components/saju/LoveForm";
 import { formatKRW, formatDate } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
+
+const productImages: Record<string, string> = {
+  "today-fortune": "/product-today.png",
+  "dream-reading": "/product-dream.png",
+  "basic-saju": "/product-basic.png",
+  "love-saju": "/product-love.png",
+  "premium-saju": "/product-premium.png",
+};
 
 type Product = { id: string; slug: string; name: string; description: string; price: number };
 type Review = { id: string; rating: number; content: string; created_at: string };
@@ -52,6 +61,17 @@ export default async function ProductDetailPage({
 
   return (
     <div className="container py-12 max-w-2xl">
+      {productImages[product.slug] && (
+        <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8">
+          <Image
+            src={productImages[product.slug]}
+            alt={product.name}
+            fill
+            className="object-cover object-top"
+            priority
+          />
+        </div>
+      )}
       <header className="mb-10">
         <>
           <p className="text-xs font-mono text-mute mb-2">PRODUCT / {product.slug}</p>
