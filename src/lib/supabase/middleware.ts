@@ -4,7 +4,11 @@ import type { Database } from "@/types/database";
 import { publicEnv } from "@/lib/env";
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  // x-pathname 헤더를 주입해 루트 layout.tsx 에서 서버 컴포넌트로 읽을 수 있게 함
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient<Database>(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,7 +22,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          response = NextResponse.next({ request });
+          response = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );

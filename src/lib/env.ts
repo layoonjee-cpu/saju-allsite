@@ -13,6 +13,7 @@ const serverSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+  ADMIN_ID: z.string().optional().default(""),
   ADMIN_PASSWORD: z.string().optional().default(""),
 });
 
@@ -56,6 +57,7 @@ export function serverEnv() {
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
       GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      ADMIN_ID: process.env.ADMIN_ID,
       ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     });
   }

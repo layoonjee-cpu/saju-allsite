@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Toaster } from "sonner";
 import { siteConfig, businessInfo } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -21,15 +22,20 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const isLoggedIn = isSupabaseConfigured() ? !!(await getCurrentUser()) : false;
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  const isAdmin = pathname.startsWith("/admin");
+
+  // 어드민 경로에서는 Supabase 세션 조회 불필요 (어드민 전용 헤더로 대체)
+  const isLoggedIn = !isAdmin && isSupabaseConfigured() ? !!(await getCurrentUser()) : false;
 
   return (
     <html lang="ko">
       <body suppressHydrationWarning>
-        <TopBanner />
-        <SiteHeader isLoggedIn={isLoggedIn} />
-        <main className="min-h-[calc(100vh-7rem)]">{children}</main>
-        <SiteFooter />
+        {!isAdmin && <TopBanner />}
+        {!isAdmin && <SiteHeader isLoggedIn={isLoggedIn} />}
+        <main className={isAdmin ? "" : "min-h-[calc(100vh-7rem)]"}>{children}</main>
+        {!isAdmin && <SiteFooter />}
         <Toaster position="top-center" />
       </body>
     </html>
