@@ -4,6 +4,7 @@ Supabase → 사주 API → 55회 Claude 호출 → HTML → Playwright PDF → 
 """
 
 import os
+import re
 import sys
 import time
 import asyncio
@@ -160,40 +161,74 @@ def format_birth_date_str(saju_input: dict) -> str:
     return f"{date_str} {time_str} ({calendar_type})"
 
 
+# ── 마크다운 인라인 변환 ───────────────────────────────────────
+def _md_inline(text: str) -> str:
+    """**bold** → <strong>, *italic* → <em>"""
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+    return text
+
+
+def text_to_html(text: str) -> str:
+    """GPT 생성 텍스트 → HTML 변환 (단락 분리 + 마크다운 처리)"""
+    if not text:
+        return ""
+    paras = []
+    for block in text.split("\n\n"):
+        block = block.strip()
+        if not block:
+            continue
+        # 헤딩
+        if block.startswith("### "):
+            paras.append(f"<h3>{_md_inline(block[4:])}</h3>")
+        elif block.startswith("## "):
+            paras.append(f"<h3>{_md_inline(block[3:])}</h3>")
+        elif block.startswith("# "):
+            paras.append(f"<h3>{_md_inline(block[2:])}</h3>")
+        # 리스트 블록 (- 또는 * 로 시작하는 줄이 포함된 경우)
+        elif any(ln.strip().startswith("- ") or ln.strip().startswith("* ")
+                 for ln in block.split("\n")):
+            items = []
+            for ln in block.split("\n"):
+                ln = ln.strip()
+                if ln.startswith("- ") or ln.startswith("* "):
+                    items.append(f"<li>{_md_inline(ln[2:])}</li>")
+                elif ln:
+                    items.append(f"<li>{_md_inline(ln)}</li>")
+            paras.append("<ul>" + "".join(items) + "</ul>")
+        else:
+            # 일반 단락 — 줄바꿈을 공백으로 합쳐 한 단락으로
+            lines = [_md_inline(ln.strip()) for ln in block.split("\n") if ln.strip()]
+            paras.append("<p>" + " ".join(lines) + "</p>")
+    return "\n".join(paras)
+
+
 # ── 사주 4기둥 테이블 데이터 구성 ─────────────────────────────
-def build_pillars(analysis: dict) -> list[dict]:
-    """가나, 지지, 십성 등 4기둥 데이터"""
+def build_pillars(analysis: dict) -> dict:
+    """가나, 지지, 십성 등 4기둥 → 템플릿용 flat dict
+    템플릿이 pillars.hour_gan, pillars.day_gan 등으로 직접 접근하므로 flat dict 반환.
+    """
     ganji = analysis.get("ganji", {})
     sipseong = analysis.get("sipseong", {})
     twelve = analysis.get("twelveFortune", {})
 
-    pillars = []
-    for pillar_key, label in [("year", "년주"), ("month", "월주"), ("day", "일주"), ("hour", "시주")]:
+    result = {}
+    for pillar_key, prefix in [("year", "year"), ("month", "month"), ("day", "day"), ("hour", "hour")]:
         p = ganji.get(pillar_key, {}) if isinstance(ganji, dict) else {}
         ss = sipseong.get(pillar_key, "") if isinstance(sipseong, dict) else ""
         tf = twelve.get(pillar_key, "") if isinstance(twelve, dict) else ""
 
         if isinstance(p, dict):
-            pillars.append({
-                "label": label,
-                "gan": p.get("gan", ""),
-                "gan_hanja": p.get("ganHanja", ""),
-                "ji": p.get("ji", ""),
-                "ji_hanja": p.get("jiHanja", ""),
-                "sipseong": ss,
-                "twelve_fortune": tf,
-            })
+            result[f"{prefix}_gan"] = p.get("gan", "")
+            result[f"{prefix}_ji"] = p.get("ji", "")
         else:
-            pillars.append({
-                "label": label,
-                "gan": "(미상)" if pillar_key == "hour" else "",
-                "gan_hanja": "",
-                "ji": "",
-                "ji_hanja": "",
-                "sipseong": "",
-                "twelve_fortune": "",
-            })
-    return pillars
+            result[f"{prefix}_gan"] = "(미상)" if pillar_key == "hour" else ""
+            result[f"{prefix}_ji"] = ""
+
+        result[f"{prefix}_gan_sipseong"] = ss
+        result[f"{prefix}_ji_twelvef"] = tf
+
+    return result
 
 
 # ── PART 구조 → 챕터 배치 ─────────────────────────────────────
@@ -208,15 +243,18 @@ def build_parts(chapter_texts: dict[str, str], start_year: int = 2026) -> list[d
             chapter_list = meta["chapters"]
 
         part_chapters = []
-        for ch_key, ch_title in chapter_list:
+        for idx, (ch_key, ch_title) in enumerate(chapter_list, 1):
             text = chapter_texts.get(ch_key, "")
             is_wealth = meta["num"] == "04"
+            paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
             part_chapters.append({
                 "key": ch_key,
+                "num": f"PART {meta['num']} — {idx:02d}",   # 템플릿 chapter.num 용
                 "title": ch_title,
                 "text": text,
                 "is_wealth": is_wealth,
-                "paragraphs": [p.strip() for p in text.split("\n\n") if p.strip()],
+                "paragraphs": paragraphs,
+                "content": text_to_html(text),               # 템플릿 chapter.content | safe 용
             })
         parts.append({
             "num": meta["num"],
