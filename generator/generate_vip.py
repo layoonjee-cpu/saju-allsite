@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 
-import anthropic
+from openai import OpenAI
 import resend
 from supabase import create_client, Client
 from jinja2 import Environment, FileSystemLoader
@@ -30,13 +30,13 @@ from prompts import get_all_chapters, PARTS_META
 # ── 환경변수 로드 ──────────────────────────────────────────────
 load_dotenv()
 
-ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SECRET_KEY = os.environ["SUPABASE_SECRET_KEY"]
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@saju7.kr")
 SITE_URL = os.environ.get("SITE_URL", "https://www.saju7.kr")
-LLM_MODEL = os.environ.get("LLM_MODEL", "claude-sonnet-4-5")
+LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-4o")
 
 DRY_RUN = "--dry-run" in sys.argv  # HTML만 생성, API 호출 없음
 GENERATOR_DIR = Path(__file__).parent
@@ -102,11 +102,11 @@ def generate_all_chapters(
         print("  [dry-run] LLM 호출 건너뜀 — 샘플 텍스트로 대체")
         chapters_raw = get_all_chapters(name, saju_context, start_year)
         return {
-            key: f"[DRY-RUN] {key} 챕터 샘플 텍스트입니다. 실제 실행 시 Claude가 상세 내용을 작성합니다."
+            key: f"[DRY-RUN] {key} 챕터 샘플 텍스트입니다. 실제 실행 시 GPT-4o가 상세 내용을 작성합니다."
             for key, _ in chapters_raw
         }
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
     chapters_raw = get_all_chapters(name, saju_context, start_year)
     results: dict[str, str] = {}
     total = len(chapters_raw)
@@ -115,13 +115,15 @@ def generate_all_chapters(
         print(f"  [{i:02d}/{total}] {key} 생성 중...", end=" ", flush=True)
         t0 = time.time()
         try:
-            msg = client.messages.create(
+            resp = client.chat.completions.create(
                 model=LLM_MODEL,
                 max_tokens=4096,
-                system=_get_system_prompt(),
-                messages=[{"role": "user", "content": user_prompt}],
+                messages=[
+                    {"role": "system", "content": _get_system_prompt()},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
-            content = msg.content[0].text if msg.content else ""
+            content = resp.choices[0].message.content or ""
             results[key] = content
             elapsed = time.time() - t0
             chars = len(content)
@@ -130,7 +132,7 @@ def generate_all_chapters(
             print(f"실패 — {e}")
             results[key] = f"[생성 오류: {key}]"
         # API rate limit 방지
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     return results
 
