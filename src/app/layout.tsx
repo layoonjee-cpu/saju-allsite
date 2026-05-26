@@ -56,14 +56,24 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
 
         {/* 로고 */}
         <Link href="/" className="flex items-center shrink-0">
-          <Image
-            src="/logo.png"
-            alt="시선"
-            width={120}
-            height={40}
-            className="object-contain h-10 w-auto"
-            priority
-          />
+          <span
+            className="font-bold text-[20px] tracking-tight"
+            style={{
+              fontFamily: "Georgia, serif",
+              background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {siteConfig.name}
+          </span>
+          <span
+            className="hidden sm:block text-[11px] font-medium tracking-widest ml-1.5"
+            style={{ color: "#c4913a", opacity: 0.8 }}
+          >
+            視線
+          </span>
         </Link>
 
         {/* 상품 메뉴 — 데스크톱만 표시 */}

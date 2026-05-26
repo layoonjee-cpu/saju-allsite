@@ -8,6 +8,7 @@ type BannerProduct = { slug?: string };
 
 // 광고 이미지 목록 — 이미지 추가 시 여기에만 추가하면 됩니다
 const AD_SLIDES = [
+  { src: "/seesun_logo1.png", alt: "시선 로고", href: "/products", width: 180, height: 60 },
   { src: "/seesun.png", alt: "시선 사주 — 정통 명리학 × AI", href: "/products", width: 64, height: 64 },
 ];
 
