@@ -33,7 +33,8 @@ def build_birth_info(saju_input: dict) -> dict:
         "gender": saju_input.get("gender", "female"),
     }
     if has_time:
-        hh, mm = birth_time.split(":")
+        parts = birth_time.split(":")
+        hh, mm = parts[0], parts[1]  # 초(ss) 무시 — PostgreSQL TIME 타입 대응
         info["birthHour"] = str(int(hh))
         info["birthMinute"] = str(int(mm))
     return info
