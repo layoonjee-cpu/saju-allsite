@@ -7,8 +7,8 @@ import { useState, useEffect } from "react";
 type BannerProduct = { slug?: string };
 
 // 광고 이미지 목록 — 이미지 추가 시 여기에만 추가하면 됩니다
-const AD_SLIDES = [
-  { src: "/seesun_logo1.png", alt: "시선 사주", href: "/products", width: 180, height: 60 },
+const AD_SLIDES: { src: string; alt: string; href: string; width: number; height: number }[] = [
+  // 로고 이미지 준비 후 여기에 추가
 ];
 
 // ── 롤링 광고 배너 (상단 이미지 슬라이드) ─────────────────────────────
@@ -71,5 +71,6 @@ function RollingAdBanner() {
 
 // ── 메인 TopBanner ─────────────────────────────────────────────────────
 export function TopBanner({ products: _products }: { products?: BannerProduct[] }) {
+  if (AD_SLIDES.length === 0) return null;
   return <RollingAdBanner />;
 }
