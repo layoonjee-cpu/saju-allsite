@@ -415,7 +415,7 @@ def generate_one(supabase: Client, result: dict):
             start_year = datetime.now().year
 
         # 3. 55챕터 LLM 호출
-        print(f"  [2/6] Claude 호출 시작 (model={LLM_MODEL})...")
+        print(f"  [2/6] GPT 호출 시작 (model={LLM_MODEL})...")
         chapter_texts = generate_all_chapters(name, saju_context, start_year)
         total_chars = sum(len(v) for v in chapter_texts.values())
         print(f"  총 {len(chapter_texts)}챕터 / {total_chars:,}자 생성 완료")

@@ -223,8 +223,8 @@ export async function POST(request: NextRequest) {
           order_id: order.id,
           myeongsik: myeongsik as never,
           interpretation_md: "",          // Python 제너레이터가 PDF로 대체
-          llm_provider: "claude",
-          llm_model: "claude-opus-4-5",
+          llm_provider: "openai",
+          llm_model: "gpt-4o",
           generation_status: "generating", // GitHub Actions cron이 처리
           pdf_url: null,
         })

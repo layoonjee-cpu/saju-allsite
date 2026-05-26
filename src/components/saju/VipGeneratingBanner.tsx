@@ -66,7 +66,7 @@ export function VipGeneratingBanner({ resultId }: Props) {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" style={{ animationDelay: "0.3s" }} />
-          Claude AI가 PART 01~10 챕터별 집필 중
+          GPT-4o가 PART 01~10 챕터별 집필 중
         </div>
         <div className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
