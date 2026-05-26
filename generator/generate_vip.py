@@ -36,7 +36,7 @@ SUPABASE_SECRET_KEY = os.environ["SUPABASE_SECRET_KEY"]
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@saju7.kr")
 SITE_URL = os.environ.get("SITE_URL", "https://www.saju7.kr")
-LLM_MODEL = os.environ.get("LLM_MODEL", "claude-opus-4-5")
+LLM_MODEL = os.environ.get("LLM_MODEL", "claude-sonnet-4-5")
 
 DRY_RUN = "--dry-run" in sys.argv  # HTML만 생성, API 호출 없음
 GENERATOR_DIR = Path(__file__).parent
