@@ -42,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 }
 
 const navItems = [
+  { label: "시선사주 스토리", href: "/story" },
   { label: "오늘의 운세", href: "/products/today-fortune", badge: "무료", badgeColor: "from-emerald-500 to-teal-500" },
   { label: "꿈해몽", href: "/products/dream-reading" },
   { label: "가벼운 사주", href: "/products/basic-saju" },
