@@ -129,11 +129,13 @@ export async function POST(request: NextRequest) {
   try {
     let myeongsik: Myeongsik;
     let manseryeokText: string | undefined;
+    let rawSajuJson: unknown = null; // 운세위키 API 16종 원본 응답 (어드민 데이터 버튼용)
 
     if (isSajuApiConfigured()) {
       try {
         const birthInfo = toBirthInfo(input);
         const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" }); // 16종 전체 (gyeokgukYongsin 포함)
+        rawSajuJson = analysis; // 원본 응답 보존
         const converted = ganjiToMyeongsik(analysis);
         if (converted) {
           myeongsik = converted;
@@ -170,6 +172,7 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
+        raw_saju_json: rawSajuJson as never, // 16종 원본 응답
       })
       .select("id")
       .single();

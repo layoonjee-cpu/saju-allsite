@@ -161,6 +161,7 @@ export async function POST(request: NextRequest) {
   try {
     let myeongsik: Myeongsik;
     let manseryeokText: string | undefined;
+    let rawSajuJson: unknown = null; // 운세위키 API 16종 원본 응답 (어드민 데이터 버튼용)
 
     // 꿈해몽은 사주 API 불필요 — 생년월일 없이 꿈 내용만으로 풀이
     const isDreamReading = product.slug === "dream-reading";
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
       try {
         const birthInfo = toBirthInfo(input);
         const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" }); // 16종 전체 (gyeokgukYongsin 포함)
+        rawSajuJson = analysis; // 원본 응답 보존
         const converted = ganjiToMyeongsik(analysis);
         if (converted) {
           myeongsik = converted;
@@ -227,6 +229,7 @@ export async function POST(request: NextRequest) {
           llm_model: "gpt-4o",
           generation_status: "generating", // GitHub Actions cron이 처리
           pdf_url: null,
+          raw_saju_json: rawSajuJson as never, // 16종 원본 응답
         })
         .select("id")
         .single();
@@ -270,6 +273,7 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
+        raw_saju_json: rawSajuJson as never, // 16종 원본 응답
       })
       .select("id")
       .single();

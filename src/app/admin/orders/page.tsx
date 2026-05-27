@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatKRW } from "@/lib/utils";
 import { SendEmailButton } from "@/components/admin/SendEmailButton";
+import { SajuDataButton } from "@/components/admin/SajuDataButton";
 
 export const metadata = { title: "주문 관리 | 시선 어드민" };
 export const dynamic = "force-dynamic";
@@ -266,7 +267,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
                     {/* 액션 */}
                     <td className="px-4 py-3 align-top">
-                      <div className="flex items-center gap-3 whitespace-nowrap">
+                      <div className="flex items-center gap-3 whitespace-nowrap flex-wrap">
                         {result ? (
                           <Link
                             href={`/results/${result.id}`}
@@ -277,6 +278,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                         ) : (
                           <span className="text-[11px] text-mute">분석지 없음</span>
                         )}
+                        <SajuDataButton
+                          orderId={o.id}
+                          name={inp?.name ?? null}
+                          birthDate={inp?.birth_date ?? null}
+                        />
                         {result && result.generation_status === "complete" && (
                           <SendEmailButton
                             resultId={result.id}

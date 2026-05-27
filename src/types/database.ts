@@ -76,6 +76,7 @@ type SajuResultRow = {
   llm_model: string;
   generation_status: string;   // 'complete' | 'generating' | 'failed'
   pdf_url: string | null;
+  raw_saju_json: Json | null;  // 운세위키 API 16종 원본 응답
   created_at: string;
 };
 
@@ -180,6 +181,7 @@ export type Database = {
           llm_model: string;
           generation_status?: string;
           pdf_url?: string | null;
+          raw_saju_json?: Json | null;
           created_at?: string;
         };
         Update: Partial<SajuResultRow>;
