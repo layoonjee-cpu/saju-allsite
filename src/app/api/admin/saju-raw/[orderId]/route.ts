@@ -48,10 +48,10 @@ export async function GET(
 
   const svc = createServiceClient();
 
-  // 2. saju_results에서 raw_saju_json 조회
+  // 2. saju_results에서 raw_saju_json + myeongsik 조회
   const { data: result } = await svc
     .from("saju_results")
-    .select("id, raw_saju_json, order_id")
+    .select("id, raw_saju_json, order_id, myeongsik")
     .eq("order_id", orderId)
     .maybeSingle();
 
@@ -60,19 +60,29 @@ export async function GET(
     return NextResponse.json(result.raw_saju_json);
   }
 
-  // 4. fallback: saju_inputs에서 출생정보 읽어 API 재호출
-  if (!isSajuApiConfigured()) {
-    return NextResponse.json(
-      { ok: false, error: "사주 API가 설정되지 않았습니다. SAJU_API_KEY를 확인하세요." },
-      { status: 404 }
-    );
-  }
-
+  // 4. saju_inputs 조회 (API 재호출 또는 fallback 표시 공통으로 필요)
   const { data: input } = await svc
     .from("saju_inputs")
-    .select("birth_date, birth_time, time_unknown, gender, calendar")
+    .select("name, birth_date, birth_time, time_unknown, gender, calendar, concerns")
     .eq("order_id", orderId)
     .maybeSingle();
+
+  // 5. SAJU_API_KEY 미설정: 에러 대신 저장된 4기둥 명식으로 fallback 표시
+  if (!isSajuApiConfigured()) {
+    return NextResponse.json({
+      _note: "SAJU_API_KEY 미설정 — 4기둥 명식만 표시됩니다. 16종 전체 데이터는 SAJU_API_KEY 설정 후 다시 클릭하세요.",
+      myeongsik: result?.myeongsik ?? null,
+      saju_input: {
+        name: input?.name ?? null,
+        birth_date: input?.birth_date ?? null,
+        birth_time: input?.birth_time ?? null,
+        time_unknown: input?.time_unknown ?? false,
+        gender: input?.gender ?? null,
+        calendar: input?.calendar ?? null,
+        concerns: input?.concerns ?? [],
+      },
+    });
+  }
 
   if (!input) {
     return NextResponse.json(
