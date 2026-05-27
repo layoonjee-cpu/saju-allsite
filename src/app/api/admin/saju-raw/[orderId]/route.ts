@@ -68,9 +68,14 @@ export async function GET(
     .maybeSingle();
 
   // 5. SAJU_API_KEY 미설정: 에러 대신 저장된 4기둥 명식으로 fallback 표시
+  const hasApiUrl = !!process.env.SAJU_API_URL;
+  const hasApiKey = !!process.env.SAJU_API_KEY;
+  console.log(`[admin/saju-raw] env check — SAJU_API_URL: ${hasApiUrl}, SAJU_API_KEY: ${hasApiKey}`);
+
   if (!isSajuApiConfigured()) {
+    const missing = [!hasApiUrl && "SAJU_API_URL", !hasApiKey && "SAJU_API_KEY"].filter(Boolean).join(", ");
     return NextResponse.json({
-      _note: "SAJU_API_KEY 미설정 — 4기둥 명식만 표시됩니다. 16종 전체 데이터는 SAJU_API_KEY 설정 후 다시 클릭하세요.",
+      _note: `환경변수 미설정(${missing}) — 4기둥 명식만 표시됩니다. Vercel에 해당 변수를 추가하고 Redeploy 후 다시 클릭하세요.`,
       myeongsik: result?.myeongsik ?? null,
       saju_input: {
         name: input?.name ?? null,
@@ -92,8 +97,10 @@ export async function GET(
   }
 
   try {
+    console.log(`[admin/saju-raw] API 호출 시작 — orderId: ${orderId}`);
     const birthInfo = toBirthInfo(input);
     const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "manual" });
+    console.log(`[admin/saju-raw] API 호출 성공 — fields: ${Object.keys(analysis as object).join(", ")}`);
 
     // 5. DB에 저장 (다음 조회 시 빠르게)
     if (result?.id) {
