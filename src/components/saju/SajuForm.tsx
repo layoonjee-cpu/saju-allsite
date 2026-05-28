@@ -6,6 +6,23 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formatKRW } from "@/lib/utils";
 
+// 12 시진 + 모름
+const SIJU_OPTIONS = [
+  { label: "모름 / 선택 안함", value: "unknown" },
+  { label: "자시 (子時)  23:30 ~ 01:29", value: "00:00" },
+  { label: "축시 (丑時)  01:30 ~ 03:29", value: "02:00" },
+  { label: "인시 (寅時)  03:30 ~ 05:29", value: "04:00" },
+  { label: "묘시 (卯時)  05:30 ~ 07:29", value: "06:00" },
+  { label: "진시 (辰時)  07:30 ~ 09:29", value: "08:00" },
+  { label: "사시 (巳時)  09:30 ~ 11:29", value: "10:00" },
+  { label: "오시 (午時)  11:30 ~ 13:29", value: "12:00" },
+  { label: "미시 (未時)  13:30 ~ 15:29", value: "14:00" },
+  { label: "신시 (申時)  15:30 ~ 17:29", value: "16:00" },
+  { label: "유시 (酉時)  17:30 ~ 19:29", value: "18:00" },
+  { label: "술시 (戌時)  19:30 ~ 21:29", value: "20:00" },
+  { label: "해시 (亥時)  21:30 ~ 23:29", value: "22:00" },
+];
+
 type ProductOption = { id: string; slug: string; name: string; price: number };
 
 type Props = {
@@ -24,16 +41,15 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthDay, setBirthDay] = useState("");
-  const [birthTime, setBirthTime] = useState("");
-  const [timeUnknown, setTimeUnknown] = useState(false);
-  const [gender, setGender] = useState<"male" | "female">("male");
+  const [selectedSiju, setSelectedSiju] = useState("unknown"); // "unknown" or "HH:MM"
+  const [gender, setGender] = useState<"male" | "female">("female");
   const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // dream-reading / love-saju 는 전용 폼 페이지에서 처리
-  const sajuProducts = (products ?? []).filter(
-    (p) => p.slug !== "dream-reading" && p.slug !== "love-saju"
-  );
+  // 현재 상품 이름 (상품 선택 목록이 있으면 찾아서 표시)
+  const currentProduct = products?.find((p) => p.slug === productSlug);
+  const currentProductName = currentProduct?.name ?? productSlug;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +72,15 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
       toast.error("올바른 일을 입력해 주세요 (1~31)");
       return;
     }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("올바른 이메일 형식을 입력해 주세요");
+      return;
+    }
+
     const birthDate = `${String(y)}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const timeUnknown = selectedSiju === "unknown";
+    const birthTime = timeUnknown ? null : selectedSiju;
+
     setSubmitting(true);
     try {
       const createRes = await fetch("/api/orders/create", {
@@ -66,11 +90,12 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
           productId,
           name,
           birthDate,
-          birthTime: timeUnknown ? null : birthTime || null,
+          birthTime,
           timeUnknown,
           gender,
           calendar,
           concerns: [],
+          customerEmail: email || null,
         }),
       });
       const createJson = await createRes.json();
@@ -106,182 +131,187 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
-      {/* ── 상품 선택 ── */}
-      {sajuProducts.length > 0 && (
-        <section className="space-y-3">
-          <p className="text-[11px] font-semibold tracking-widest text-[#888] uppercase">
-            분석 상품 선택
-          </p>
-          <div className="flex flex-col gap-2">
-            {sajuProducts.map((p) => {
-              const selected = p.slug === productSlug;
-              return (
-                <button
-                  key={p.slug}
-                  type="button"
-                  onClick={() => {
-                    if (!selected) router.push(`/products/${p.slug}`);
-                  }}
-                  className={`flex items-center justify-between px-4 py-3.5 rounded-xl border text-sm font-medium transition-all text-left ${
-                    selected
-                      ? "border-[#2D5C5C] bg-[#2D5C5C]/5 text-[#2D5C5C] ring-1 ring-[#2D5C5C]/20"
-                      : "border-[#e0dbd0] text-[#4a4a6a] hover:border-[#2D5C5C]/50 bg-white"
-                  }`}
-                >
-                  <span>{p.name}</span>
-                  <span
-                    className={`text-xs font-mono tabular-nums ${
-                      selected ? "text-[#2D5C5C] font-semibold" : "text-[#aaa]"
-                    }`}
-                  >
-                    {p.price === 0 ? "무료" : formatKRW(p.price)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* ── 신청 상품 (읽기 전용) ── */}
+      <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-[#2D5C5C]/8 border border-[#2D5C5C]/25">
+        <div>
+          <p className="text-[11px] text-[#2D5C5C] font-semibold tracking-wider uppercase mb-0.5">신청 상품</p>
+          <p className="text-sm font-semibold text-[#1a1730]">{currentProductName}</p>
+        </div>
+        <span className="text-sm font-mono font-bold text-[#2D5C5C]">
+          {productPrice === 0 ? "무료" : formatKRW(productPrice)}
+        </span>
+      </div>
+
+      {/* ── 성별 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">성별 <span className="text-red-500">*</span></p>
+        <div className="flex gap-3">
+          {(["male", "female"] as const).map((g) => (
+            <label key={g} className="flex items-center gap-2 cursor-pointer select-none">
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  gender === g ? "border-[#E91E8C]" : "border-[#ccc]"
+                }`}
+                onClick={() => setGender(g)}
+              >
+                {gender === g && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E91E8C] block" />
+                )}
+              </span>
+              <span
+                className={`text-sm font-medium ${gender === g ? "text-[#1a1730]" : "text-[#888]"}`}
+                onClick={() => setGender(g)}
+              >
+                {g === "male" ? "남성" : "여성"}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
 
       {/* ── 이름 ── */}
-      <section className="space-y-2">
-        <label
-          htmlFor="saju-name"
-          className="text-[11px] font-semibold tracking-widest text-[#888] uppercase"
-        >
-          이름 <span className="normal-case font-normal">(선택)</span>
+      <div className="space-y-2">
+        <label htmlFor="saju-name" className="text-sm font-bold text-[#1a1730] block">
+          이름 <span className="text-red-500">*</span>
         </label>
         <input
           id="saju-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="홍길동"
-          className="w-full h-12 px-4 rounded-xl border border-[#e0dbd0] bg-white text-[#1a1730] text-sm placeholder:text-[#ccc] focus:outline-none focus:border-[#2D5C5C] focus:ring-1 focus:ring-[#2D5C5C]/20 transition-colors"
+          placeholder="이름을 입력해 주세요"
+          className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
         />
-      </section>
-
-      {/* ── 생년월일 ── */}
-      <section className="space-y-3">
-        <p className="text-[11px] font-semibold tracking-widest text-[#888] uppercase">
-          생년월일
-        </p>
-        <div className="flex gap-2 items-center">
-          <div className="flex-1 flex flex-col gap-0.5">
-            <input
-              type="number"
-              placeholder="년도"
-              min={1900}
-              max={new Date().getFullYear()}
-              value={birthYear}
-              onChange={(e) => setBirthYear(e.target.value)}
-              className="w-full h-12 px-3 rounded-xl border border-[#e0dbd0] bg-white text-[#1a1730] text-sm text-center placeholder:text-[#ccc] focus:outline-none focus:border-[#2D5C5C] focus:ring-1 focus:ring-[#2D5C5C]/20 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <span className="text-[10px] text-center text-[#bbb]">년</span>
-          </div>
-          <div className="flex flex-col gap-0.5 w-16">
-            <input
-              type="number"
-              placeholder="월"
-              min={1}
-              max={12}
-              value={birthMonth}
-              onChange={(e) => setBirthMonth(e.target.value)}
-              className="w-full h-12 px-2 rounded-xl border border-[#e0dbd0] bg-white text-[#1a1730] text-sm text-center placeholder:text-[#ccc] focus:outline-none focus:border-[#2D5C5C] focus:ring-1 focus:ring-[#2D5C5C]/20 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <span className="text-[10px] text-center text-[#bbb]">월</span>
-          </div>
-          <div className="flex flex-col gap-0.5 w-16">
-            <input
-              type="number"
-              placeholder="일"
-              min={1}
-              max={31}
-              value={birthDay}
-              onChange={(e) => setBirthDay(e.target.value)}
-              className="w-full h-12 px-2 rounded-xl border border-[#e0dbd0] bg-white text-[#1a1730] text-sm text-center placeholder:text-[#ccc] focus:outline-none focus:border-[#2D5C5C] focus:ring-1 focus:ring-[#2D5C5C]/20 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <span className="text-[10px] text-center text-[#bbb]">일</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 출생 시각 ── */}
-      <section className="space-y-3">
-        <p className="text-[11px] font-semibold tracking-widest text-[#888] uppercase">
-          출생 시각
-        </p>
-        <input
-          type="time"
-          value={birthTime}
-          onChange={(e) => setBirthTime(e.target.value)}
-          disabled={timeUnknown}
-          className="w-full h-12 px-4 rounded-xl border border-[#e0dbd0] bg-white text-[#1a1730] text-sm focus:outline-none focus:border-[#2D5C5C] focus:ring-1 focus:ring-[#2D5C5C]/20 transition-colors disabled:opacity-40 disabled:bg-[#f8f5ef]"
-        />
-        <label className="flex items-center gap-2.5 text-sm text-[#888] cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={timeUnknown}
-            onChange={(e) => setTimeUnknown(e.target.checked)}
-            className="w-4 h-4 rounded accent-[#2D5C5C] cursor-pointer"
-          />
-          출생 시각을 모릅니다
-        </label>
-      </section>
-
-      {/* ── 성별 + 달력 ── */}
-      <div className="grid grid-cols-2 gap-4">
-        <section className="space-y-3">
-          <p className="text-[11px] font-semibold tracking-widest text-[#888] uppercase">
-            성별
-          </p>
-          <div className="flex gap-2">
-            {(["male", "female"] as const).map((g) => (
-              <button
-                type="button"
-                key={g}
-                onClick={() => setGender(g)}
-                className={`flex-1 h-12 rounded-xl border text-sm font-medium transition-all ${
-                  gender === g
-                    ? "border-[#2D5C5C] bg-[#2D5C5C] text-white shadow-sm"
-                    : "border-[#e0dbd0] text-[#4a4a6a] bg-white hover:border-[#2D5C5C]/50"
-                }`}
-              >
-                {g === "male" ? "남성" : "여성"}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-3">
-          <p className="text-[11px] font-semibold tracking-widest text-[#888] uppercase">
-            달력
-          </p>
-          <div className="flex gap-2">
-            {(["solar", "lunar"] as const).map((c) => (
-              <button
-                type="button"
-                key={c}
-                onClick={() => setCalendar(c)}
-                className={`flex-1 h-12 rounded-xl border text-sm font-medium transition-all ${
-                  calendar === c
-                    ? "border-[#2D5C5C] bg-[#2D5C5C] text-white shadow-sm"
-                    : "border-[#e0dbd0] text-[#4a4a6a] bg-white hover:border-[#2D5C5C]/50"
-                }`}
-              >
-                {c === "solar" ? "양력" : "음력"}
-              </button>
-            ))}
-          </div>
-        </section>
       </div>
 
-      {/* ── 제출 ── */}
+      {/* ── 생년월일 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">
+          생년월일 <span className="text-red-500">*</span>
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="relative">
+            <select
+              value={birthYear}
+              onChange={(e) => setBirthYear(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">년도</option>
+              {Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => {
+                const y = new Date().getFullYear() - i;
+                return (
+                  <option key={y} value={String(y)}>
+                    {y}년
+                  </option>
+                );
+              })}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+          <div className="relative">
+            <select
+              value={birthMonth}
+              onChange={(e) => setBirthMonth(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">월</option>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={String(m)}>
+                  {m}월
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+          <div className="relative">
+            <select
+              value={birthDay}
+              onChange={(e) => setBirthDay(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">일</option>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={String(d)}>
+                  {d}일
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 달력 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">달력 <span className="text-red-500">*</span></p>
+        <div className="flex gap-4">
+          {(["solar", "lunar"] as const).map((c) => (
+            <label key={c} className="flex items-center gap-2 cursor-pointer select-none">
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  calendar === c ? "border-[#E91E8C]" : "border-[#ccc]"
+                }`}
+                onClick={() => setCalendar(c)}
+              >
+                {calendar === c && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E91E8C] block" />
+                )}
+              </span>
+              <span
+                className={`text-sm font-medium ${calendar === c ? "text-[#1a1730]" : "text-[#888]"}`}
+                onClick={() => setCalendar(c)}
+              >
+                {c === "solar" ? "양력" : "음력"}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 태어난 시간 (시주) ── */}
+      <div className="space-y-2">
+        <label htmlFor="saju-siju" className="text-sm font-bold text-[#1a1730] block">
+          태어난 시간 (시주) <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <select
+            id="saju-siju"
+            value={selectedSiju}
+            onChange={(e) => setSelectedSiju(e.target.value)}
+            className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+          >
+            {SIJU_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+        </div>
+      </div>
+
+      {/* ── 이메일 (선택) ── */}
+      <div className="space-y-2">
+        <label htmlFor="saju-email" className="text-sm font-bold text-[#1a1730] block">
+          이메일{" "}
+          <span className="text-xs font-normal text-[#888]">(선택 — 분석지 발송용)</span>
+        </label>
+        <input
+          id="saju-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="example@email.com"
+          className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+        />
+      </div>
+
+      {/* ── 제출 버튼 ── */}
       {isLoggedIn ? (
         <button
           type="submit"
           disabled={submitting}
-          className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-semibold hover:bg-[#245050] active:scale-[0.99] transition-all disabled:opacity-60 mt-2"
+          className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-bold hover:bg-[#245050] active:scale-[0.99] transition-all disabled:opacity-60 mt-2 tracking-wide"
         >
           {submitting
             ? isFree
@@ -295,7 +325,7 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
         <div className="space-y-2 mt-2">
           <Link
             href={`/login?redirect=${encodeURIComponent(`/products/${productSlug}`)}`}
-            className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-semibold hover:bg-[#245050] transition-colors flex items-center justify-center"
+            className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-bold hover:bg-[#245050] transition-colors flex items-center justify-center tracking-wide"
           >
             {isFree ? "로그인하고 무료로 보기 →" : "로그인하고 결제하기 →"}
           </Link>

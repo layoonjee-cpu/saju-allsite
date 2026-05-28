@@ -14,6 +14,7 @@ const bodySchema = z.object({
   calendar: z.enum(["solar", "lunar"]).optional(),
   concerns: z.array(z.string().max(200)).max(20).optional(),
   dreamContent: z.string().max(2000).optional(),
+  customerEmail: z.string().email().max(200).optional().nullable(),
   // 연인/궁합(love-saju) 전용 파트너 필드
   partnerName: z.string().max(50).optional(),
   partnerBirthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
     calendar: body.calendar ?? "solar",
     concerns: body.concerns ?? [],
     dream_content: body.dreamContent ?? null,
+    customer_email: body.customerEmail ?? null,
     // 연인/궁합 파트너 정보
     partner_name: body.partnerName ?? null,
     partner_birth_date: body.partnerBirthDate ?? null,
