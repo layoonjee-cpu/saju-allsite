@@ -13,14 +13,14 @@ const _cy = _now.getFullYear();
 const _cm = _now.getMonth() + 1;
 const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => {
   const d = new Date(_cy, _cm - 1 + i, 1);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 운세 심층 분析`;
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 운세 심층 분석`;
 });
 
 const SECTION_LABELS = [
   "프롤로그 · 사주팔자 원국 구조",
-  "일간의 본질 · 신강신약 분析",
+  "일간의 본질 · 신강신약 분석",
   "음양오행 · 십성(十星) 분포",
-  "격국(格局) · 용신(用神) 분析",
+  "격국(格局) · 용신(用神) 분석",
   "어린 시절 · 성장 환경 · 타고난 성품",
   "직업 적성 · 재능과 추천 직업군",
   "직장운 · 사업운 · 성공 전략",
@@ -83,7 +83,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
 
         // 예상치 못한 failed
         if (data.status === "failed") {
-          setErrorMsg(data.error ?? "분析 생성 실패");
+          setErrorMsg(data.error ?? "분석 생성 실패");
           setState("failed");
           return;
         }
@@ -126,7 +126,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
       <div className="my-10 rounded-2xl border border-red-200 bg-red-50/60 p-8 text-center backdrop-blur-sm">
         <p className="text-3xl mb-3">⚠️</p>
         <h2 className="text-lg font-semibold text-red-800 mb-2">
-          분析 생성 중 문제가 생겼습니다
+          분석 생성 중 문제가 생겼습니다
         </h2>
         <p className="text-sm text-muted-foreground mb-6">
           섹션 {currentSection}/{TOTAL_SECTIONS} 처리 중 오류가 발생했습니다.
@@ -162,13 +162,13 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
       </div>
 
       <p className="mb-1 text-xs font-medium tracking-widest text-[#2b6e6e] uppercase">
-        深視線 · 깊은시선 프리미엄 사주분析
+        深視線 · 깊은시선 프리미엄 사주분석
       </p>
       <h2 className="mb-1 text-xl font-semibold text-[#1a1730]">
         시선이 당신의 사주를 깊이 들여다보고 있습니다
       </h2>
       <p className="text-sm text-muted-foreground mb-5">
-        27개 섹션으로 구성된 심층 분析서를 순서대로 작성합니다.
+        27개 섹션으로 구성된 심층 분석서를 순서대로 작성합니다.
         <br />
         이 페이지를 열어두시면 완료 시 자동으로 표시됩니다.
         {elapsedText}

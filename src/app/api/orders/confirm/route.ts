@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
   // ── VIP: 사주 API 이전에 결과 행 미리 확보 ──────────────────────────
   // 이유: fetchSajuAnalysis(최대 ~125초) + LLM(~160초) 합산이 Vercel maxDuration에
   //       근접. 타임아웃 시 함수가 죽기 전에 generating 행이 반드시 존재해야
-  //       "분析지 없음" 방지 가능.
+  //       "분석지 없음" 방지 가능.
   let vipEarlyResultId: string | null = null;
   if (product.slug === "premium-saju") {
     const { data: earlyRow, error: earlyErr } = await service

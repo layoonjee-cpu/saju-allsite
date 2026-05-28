@@ -137,7 +137,7 @@ export default async function ResultPage({
         </article>
       )}
 
-      {/* 분析 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
+      {/* 분석 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
       {!isFree && !showBanner && (
         <ResultShareButtons
           resultId={resultId}
