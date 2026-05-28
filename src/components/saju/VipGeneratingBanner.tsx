@@ -39,16 +39,19 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
   const router = useRouter();
   const [state, setState] = useState<GenState>("running");
   const [currentSection, setCurrentSection] = useState(0); // 0 = 시작 전
+  const [failedSection, setFailedSection] = useState(1);   // 재시도 시작 섹션
   const [elapsed, setElapsed] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const run = useCallback(async () => {
+  // startFrom: 실패한 섹션부터 재개 (기본 1 = 처음부터)
+  const run = useCallback(async (startFrom = 1) => {
     setState("running");
-    setCurrentSection(0);
+    // startFrom > 1 이면 이미 완료된 섹션 수를 표시 유지
+    setCurrentSection(startFrom > 1 ? startFrom : 0);
     setElapsed(0);
     setErrorMsg("");
 
-    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
+    for (let i = startFrom; i <= TOTAL_SECTIONS; i++) {
       setCurrentSection(i);
       try {
         const res = await fetch(
@@ -59,6 +62,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         if (!res.ok) {
           const data = await res.json().catch(() => ({})) as { error?: string };
           setErrorMsg(data.error ?? `서버 오류 (섹션 ${i})`);
+          setFailedSection(i); // ← 실패 지점 기억
           setState("failed");
           return;
         }
@@ -84,11 +88,13 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         // 예상치 못한 failed
         if (data.status === "failed") {
           setErrorMsg(data.error ?? "분석 생성 실패");
+          setFailedSection(i); // ← 실패 지점 기억
           setState("failed");
           return;
         }
       } catch (e) {
         setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
+        setFailedSection(i => i); // 현재 섹션 유지
         setState("failed");
         return;
       }
@@ -100,7 +106,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
 
   // 마운트 시 즉시 시작
   useEffect(() => {
-    run();
+    run(1);
   }, [run]);
 
   // 경과 시간 (1초 단위, 실행 중일 때만)
@@ -131,14 +137,26 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         <p className="text-sm text-muted-foreground mb-6">
           섹션 {currentSection}/{TOTAL_SECTIONS} 처리 중 오류가 발생했습니다.
           <br />
-          아래 버튼을 눌러 처음부터 다시 시도해 주세요.
+          {failedSection > 1
+            ? `섹션 ${failedSection}부터 이어서 다시 시도합니다.`
+            : "아래 버튼을 눌러 다시 시도해 주세요."}
         </p>
-        <button
-          onClick={run}
-          className="px-6 py-2.5 rounded-full bg-[#2D5C5C] text-white text-sm font-medium hover:bg-[#24494A] transition-colors"
-        >
-          ⟳ 처음부터 다시 시도
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => run(failedSection)}
+            className="px-6 py-2.5 rounded-full bg-[#2D5C5C] text-white text-sm font-medium hover:bg-[#24494A] transition-colors"
+          >
+            ⟳ {failedSection > 1 ? `섹션 ${failedSection}부터 이어서 시도` : "다시 시도"}
+          </button>
+          {failedSection > 1 && (
+            <button
+              onClick={() => run(1)}
+              className="px-6 py-2.5 rounded-full border border-[#2D5C5C] text-[#2D5C5C] text-sm font-medium hover:bg-[#2D5C5C]/10 transition-colors"
+            >
+              ↺ 처음부터 다시 시도
+            </button>
+          )}
+        </div>
         {errorMsg && (
           <p className="mt-3 text-xs font-mono text-red-700/60 break-all">
             {errorMsg}
