@@ -217,30 +217,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── 깊은 시선 VIP: 비동기 PDF 생성 (인라인 LLM 호출 건너뜀) ────
-    if (isPremiumVip) {
-      const { data: result, error: resultErr } = await service
-        .from("saju_results")
-        .insert({
-          order_id: order.id,
-          myeongsik: myeongsik as never,
-          interpretation_md: "",          // Python 제너레이터가 PDF로 대체
-          llm_provider: "openai",
-          llm_model: "gpt-4o",
-          generation_status: "generating", // GitHub Actions cron이 처리
-          pdf_url: null,
-          raw_saju_json: rawSajuJson as never, // 16종 원본 응답
-        })
-        .select("id")
-        .single();
-
-      if (resultErr || !result) {
-        return NextResponse.json({ error: "결과 저장 실패", detail: resultErr?.message }, { status: 500 });
-      }
-      return NextResponse.json({ resultId: result.id, generating: true });
-    }
-
-    // ── 일반 상품: 기존 인라인 LLM 호출 ────────────────────────
+    // ── 모든 상품: 인라인 LLM 호출 ──────────────────────────────
     const { system, user } = buildSajuPrompt({
       productSlug: product.slug,
       productName: product.name,
