@@ -104,16 +104,12 @@ export default async function ProductDetailPage({
             isLoggedIn={!!user}
           />
         ) : product.slug === "love-saju" ? (
-          <>
-            <h2 className="text-sm font-semibold mb-4 text-ink">두 사람의 사주 정보 입력</h2>
-            <p className="text-xs text-body mb-4">정확한 생년월일일수록 더 정밀한 결과가 나옵니다.</p>
-            <LoveForm
-              productId={product.id}
-              productSlug={product.slug}
-              productPrice={product.price}
-              isLoggedIn={!!user}
-            />
-          </>
+          <LoveForm
+            productId={product.id}
+            productSlug={product.slug}
+            productPrice={product.price}
+            isLoggedIn={!!user}
+          />
         ) : (
           <SajuForm
             productId={product.id}
