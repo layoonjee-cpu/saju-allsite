@@ -6,6 +6,7 @@ import { formatKRW } from "@/lib/utils";
 import { SendEmailButton } from "@/components/admin/SendEmailButton";
 import { SajuDataButton } from "@/components/admin/SajuDataButton";
 import { ExtraAnalysisButton } from "@/components/admin/ExtraAnalysisButton";
+import { RegenerateButton } from "@/components/admin/RegenerateButton";
 
 export const metadata = { title: "주문 관리 | 시선 어드민" };
 export const dynamic = "force-dynamic";
@@ -284,6 +285,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                           name={inp?.name ?? null}
                           birthDate={inp?.birth_date ?? null}
                         />
+                        {/* 분석지 없거나 generating 상태이면 재생성 버튼 표시 */}
+                        {o.status === "paid" && (!result || result.generation_status !== "complete") && (
+                          <RegenerateButton
+                            orderId={o.id}
+                            hasResult={!!result}
+                          />
+                        )}
                         {result && result.generation_status === "complete" && (
                           <>
                             <SendEmailButton

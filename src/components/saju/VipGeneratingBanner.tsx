@@ -12,16 +12,17 @@ export function VipGeneratingBanner({ resultId }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [checking, setChecking] = useState(false);
 
-  // 30초마다 상태 확인
+  // 30초마다 generation_status 확인
   useEffect(() => {
     const interval = setInterval(async () => {
       if (checking) return;
       setChecking(true);
       setElapsed((e) => e + 30);
       try {
-        const res = await fetch(`/api/pdf/download/${resultId}`);
+        const res = await fetch(`/api/results/${resultId}/status`);
         const data = await res.json();
-        if (data.status === "ready") {
+        // complete 또는 failed → 페이지 새로고침 (배너 사라지고 분석지 또는 오류 표시)
+        if (data.status === "complete" || data.status === "failed") {
           router.refresh();
         }
       } catch {
@@ -54,9 +55,9 @@ export function VipGeneratingBanner({ resultId }: Props) {
         보고서를 정성스럽게 작성 중입니다
       </h2>
       <p className="text-sm text-muted-foreground">
-        깊은 시선 VIP 보고서는 45개 챕터, 11만 자 이상으로 구성됩니다.
+        깊은 시선 VIP 보고서는 17개 섹션, 약 10,000자 이상으로 구성됩니다.
         <br />
-        약 <strong>5~10분</strong> 후 가입하신 이메일로 PDF 링크가 발송됩니다.{elapsedText}
+        약 <strong>2~3분</strong> 후 이 페이지에 분석지가 자동으로 표시됩니다.{elapsedText}
       </p>
 
       <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground">
@@ -66,16 +67,12 @@ export function VipGeneratingBanner({ resultId }: Props) {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" style={{ animationDelay: "0.3s" }} />
-          GPT-4o가 PART 01~10 챕터별 집필 중
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
-          PDF 생성 및 이메일 발송 (대기 중)
+          GPT-4o가 17개 섹션 심층 분석 중
         </div>
       </div>
 
       <p className="mt-6 text-xs text-muted-foreground/70">
-        이 페이지를 닫아도 됩니다. 완료 시 이메일로 알려드립니다.
+        이 페이지를 열어두시면 완료 시 자동으로 분석지가 표시됩니다.
       </p>
     </div>
   );

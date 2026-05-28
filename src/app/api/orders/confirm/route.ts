@@ -219,8 +219,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── 모든 상품: 인라인 LLM 호출 ──────────────────────────────
-    const { system, user } = buildSajuPrompt({
+    // buildSajuPrompt 공통 인자
+    const promptArgs = {
       productSlug: product.slug,
       productName: product.name,
       myeongsik,
@@ -231,7 +231,6 @@ export async function POST(request: NextRequest) {
       gender: input.gender,
       concerns: input.concerns ?? [],
       dreamContent: input.dream_content ?? undefined,
-      // 연인/궁합 파트너 정보
       name: input.name ?? undefined,
       partnerMyeongsik,
       partnerManseryeokText,
@@ -240,7 +239,52 @@ export async function POST(request: NextRequest) {
       partnerBirthTime: input.partner_birth_time ?? null,
       partnerTimeUnknown: input.partner_time_unknown ?? false,
       partnerGender: (input.partner_gender ?? undefined) as "male" | "female" | undefined,
-    });
+    };
+
+    // ── VIP: 2단계 저장 (결제 후 항상 resultId 반환 보장) ────────
+    if (isPremiumVip) {
+      // 1단계: generating 상태로 즉시 INSERT → resultId 확보 (LLM 실패해도 분석지 없음 방지)
+      const { data: earlyResult, error: earlyErr } = await service
+        .from("saju_results")
+        .insert({
+          order_id: order.id,
+          myeongsik: myeongsik as never,
+          interpretation_md: "",
+          llm_provider: process.env.LLM_PROVIDER ?? "openai",
+          llm_model: process.env.LLM_MODEL ?? "gpt-4o",
+          raw_saju_json: rawSajuJson as never,
+          generation_status: "generating",
+        })
+        .select("id")
+        .single();
+
+      if (earlyErr || !earlyResult) {
+        return NextResponse.json({ error: "결과 초기화 실패", detail: earlyErr?.message }, { status: 500 });
+      }
+
+      // 2단계: LLM 생성 시도 (타임아웃·오류 나도 generating 행은 남아 있음 → 어드민 재생성 가능)
+      try {
+        const { system, user } = buildSajuPrompt(promptArgs);
+        const llm = await generateInterpretation({ system, user });
+        await service
+          .from("saju_results")
+          .update({
+            interpretation_md: llm.text,
+            llm_provider: llm.provider,
+            llm_model: llm.model,
+            generation_status: "complete",
+          })
+          .eq("id", earlyResult.id);
+      } catch (llmErr) {
+        console.error("[VIP] LLM 생성 실패, generating 상태 유지 (어드민에서 재생성 가능):", llmErr);
+        // throw 하지 않음 — resultId 반환 계속
+      }
+
+      return NextResponse.json({ resultId: earlyResult.id });
+    }
+
+    // ── 비-VIP 상품: 인라인 LLM 호출 ────────────────────────────
+    const { system, user } = buildSajuPrompt(promptArgs);
 
     const llm = await generateInterpretation({ system, user });
 
