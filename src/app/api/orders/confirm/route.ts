@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+
+export const maxDuration = 300; // 5분 — 깊은시선 VIP 10,000자 생성에 충분한 시간
 import { createServiceClient } from "@/lib/supabase/server";
 import { confirmTossPayment } from "@/lib/toss/confirm";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";

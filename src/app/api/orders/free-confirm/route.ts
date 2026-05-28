@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+
+export const maxDuration = 60; // 60초 — 무료 분석 생성용
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";
