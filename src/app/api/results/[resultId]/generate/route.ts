@@ -67,7 +67,7 @@ export async function POST(
   // 1. 결과 조회
   const { data: result } = await svc
     .from("saju_results")
-    .select("id, generation_status, myeongsik, raw_saju_json, order_id")
+    .select("id, generation_status, myeongsik, raw_saju_json, order_id, interpretation_md")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -75,9 +75,21 @@ export async function POST(
     return NextResponse.json({ status: "failed", error: "not found" }, { status: 404 });
   }
 
-  // 이미 완료 → 즉시 반환
+  // 이미 완료 → 콘텐츠 품질 확인 후 정상이면 즉시 반환
   if (result.generation_status === "complete") {
-    return NextResponse.json({ status: "complete" });
+    const md = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
+    const lower = md.toLowerCase();
+    const isGoodContent =
+      md.length >= 200 &&
+      !lower.includes("i'm sorry") &&
+      !lower.includes("i cannot") &&
+      !lower.includes("i can't assist") &&
+      !lower.includes("죄송합니다");
+    if (isGoodContent) {
+      return NextResponse.json({ status: "complete" });
+    }
+    // 콘텐츠 불량 → 재생성 진행 (fall through)
+    console.log("[generate] 불량 콘텐츠 감지 — 재생성 진행");
   }
 
   // 2. 주문·입력·상품 조회
@@ -167,6 +179,22 @@ export async function POST(
     });
 
     const llm = await generateInterpretation({ system, user });
+
+    // 출력 검증 — 거부/빈 응답은 저장하지 않고 failed 반환
+    const lowerOut = llm.text.toLowerCase();
+    if (
+      llm.text.trim().length < 200 ||
+      lowerOut.includes("i'm sorry") ||
+      lowerOut.includes("i cannot") ||
+      lowerOut.includes("i can't assist") ||
+      lowerOut.includes("죄송합니다만 이 요청은")
+    ) {
+      console.error("[generate] LLM 거부 응답:", llm.text.slice(0, 120));
+      return NextResponse.json(
+        { status: "failed", error: `LLM 거부 또는 빈 응답: ${llm.text.slice(0, 100)}` },
+        { status: 500 }
+      );
+    }
 
     await svc
       .from("saju_results")

@@ -64,8 +64,25 @@ export default async function ResultPage({
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
 
+  // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트)
+  const isBadContent = (() => {
+    if (!isPremiumVip || result.generation_status !== "complete") return false;
+    const md = result.interpretation_md ?? "";
+    const lower = md.toLowerCase();
+    return (
+      md.length < 200 ||
+      lower.includes("i'm sorry") ||
+      lower.includes("i cannot") ||
+      lower.includes("i can't assist") ||
+      lower.includes("죄송합니다만")
+    );
+  })();
+
+  // 배너 표시 조건: 생성중이거나 불량 콘텐츠 감지됨
+  const showBanner = isPremiumVip && (isGenerating || isBadContent);
+
   const myeongsik = result.myeongsik as unknown as Myeongsik;
-  const showChart = !isDreamReading && !isFree && !(isPremiumVip && isGenerating);
+  const showChart = !isDreamReading && !isFree && !showBanner;
 
   return (
     <div className="container py-12 max-w-2xl">
@@ -75,8 +92,8 @@ export default async function ResultPage({
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
-      {/* VIP 생성 중 배너 */}
-      {isPremiumVip && isGenerating && (
+      {/* VIP 생성 중 배너 (생성중 OR 불량 콘텐츠 감지) */}
+      {showBanner && (
         <VipGeneratingBanner resultId={resultId} />
       )}
 
@@ -85,8 +102,8 @@ export default async function ResultPage({
         <VipDownloadButton resultId={resultId} />
       )}
 
-      {/* 사주 명식표 (꿈해몽·VIP 생성중 제외) */}
-      {!isDreamReading && !(isPremiumVip && isGenerating) && (
+      {/* 사주 명식표 (꿈해몽·VIP 생성중·불량 콘텐츠 제외) */}
+      {!isDreamReading && !showBanner && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
           <MyeongsikTable myeongsik={myeongsik} />
@@ -100,20 +117,20 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* VIP 전용 시각화 (신강신약 게이지 + 격국 배지) */}
-      {isPremiumVip && !isGenerating && result.raw_saju_json && (
+      {/* VIP 전용 시각화 (신강신약 게이지 + 격국 배지) — 불량 콘텐츠일 때는 숨김 */}
+      {isPremiumVip && !showBanner && result.raw_saju_json && (
         <VipVisuals rawJson={result.raw_saju_json} />
       )}
 
-      {/* 마크다운 결과 (VIP 생성중이면 숨김) */}
-      {!isGenerating && result.interpretation_md && (
+      {/* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */}
+      {!showBanner && !isBadContent && result.interpretation_md && (
         <article>
           <ResultBody markdown={result.interpretation_md} />
         </article>
       )}
 
-      {/* 분석 결과 저장 버튼 (유료 상품만, VIP 생성중 제외) */}
-      {!isFree && !isGenerating && (
+      {/* 분析 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
+      {!isFree && !showBanner && (
         <ResultShareButtons
           resultId={resultId}
           productName={product?.name ?? "사주 분석"}
