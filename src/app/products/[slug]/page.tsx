@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { SajuLabForm } from "@/components/saju/SajuLabForm";
+import { SajuForm } from "@/components/saju/SajuForm";
 import { DreamForm } from "@/components/saju/DreamForm";
 import { LoveForm } from "@/components/saju/LoveForm";
 import { formatKRW, formatDate } from "@/lib/utils";
@@ -18,6 +18,7 @@ const productImages: Record<string, string> = {
 };
 
 type Product = { id: string; slug: string; name: string; description: string; price: number };
+type ProductOption = { id: string; slug: string; name: string; price: number };
 type Review = { id: string; rating: number; content: string; created_at: string };
 
 export default async function ProductDetailPage({
@@ -28,6 +29,7 @@ export default async function ProductDetailPage({
   const { slug } = await params;
 
   let product: Product | null;
+  let allProducts: ProductOption[] = [];
   let reviews: Review[] | null = null;
   let user: Awaited<ReturnType<typeof getCurrentUser>> = null;
 
@@ -40,6 +42,14 @@ export default async function ProductDetailPage({
       .eq("is_active", true)
       .maybeSingle();
     product = data;
+
+    // 전체 활성 상품 목록 (폼 상품 선택 UI용)
+    const { data: allData } = await supabase
+      .from("products")
+      .select("id, slug, name, price")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+    allProducts = allData ?? [];
 
     if (product) {
       const { data: r } = await supabase
@@ -55,6 +65,10 @@ export default async function ProductDetailPage({
   } else {
     const seed = productsSeed.find((p) => p.slug === slug && p.is_active);
     product = seed ? { id: seed.slug, ...seed } : null;
+    allProducts = productsSeed
+      .filter((p) => p.is_active)
+      .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+      .map((p) => ({ id: p.slug, slug: p.slug, name: p.name, price: p.price }));
   }
 
   if (!product) notFound();
@@ -101,11 +115,12 @@ export default async function ProductDetailPage({
             />
           </>
         ) : (
-          <SajuLabForm
+          <SajuForm
             productId={product.id}
             productSlug={product.slug}
             productPrice={product.price}
             isLoggedIn={!!user}
+            products={allProducts}
           />
         )}
       </section>
