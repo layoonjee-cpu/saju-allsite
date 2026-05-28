@@ -73,9 +73,17 @@ export function buildSajuPrompt(input: PromptInput): { system: string; user: str
   const pillar = (p: { cheongan: string; jiji: string } | null) =>
     p ? `${p.cheongan}${p.jiji}` : "(시 미상)";
 
+  // GPT-4o Tier 1 TPM(30,000) 안전망: manseryeokText 를 15,000자로 제한
+  // daeun·seun 컴팩트 포맷터 적용 후 보통 3,000자 이내이므로 일반적으로는 미발동
+  const MAX_MANSERYEOK_CHARS = 15_000;
+  const safeManseryeok =
+    input.manseryeokText && input.manseryeokText.length > MAX_MANSERYEOK_CHARS
+      ? input.manseryeokText.slice(0, MAX_MANSERYEOK_CHARS) + "\n...(이하 데이터 생략)"
+      : input.manseryeokText;
+
   // 풀 분석 텍스트가 있으면 그걸 우선 사용, 없으면 단순 4기둥
-  const sajuSection = input.manseryeokText
-    ? `[사주 풀 명식]\n${input.manseryeokText}`
+  const sajuSection = safeManseryeok
+    ? `[사주 풀 명식]\n${safeManseryeok}`
     : [
         `[사주 4기둥]`,
         `- 년주: ${pillar(m.year)}`,
@@ -89,7 +97,7 @@ export function buildSajuPrompt(input: PromptInput): { system: string; user: str
     input.timeUnknown ? " (시 미상)" : input.birthTime ? ` ${input.birthTime}` : ""
   }`;
   const concernText = input.concerns.length > 0 ? input.concerns.join(", ") : "(없음)";
-  const manseryeokNote = input.manseryeokText
+  const manseryeokNote = safeManseryeok
     ? "\n※ 풀 명식 16종 데이터를 최대한 활용하세요: [천간지지]의 오행·음양, [십성] 분포, [신강신약] 수치, [격국·격국용신]의 성격·파격 여부와 용신·상신·기신, [12운성] 에너지 레벨, [합·충·형·해·파]에서 확인된 모든 관계(위치와 의미 포함), [귀인] 발견된 종류·위치, [12신살] 종류, [비견/겁재] 개수, [홍염살·도화살·화개살] 유무, [월운] 현재~향후 흐름. 데이터에 있는 내용은 분석에 구체적으로 언급하세요."
     : "";
 
@@ -292,6 +300,17 @@ function buildLoveCouplePrompt(input: PromptInput): { system: string; user: stri
   const pillar = (p: { cheongan: string; jiji: string } | null) =>
     p ? `${p.cheongan}${p.jiji}` : "(시 미상)";
 
+  // GPT-4o Tier 1 TPM 안전망: 2인 궁합은 각각 12,000자로 제한
+  const MAX_LOVE_CHARS = 12_000;
+  const safeManseryeokA =
+    input.manseryeokText && input.manseryeokText.length > MAX_LOVE_CHARS
+      ? input.manseryeokText.slice(0, MAX_LOVE_CHARS) + "\n...(이하 생략)"
+      : input.manseryeokText;
+  const safeManseryeokB =
+    input.partnerManseryeokText && input.partnerManseryeokText.length > MAX_LOVE_CHARS
+      ? input.partnerManseryeokText.slice(0, MAX_LOVE_CHARS) + "\n...(이하 생략)"
+      : input.partnerManseryeokText;
+
   const nameA = input.name?.trim() || "나";
   const nameB = input.partnerName?.trim() || "상대방";
   const genderA = input.gender === "male" ? "남성" : "여성";
@@ -303,8 +322,8 @@ function buildLoveCouplePrompt(input: PromptInput): { system: string; user: stri
     input.partnerTimeUnknown ? " (시 미상)" : input.partnerBirthTime ? ` ${input.partnerBirthTime}` : ""
   }`;
 
-  const sajuA = input.manseryeokText
-    ? `[${nameA} — 풀 명식]\n${input.manseryeokText}`
+  const sajuA = safeManseryeokA
+    ? `[${nameA} — 풀 명식]\n${safeManseryeokA}`
     : [
         `[${nameA} — 사주 4기둥]`,
         `- 년주: ${pillar(m.year)}`,
@@ -313,8 +332,8 @@ function buildLoveCouplePrompt(input: PromptInput): { system: string; user: stri
         `- 시주: ${pillar(m.hour)}`,
       ].join("\n");
 
-  const sajuB = input.partnerManseryeokText
-    ? `[${nameB} — 풀 명식]\n${input.partnerManseryeokText}`
+  const sajuB = safeManseryeokB
+    ? `[${nameB} — 풀 명식]\n${safeManseryeokB}`
     : [
         `[${nameB} — 사주 4기둥]`,
         `- 년주: ${pillar(pm.year)}`,
@@ -324,7 +343,7 @@ function buildLoveCouplePrompt(input: PromptInput): { system: string; user: stri
       ].join("\n");
 
   const concernText = (input.concerns ?? []).length > 0 ? input.concerns.join(", ") : "(없음)";
-  const manseryeokNote = (input.manseryeokText || input.partnerManseryeokText)
+  const manseryeokNote = (safeManseryeokA || safeManseryeokB)
     ? "\n※ 두 사람 각자의 풀 명식 16종 데이터를 최대한 활용하세요. [합·충·형·해·파] 데이터로 각자 내부 합충 구조를 파악하고 두 사람 기둥 간 교차 관계도 분석하세요. [귀인] 발견 여부, [격국용신] 성격·파격, [신살] 종류도 각자의 관계 특성과 연결해 서술하세요."
     : "";
 

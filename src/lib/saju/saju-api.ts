@@ -324,6 +324,50 @@ function formatField(key: AnalysisField, value: unknown): string {
       return lines.length > 0 ? lines.join("\n") : stringifyValue(value);
     }
 
+    // ── 대운: 1줄 요약 형식 (stringifyValue 대비 ~98% 토큰 절감) ──
+    case "daeun": {
+      const arr = Array.isArray(value) ? (value as Array<Record<string, unknown>>) : null;
+      if (!arr || arr.length === 0) return stringifyValue(value);
+      return arr
+        .map((d) => {
+          const period =
+            d.period != null
+              ? String(d.period)
+              : d.startAge != null
+              ? `${d.startAge ?? ""}~${d.endAge ?? ""}세`
+              : (d.age_range ? String(d.age_range) : "");
+          const ganji = String(d.ganji_hanja ?? d.ganji ?? `${d.gan ?? ""}${d.ji ?? ""}`);
+          const sp = d.sipseong;
+          const sipseong =
+            sp && typeof sp === "object"
+              ? `십성 천간:${(sp as Record<string, string>).gan ?? "-"} 지지:${(sp as Record<string, string>).ji ?? "-"}`
+              : sp
+              ? String(sp)
+              : "";
+          return `- ${period} ${ganji}${sipseong ? ` (${sipseong})` : ""}`.trim();
+        })
+        .join("\n");
+    }
+
+    // ── 세운: 1줄 요약 형식 ──────────────────────────────────────
+    case "seun": {
+      const arr = Array.isArray(value) ? (value as Array<Record<string, unknown>>) : null;
+      if (!arr || arr.length === 0) return stringifyValue(value);
+      return arr
+        .map((y) => {
+          const ganji = String(y.ganji_hanja ?? y.ganji ?? `${y.gan ?? ""}${y.ji ?? ""}`);
+          const sp = y.sipseong;
+          const sipseong =
+            sp && typeof sp === "object"
+              ? `십성 천간:${(sp as Record<string, string>).gan ?? "-"} 지지:${(sp as Record<string, string>).ji ?? "-"}`
+              : sp
+              ? String(sp)
+              : "";
+          return `- ${y.year ?? ""}년 ${ganji}${sipseong ? ` (${sipseong})` : ""}`.trim();
+        })
+        .join("\n");
+    }
+
     // ── 그 외: 기존 범용 포맷터 ─────────────────────────────────
     default:
       return stringifyValue(value);
