@@ -142,27 +142,56 @@ export async function POST(
       myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
     }
 
-    // 5. LLM 생성
-    const { system, user } = buildSajuPrompt({
-      productSlug: product.slug,
-      productName: product.name,
-      myeongsik,
-      manseryeokText,
-      birthDate: (input as SajuInputRow).birth_date ?? "",
-      birthTime: (input as SajuInputRow).birth_time,
-      timeUnknown: (input as SajuInputRow).time_unknown ?? false,
-      gender: (input as SajuInputRow).gender,
-      concerns: (input as SajuInputRow).concerns ?? [],
-      dreamContent: (input as SajuInputRow).dream_content ?? undefined,
-      name: (input as SajuInputRow).name ?? undefined,
-    });
-
-    const llm = await generateInterpretation({ system, user });
-
-    // 6. DB 저장 (기존 result 있으면 UPDATE, 없으면 INSERT)
+    // 5. DB row 확보 (LLM 이전) — 타임아웃 나도 ok:true 반환 보장
     let resultId: string;
 
     if (existingResult) {
+      await svc
+        .from("saju_results")
+        .update({
+          generation_status: "generating",
+          myeongsik: myeongsik as never,
+          raw_saju_json: rawSajuJson as never,
+        })
+        .eq("id", existingResult.id);
+      resultId = existingResult.id;
+    } else {
+      const { data: newRow, error: insertErr } = await svc
+        .from("saju_results")
+        .insert({
+          order_id: orderId,
+          myeongsik: myeongsik as never,
+          interpretation_md: "",
+          llm_provider: process.env.LLM_PROVIDER ?? "openai",
+          llm_model: process.env.LLM_MODEL ?? "gpt-4o",
+          raw_saju_json: rawSajuJson as never,
+          generation_status: "generating",
+        })
+        .select("id")
+        .single();
+
+      if (insertErr || !newRow) {
+        return NextResponse.json({ ok: false, error: "결과 행 생성 실패", detail: insertErr?.message }, { status: 500 });
+      }
+      resultId = newRow.id;
+    }
+
+    // 6. LLM 생성 시도 (실패해도 generating 상태 유지 → 버튼 재클릭으로 재시도 가능)
+    try {
+      const { system, user } = buildSajuPrompt({
+        productSlug: product.slug,
+        productName: product.name,
+        myeongsik,
+        manseryeokText,
+        birthDate: (input as SajuInputRow).birth_date ?? "",
+        birthTime: (input as SajuInputRow).birth_time,
+        timeUnknown: (input as SajuInputRow).time_unknown ?? false,
+        gender: (input as SajuInputRow).gender,
+        concerns: (input as SajuInputRow).concerns ?? [],
+        dreamContent: (input as SajuInputRow).dream_content ?? undefined,
+        name: (input as SajuInputRow).name ?? undefined,
+      });
+      const llm = await generateInterpretation({ system, user });
       await svc
         .from("saju_results")
         .update({
@@ -170,33 +199,16 @@ export async function POST(
           llm_provider: llm.provider,
           llm_model: llm.model,
           generation_status: "complete",
-          raw_saju_json: rawSajuJson as never,
         })
-        .eq("id", existingResult.id);
-      resultId = existingResult.id;
-    } else {
-      const { data: newResult, error: insertErr } = await svc
-        .from("saju_results")
-        .insert({
-          order_id: orderId,
-          myeongsik: myeongsik as never,
-          interpretation_md: llm.text,
-          llm_provider: llm.provider,
-          llm_model: llm.model,
-          raw_saju_json: rawSajuJson as never,
-          generation_status: "complete",
-        })
-        .select("id")
-        .single();
-
-      if (insertErr || !newResult) {
-        return NextResponse.json({ ok: false, error: "결과 저장 실패", detail: insertErr?.message }, { status: 500 });
-      }
-      resultId = newResult.id;
+        .eq("id", resultId);
+    } catch (llmErr) {
+      console.error("[regenerate] LLM 실패:", llmErr instanceof Error ? llmErr.message : String(llmErr));
+      // generating 상태 유지 — 어드민에서 버튼 다시 클릭 시 재시도
     }
 
     return NextResponse.json({ ok: true, resultId });
   } catch (err) {
+    console.error("[regenerate] 오류:", err);
     return NextResponse.json(
       { ok: false, error: "재생성 실패", detail: err instanceof Error ? err.message : String(err) },
       { status: 500 }

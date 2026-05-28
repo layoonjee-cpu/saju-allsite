@@ -160,6 +160,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "사주 입력 또는 상품 조회 실패" }, { status: 500 });
   }
 
+  // ── VIP: 사주 API 이전에 결과 행 미리 확보 ──────────────────────────
+  // 이유: fetchSajuAnalysis(최대 ~125초) + LLM(~160초) 합산이 Vercel maxDuration에
+  //       근접. 타임아웃 시 함수가 죽기 전에 generating 행이 반드시 존재해야
+  //       "분析지 없음" 방지 가능.
+  let vipEarlyResultId: string | null = null;
+  if (product.slug === "premium-saju") {
+    const { data: earlyRow, error: earlyErr } = await service
+      .from("saju_results")
+      .insert({
+        order_id: order.id,
+        myeongsik: { year: null, month: null, day: null, hour: null } as never,
+        interpretation_md: "",
+        llm_provider: process.env.LLM_PROVIDER ?? "openai",
+        llm_model: process.env.LLM_MODEL ?? "gpt-4o",
+        generation_status: "generating",
+      })
+      .select("id")
+      .single();
+    if (earlyErr || !earlyRow) {
+      // 중복 방어: 이미 행이 존재하면(idempotent 재시도) 기존 것 반환
+      const { data: existing } = await service
+        .from("saju_results")
+        .select("id")
+        .eq("order_id", order.id)
+        .maybeSingle();
+      if (existing) return NextResponse.json({ resultId: existing.id });
+      return NextResponse.json({ error: "결과 초기화 실패", detail: earlyErr?.message }, { status: 500 });
+    }
+    vipEarlyResultId = earlyRow.id;
+  }
+
   try {
     let myeongsik: Myeongsik;
     let manseryeokText: string | undefined;
@@ -241,28 +272,14 @@ export async function POST(request: NextRequest) {
       partnerGender: (input.partner_gender ?? undefined) as "male" | "female" | undefined,
     };
 
-    // ── VIP: 2단계 저장 (결제 후 항상 resultId 반환 보장) ────────
-    if (isPremiumVip) {
-      // 1단계: generating 상태로 즉시 INSERT → resultId 확보 (LLM 실패해도 분석지 없음 방지)
-      const { data: earlyResult, error: earlyErr } = await service
+    // ── VIP: myeongsik + raw_saju_json 계산 완료 → 미리 확보한 row 업데이트 ──
+    if (isPremiumVip && vipEarlyResultId) {
+      await service
         .from("saju_results")
-        .insert({
-          order_id: order.id,
-          myeongsik: myeongsik as never,
-          interpretation_md: "",
-          llm_provider: process.env.LLM_PROVIDER ?? "openai",
-          llm_model: process.env.LLM_MODEL ?? "gpt-4o",
-          raw_saju_json: rawSajuJson as never,
-          generation_status: "generating",
-        })
-        .select("id")
-        .single();
+        .update({ myeongsik: myeongsik as never, raw_saju_json: rawSajuJson as never })
+        .eq("id", vipEarlyResultId);
 
-      if (earlyErr || !earlyResult) {
-        return NextResponse.json({ error: "결과 초기화 실패", detail: earlyErr?.message }, { status: 500 });
-      }
-
-      // 2단계: LLM 생성 시도 (타임아웃·오류 나도 generating 행은 남아 있음 → 어드민 재생성 가능)
+      // LLM 시도 — 실패해도 generating 상태 유지 (어드민 재생성 가능)
       try {
         const { system, user } = buildSajuPrompt(promptArgs);
         const llm = await generateInterpretation({ system, user });
@@ -274,13 +291,12 @@ export async function POST(request: NextRequest) {
             llm_model: llm.model,
             generation_status: "complete",
           })
-          .eq("id", earlyResult.id);
+          .eq("id", vipEarlyResultId);
       } catch (llmErr) {
-        console.error("[VIP] LLM 생성 실패, generating 상태 유지 (어드민에서 재생성 가능):", llmErr);
-        // throw 하지 않음 — resultId 반환 계속
+        console.error("[VIP confirm] LLM 실패, generating 상태 유지 (어드민 재생성 가능):", llmErr);
       }
 
-      return NextResponse.json({ resultId: earlyResult.id });
+      return NextResponse.json({ resultId: vipEarlyResultId });
     }
 
     // ── 비-VIP 상품: 인라인 LLM 호출 ────────────────────────────
