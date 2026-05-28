@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { MyeongsikTable } from "@/components/saju/MyeongsikTable";
+import { OhaengChart } from "@/components/saju/OhaengChart";
+import { VipVisuals } from "@/components/saju/VipVisuals";
 import { ResultBody } from "@/components/saju/ResultBody";
 import { ResultShareButtons } from "@/components/saju/ResultShareButtons";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
@@ -23,7 +25,7 @@ export default async function ResultPage({
 
   const { data: result } = await service
     .from("saju_results")
-    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url, email_sent_at")
+    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url, email_sent_at, raw_saju_json")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -63,6 +65,7 @@ export default async function ResultPage({
   const isFree = (order?.amount ?? 0) === 0;
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
+  const showChart = !isDreamReading && !isFree && !(isPremiumVip && isGenerating);
 
   return (
     <div className="container py-12 max-w-2xl">
@@ -84,10 +87,22 @@ export default async function ResultPage({
 
       {/* 사주 명식표 (꿈해몽·VIP 생성중 제외) */}
       {!isDreamReading && !(isPremiumVip && isGenerating) && (
-        <section className="mb-12">
+        <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
           <MyeongsikTable myeongsik={myeongsik} />
         </section>
+      )}
+
+      {/* 오행 분포 차트 (꿈해몽·무료·VIP생성중 제외) */}
+      {showChart && (
+        <section className="mb-10">
+          <OhaengChart myeongsik={myeongsik} />
+        </section>
+      )}
+
+      {/* VIP 전용 시각화 (신강신약 게이지 + 격국 배지) */}
+      {isPremiumVip && !isGenerating && result.raw_saju_json && (
+        <VipVisuals rawJson={result.raw_saju_json} />
       )}
 
       {/* 마크다운 결과 (VIP 생성중이면 숨김) */}
