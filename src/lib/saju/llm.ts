@@ -7,6 +7,8 @@
 export type LlmRequest = {
   system: string;
   user: string;
+  /** 섹션별 토큰 오버라이드 (10-call VIP 등 다중 호출 시 사용) */
+  maxTokensOverride?: number;
 };
 
 export type LlmResponse = {
@@ -31,6 +33,9 @@ export async function generateInterpretation(req: LlmRequest): Promise<LlmRespon
   }
 }
 
+/** 기본 max_tokens (싱글 호출용) */
+const DEFAULT_MAX_TOKENS = parseInt(process.env.LLM_MAX_TOKENS ?? "4000");
+
 async function callOpenAI(req: LlmRequest, model: string, key: string | undefined): Promise<LlmResponse> {
   if (!key) throw new Error("OPENAI_API_KEY is required when LLM_PROVIDER=openai");
   const { default: OpenAI } = await import("openai");
@@ -42,7 +47,7 @@ async function callOpenAI(req: LlmRequest, model: string, key: string | undefine
       { role: "user", content: req.user },
     ],
     temperature: 0.7,
-    max_tokens: parseInt(process.env.LLM_MAX_TOKENS ?? "4000"),
+    max_tokens: req.maxTokensOverride ?? DEFAULT_MAX_TOKENS,
   });
   const text = completion.choices[0]?.message?.content ?? "";
   return { text, provider: "openai", model };

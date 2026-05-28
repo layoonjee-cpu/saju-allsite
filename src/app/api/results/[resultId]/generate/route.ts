@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";
-import { buildSajuPrompt } from "@/lib/saju/prompt";
+import { buildSajuPrompt, buildVipMainPrompt, buildVipTimelinePrompt, buildVipSectionPrompts } from "@/lib/saju/prompt";
 import { generateInterpretation } from "@/lib/saju/llm";
 import {
   ganjiToMyeongsik,
@@ -64,6 +64,10 @@ export async function POST(
   const { resultId } = await params;
   const svc = createServiceClient();
 
+  // 섹션 번호 파싱 (클라이언트 순차 호출용: ?section=1~10)
+  const sectionNum = parseInt(new URL(_req.url).searchParams.get("section") ?? "0", 10);
+  const isSectionCall = sectionNum > 0;
+
   // 1. 결과 조회
   const { data: result } = await svc
     .from("saju_results")
@@ -75,8 +79,9 @@ export async function POST(
     return NextResponse.json({ status: "failed", error: "not found" }, { status: 404 });
   }
 
-  // 이미 완료 → 콘텐츠 품질 확인 후 정상이면 즉시 반환
-  if (result.generation_status === "complete") {
+  // 이미 완료 → 섹션 호출이 아닌 경우에만 콘텐츠 품질 확인 후 즉시 반환
+  // (섹션 호출은 항상 진행 — 섹션1이 interpretation_md를 초기화함)
+  if (!isSectionCall && result.generation_status === "complete") {
     const md = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
     const lower = md.toLowerCase();
     const isGoodContent =
@@ -164,7 +169,12 @@ export async function POST(
     }
 
     // 4. LLM 생성
-    const { system, user } = buildSajuPrompt({
+    const isPremiumProduct = product.slug === "premium-saju";
+    const vipCalls = isPremiumProduct
+      ? parseInt(process.env.VIP_GENERATION_CALLS ?? "1", 10)
+      : 1;
+
+    const promptArgs = {
       productSlug: product.slug,
       productName: product.name,
       myeongsik,
@@ -176,22 +186,162 @@ export async function POST(
       concerns: (input as SajuInputRow).concerns ?? [],
       dreamContent: (input as SajuInputRow).dream_content ?? undefined,
       name: (input as SajuInputRow).name ?? undefined,
-    });
+    };
 
-    const llm = await generateInterpretation({ system, user });
+    /** LLM 출력 거부/빈 응답 검증 헬퍼 */
+    function isRefusal(text: string): boolean {
+      const lower = text.toLowerCase();
+      return (
+        text.trim().length < 200 ||
+        lower.includes("i'm sorry") ||
+        lower.includes("i cannot") ||
+        lower.includes("i can't assist") ||
+        lower.includes("죄송합니다만 이 요청은")
+      );
+    }
+
+    // ── 섹션별 호출 처리 (VipGeneratingBanner 클라이언트 순차 호출) ──
+    // ?section=1~10 : Hobby 플랜 60초 제한 내 단일 섹션만 생성
+    // 섹션1: interpretation_md 초기화, 섹션2~9: 이어붙이기, 섹션10: complete 처리
+    if (isSectionCall && isPremiumProduct) {
+      const sections = buildVipSectionPrompts(promptArgs);
+      const TOTAL = sections.length; // 10
+
+      if (sectionNum < 1 || sectionNum > TOTAL) {
+        return NextResponse.json({ status: "failed", error: `section out of range: ${sectionNum}` }, { status: 400 });
+      }
+
+      const sec = sections[sectionNum - 1];
+      console.log(`[generate] 섹션 ${sectionNum}/${TOTAL}: ${sec.id}`);
+
+      const llm = await generateInterpretation({
+        system: sec.system,
+        user: sec.user,
+        maxTokensOverride: 2000,
+      });
+
+      if (isRefusal(llm.text)) {
+        console.warn(`[generate] 섹션 ${sectionNum} 거부 응답 — 스킵`);
+        // 거부돼도 다음 섹션은 계속 진행할 수 있도록 section_skipped 반환
+        return NextResponse.json({ status: "section_skipped", section: sectionNum, total: TOTAL });
+      }
+
+      if (sectionNum === 1) {
+        // 첫 섹션: interpretation_md 초기화 + provider/model 기록
+        await svc.from("saju_results").update({
+          interpretation_md: llm.text,
+          llm_provider: llm.provider,
+          llm_model: llm.model,
+          generation_status: "generating",
+        }).eq("id", resultId);
+      } else {
+        // 이후 섹션: 기존 내용에 이어붙이기
+        const { data: cur } = await svc
+          .from("saju_results")
+          .select("interpretation_md")
+          .eq("id", resultId)
+          .single();
+
+        const appended = (cur?.interpretation_md ?? "") + "\n\n---\n\n" + llm.text;
+
+        await svc.from("saju_results").update({
+          interpretation_md: appended,
+          generation_status: sectionNum === TOTAL ? "complete" : "generating",
+        }).eq("id", resultId);
+      }
+
+      return NextResponse.json({
+        status: sectionNum === TOTAL ? "complete" : "section_complete",
+        section: sectionNum,
+        total: TOTAL,
+      });
+    }
+
+    let llmText: string;
+    let llmProvider: string;
+    let llmModel: string;
+
+    if (isPremiumProduct && vipCalls >= 3) {
+      // ── 10-Section 아키텍처 (VIP_GENERATION_CALLS>=3) ───────────────
+      // 각 섹션 max_tokens=2000 (~20초/섹션), 총 10섹션 ~200초
+      // Vercel Pro 300초 한도 내 완료
+      const sections = buildVipSectionPrompts(promptArgs);
+      const results: string[] = [];
+      let firstProvider = "openai";
+      let firstModel = process.env.LLM_MODEL ?? "gpt-4o";
+
+      for (let i = 0; i < sections.length; i++) {
+        const sec = sections[i];
+        console.log(`[generate] VIP section ${i + 1}/${sections.length}: ${sec.id}`);
+        try {
+          const llm = await generateInterpretation({
+            system: sec.system,
+            user: sec.user,
+            maxTokensOverride: 2000,
+          });
+          if (i === 0) {
+            firstProvider = llm.provider;
+            firstModel = llm.model;
+          }
+          if (!isRefusal(llm.text)) {
+            results.push(llm.text);
+          } else {
+            console.warn(`[generate] VIP section ${sec.id} 거부 응답 — 스킵`);
+          }
+        } catch (secErr) {
+          console.error(`[generate] VIP section ${sec.id} 오류:`, secErr instanceof Error ? secErr.message : String(secErr));
+          // 한 섹션 실패해도 나머지 계속 진행
+        }
+      }
+
+      if (results.length === 0) {
+        return NextResponse.json({ status: "failed", error: "모든 섹션 생성 실패" }, { status: 500 });
+      }
+
+      llmText = results.join("\n\n---\n\n");
+      llmProvider = firstProvider;
+      llmModel = firstModel;
+    } else if (isPremiumProduct && vipCalls === 2) {
+      // ── 2-Call 아키텍처 (VIP_GENERATION_CALLS=2) ────────────────────
+      // Call 1: PART 01~08 (인물·황금기·연애·재물·직업·건강·귀인·개운)
+      const { system: sys1, user: user1 } = buildVipMainPrompt(promptArgs);
+      const llm1 = await generateInterpretation({ system: sys1, user: user1 });
+
+      if (isRefusal(llm1.text)) {
+        console.error("[generate] VIP Call1 거부 응답:", llm1.text.slice(0, 120));
+        return NextResponse.json(
+          { status: "failed", error: `LLM Call1 거부 또는 빈 응답: ${llm1.text.slice(0, 100)}` },
+          { status: 500 }
+        );
+      }
+
+      // Call 2: PART 09~10 (12개월 월별 + 10년 운명)
+      const { system: sys2, user: user2 } = buildVipTimelinePrompt(promptArgs);
+      const llm2 = await generateInterpretation({ system: sys2, user: user2 });
+
+      // Call 2 거부는 Call 1 결과라도 저장 (부분 완료)
+      if (isRefusal(llm2.text)) {
+        console.error("[generate] VIP Call2 거부 응답 — Call1 결과만 저장:", llm2.text.slice(0, 120));
+        llmText = llm1.text;
+      } else {
+        llmText = llm1.text + "\n\n---\n\n" + llm2.text;
+      }
+      llmProvider = llm1.provider;
+      llmModel = llm1.model;
+    } else {
+      // ── 단일 호출 (기본) ────────────────────────────────────────────
+      const { system, user } = buildSajuPrompt(promptArgs);
+      const llm = await generateInterpretation({ system, user });
+      llmText = llm.text;
+      llmProvider = llm.provider;
+      llmModel = llm.model;
+    }
 
     // 출력 검증 — 거부/빈 응답은 저장하지 않고 failed 반환
-    const lowerOut = llm.text.toLowerCase();
-    if (
-      llm.text.trim().length < 200 ||
-      lowerOut.includes("i'm sorry") ||
-      lowerOut.includes("i cannot") ||
-      lowerOut.includes("i can't assist") ||
-      lowerOut.includes("죄송합니다만 이 요청은")
-    ) {
-      console.error("[generate] LLM 거부 응답:", llm.text.slice(0, 120));
+    if (isRefusal(llmText)) {
+      console.error("[generate] LLM 거부 응답:", llmText.slice(0, 120));
       return NextResponse.json(
-        { status: "failed", error: `LLM 거부 또는 빈 응답: ${llm.text.slice(0, 100)}` },
+        { status: "failed", error: `LLM 거부 또는 빈 응답: ${llmText.slice(0, 100)}` },
         { status: 500 }
       );
     }
@@ -199,9 +349,9 @@ export async function POST(
     await svc
       .from("saju_results")
       .update({
-        interpretation_md: llm.text,
-        llm_provider: llm.provider,
-        llm_model: llm.model,
+        interpretation_md: llmText,
+        llm_provider: llmProvider,
+        llm_model: llmModel,
         myeongsik: myeongsik as never,
         generation_status: "complete",
       })

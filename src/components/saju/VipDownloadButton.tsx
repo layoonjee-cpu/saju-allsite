@@ -31,14 +31,17 @@ export function VipDownloadButton({ resultId }: Props) {
 
   return (
     <div className="my-8 rounded-2xl border border-teal-200 bg-teal-50/60 p-8 text-center backdrop-blur-sm">
-      <div className="mb-4 text-4xl">📄</div>
-      <h2 className="mb-2 text-xl font-semibold text-[#1a1730]">
-        깊은 시선 VIP 보고서가 완성되었습니다
+      <div className="mb-4 text-4xl">📜</div>
+      <h2 className="mb-1 text-xl font-semibold text-[#1a1730]">
+        시선이 당신의 사주를 깊이 들여다보았습니다
       </h2>
+      <p className="mb-1 text-xs font-medium tracking-widest text-[#2b6e6e] uppercase">
+        深視線 · 깊은시선 프리미엄 사주분석
+      </p>
       <p className="mb-6 text-sm text-muted-foreground">
-        A5 약 160~170페이지, 11만 자 이상의 정통 명리학 분석 보고서입니다.
+        정통 명리학 기반의 심층 사주 분석서입니다.
         <br />
-        PDF 파일은 7일간 다운로드 가능합니다.
+        PDF 파일은 발송 후 7일간 다운로드 가능합니다.
       </p>
       <button
         onClick={handleDownload}
@@ -52,7 +55,7 @@ export function VipDownloadButton({ resultId }: Props) {
           </>
         ) : (
           <>
-            📥 PDF 다운로드
+            📥 깊은시선 PDF 저장하기
           </>
         )}
       </button>

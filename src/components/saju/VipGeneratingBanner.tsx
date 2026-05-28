@@ -3,41 +3,94 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-type GenState = "triggering" | "failed";
+type GenState = "running" | "failed";
+
+const TOTAL_SECTIONS = 10;
+
+const SECTION_LABELS = [
+  "프롤로그 · 사주명식과 원국 구조",
+  "오행과 십성의 균형 · 일간의 본질",
+  "격국과 용신 · 기질과 성향 심층 분析",
+  "직업운과 성공의 흐름",
+  "재물운과 경제 흐름",
+  "연애운과 배우자운",
+  "건강운 · 귀인운과 인간관계",
+  "대운 10년간의 운세 흐름",
+  "세운 분析 · 월별 운세 전반",
+  "월별 운세 후반 · 합충형해파 · 개운법 · 종합 결론",
+];
 
 export function VipGeneratingBanner({ resultId }: { resultId: string }) {
   const router = useRouter();
-  const [state, setState] = useState<GenState>("triggering");
+  const [state, setState] = useState<GenState>("running");
+  const [currentSection, setCurrentSection] = useState(0); // 0 = 시작 전
   const [elapsed, setElapsed] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const trigger = useCallback(async () => {
-    setState("triggering");
+  const run = useCallback(async () => {
+    setState("running");
+    setCurrentSection(0);
     setElapsed(0);
     setErrorMsg("");
-    try {
-      const res = await fetch(`/api/results/${resultId}/generate`, { method: "POST" });
-      const data = await res.json() as { status: string; error?: string };
-      if (data.status === "complete") {
-        router.refresh();
-      } else {
-        setErrorMsg(data.error ?? "");
+
+    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
+      setCurrentSection(i);
+      try {
+        const res = await fetch(
+          `/api/results/${resultId}/generate?section=${i}`,
+          { method: "POST" }
+        );
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({})) as { error?: string };
+          setErrorMsg(data.error ?? `서버 오류 (섹션 ${i})`);
+          setState("failed");
+          return;
+        }
+
+        const data = await res.json() as {
+          status: string;
+          section?: number;
+          total?: number;
+          error?: string;
+        };
+
+        // 마지막 섹션 완료 → 페이지 새로고침
+        if (data.status === "complete") {
+          router.refresh();
+          return;
+        }
+
+        // section_complete / section_skipped → 다음 섹션으로 계속
+        if (data.status === "section_complete" || data.status === "section_skipped") {
+          continue;
+        }
+
+        // 예상치 못한 failed
+        if (data.status === "failed") {
+          setErrorMsg(data.error ?? "분析 생성 실패");
+          setState("failed");
+          return;
+        }
+      } catch (e) {
+        setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
         setState("failed");
+        return;
       }
-    } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
-      setState("failed");
     }
+
+    // 루프 완료 (마지막 섹션이 complete를 반환하지 않은 경우 대비)
+    router.refresh();
   }, [resultId, router]);
 
-  // 마운트 시 즉시 LLM 트리거
+  // 마운트 시 즉시 시작
   useEffect(() => {
-    trigger();
-  }, [trigger]);
+    run();
+  }, [run]);
 
-  // 경과 시간 (1초 단위, 생성 중일 때만)
+  // 경과 시간 (1초 단위, 실행 중일 때만)
   useEffect(() => {
-    if (state !== "triggering") return;
+    if (state !== "running") return;
     const t = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(t);
   }, [state]);
@@ -45,26 +98,31 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
   const min = Math.floor(elapsed / 60);
   const sec = elapsed % 60;
   const elapsedText =
-    elapsed === 0 ? "" : ` (${min > 0 ? `${min}분 ` : ""}${sec}초 경과)`;
+    elapsed === 0
+      ? ""
+      : ` (${min > 0 ? `${min}분 ` : ""}${sec}초 경과)`;
 
-  // 실패 / 타임아웃 상태
+  const progressPct =
+    currentSection === 0 ? 0 : Math.round((currentSection / TOTAL_SECTIONS) * 100);
+
+  // ── 실패 상태 ─────────────────────────────────────────────────
   if (state === "failed") {
     return (
       <div className="my-10 rounded-2xl border border-red-200 bg-red-50/60 p-8 text-center backdrop-blur-sm">
         <p className="text-3xl mb-3">⚠️</p>
         <h2 className="text-lg font-semibold text-red-800 mb-2">
-          분석 생성에 시간이 걸리고 있습니다
+          분析 생성 중 문제가 생겼습니다
         </h2>
         <p className="text-sm text-muted-foreground mb-6">
-          서버 상황에 따라 분析지 생성이 지연될 수 있습니다.
+          섹션 {currentSection}/{TOTAL_SECTIONS} 처리 중 오류가 발생했습니다.
           <br />
-          아래 버튼을 눌러 다시 시도해 주세요.
+          아래 버튼을 눌러 처음부터 다시 시도해 주세요.
         </p>
         <button
-          onClick={trigger}
+          onClick={run}
           className="px-6 py-2.5 rounded-full bg-[#2D5C5C] text-white text-sm font-medium hover:bg-[#24494A] transition-colors"
         >
-          ⟳ 다시 시도
+          ⟳ 처음부터 다시 시도
         </button>
         {errorMsg && (
           <p className="mt-3 text-xs font-mono text-red-700/60 break-all">
@@ -75,7 +133,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
     );
   }
 
-  // 생성 중 상태
+  // ── 생성 중 상태 ──────────────────────────────────────────────
   return (
     <div className="my-10 rounded-2xl border border-amber-200 bg-amber-50/60 p-8 text-center backdrop-blur-sm">
       {/* 스피너 */}
@@ -88,32 +146,66 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         </div>
       </div>
 
-      <h2 className="mb-2 text-xl font-semibold text-[#1a1730]">
-        보고서를 정성스럽게 작성 중입니다
+      <p className="mb-1 text-xs font-medium tracking-widest text-[#2b6e6e] uppercase">
+        深視線 · 깊은시선 프리미엄 사주분析
+      </p>
+      <h2 className="mb-1 text-xl font-semibold text-[#1a1730]">
+        시선이 당신의 사주를 깊이 들여다보고 있습니다
       </h2>
-      <p className="text-sm text-muted-foreground">
-        깊은 시선 VIP 보고서는 17개 섹션으로 구성됩니다.
+      <p className="text-sm text-muted-foreground mb-5">
+        17개 챕터로 구성된 심층 분析서를 순서대로 작성합니다.
         <br />
-        약 <strong>1~2분</strong> 후 이 페이지에 분析지가 자동으로 표시됩니다.
+        이 페이지를 열어두시면 완료 시 자동으로 표시됩니다.
         {elapsedText}
       </p>
 
-      <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-          사주 명식 16종 데이터 분析 완료
+      {/* 진행 바 */}
+      <div className="mb-4 w-full max-w-sm mx-auto">
+        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+          <span>
+            {currentSection > 0
+              ? `섹션 ${currentSection} / ${TOTAL_SECTIONS} — ${SECTION_LABELS[currentSection - 1]}`
+              : "준비 중..."}
+          </span>
+          <span>{progressPct}%</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span
-            className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500"
-            style={{ animationDelay: "0.3s" }}
+        <div className="h-2 w-full rounded-full bg-amber-100 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-teal-600 transition-all duration-700"
+            style={{ width: `${progressPct}%` }}
           />
-          AI가 17개 섹션 심층 분析 중
         </div>
       </div>
 
-      <p className="mt-6 text-xs text-muted-foreground/70">
-        이 페이지를 열어두시면 완료 시 자동으로 분析지가 표시됩니다.
+      {/* 완료된 섹션 목록 */}
+      <div className="mx-auto max-w-xs text-left space-y-1">
+        {SECTION_LABELS.map((label, idx) => {
+          const sIdx = idx + 1;
+          const isDone = sIdx < currentSection;
+          const isActive = sIdx === currentSection;
+          return (
+            <div
+              key={sIdx}
+              className={`flex items-center gap-2 text-xs transition-all ${
+                isDone
+                  ? "text-teal-700"
+                  : isActive
+                  ? "text-amber-700 font-medium"
+                  : "text-muted-foreground/50"
+              }`}
+            >
+              <span className="shrink-0">
+                {isDone ? "✓" : isActive ? "⟳" : "○"}
+              </span>
+              <span>{label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mt-5 text-xs text-muted-foreground/60">
+        약 <strong>5~7분</strong> 소요됩니다. 페이지를 닫으셔도 되지만,
+        열어두시면 완료 즉시 자동 표시됩니다.
       </p>
     </div>
   );

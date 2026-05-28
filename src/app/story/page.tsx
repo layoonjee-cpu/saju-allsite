@@ -45,7 +45,7 @@ export default function StoryPage() {
           &ldquo;운명을 점치지 않습니다.<br />
           <span className="accent" style={{ color: "#E8954A" }}>당신의 지금</span>을 함께 읽어드립니다.&rdquo;
         </blockquote>
-        <cite>— 시선 운명론자 드림 —</cite>
+        <cite>— 시선 사주 드림 —</cite>
       </section>
 
       {/* ━━━ WHY SISEON ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}

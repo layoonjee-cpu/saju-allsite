@@ -15,7 +15,7 @@ export const siteConfig = {
 
 // 통신판매업 / 사업자 정보 — 법적 페이지 및 푸터에 노출됩니다.
 export const businessInfo = {
-  companyName: "운명론자",
+  companyName: "시선 사주",
   representative: "나윤지",
   businessNumber: "555-52-01094",
   mailOrderNumber: "2025-서울서초-3940",

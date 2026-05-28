@@ -8,6 +8,7 @@ import { ResultBody } from "@/components/saju/ResultBody";
 import { ResultShareButtons } from "@/components/saju/ResultShareButtons";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
 import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
+import { SipsinChart } from "@/components/saju/SipsinChart";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -120,6 +121,13 @@ export default async function ResultPage({
       {/* VIP 전용 시각화 (신강신약 게이지 + 격국 배지) — 불량 콘텐츠일 때는 숨김 */}
       {isPremiumVip && !showBanner && result.raw_saju_json && (
         <VipVisuals rawJson={result.raw_saju_json} />
+      )}
+
+      {/* 십신(十神) 분포 차트 — VIP + raw_saju_json 있을 때만 */}
+      {isPremiumVip && !showBanner && result.raw_saju_json && (
+        <section className="mb-6">
+          <SipsinChart rawJson={result.raw_saju_json} />
+        </section>
       )}
 
       {/* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */}
