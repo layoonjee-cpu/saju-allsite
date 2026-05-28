@@ -84,17 +84,22 @@ export async function POST(
   if (!isSectionCall && result.generation_status === "complete") {
     const md = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
     const lower = md.toLowerCase();
+    const curYear = new Date().getFullYear();
+    const hasWrongYear =
+      md.includes("2023년") || md.includes("2024년") ||
+      (curYear >= 2026 && md.includes("2025년") && !md.includes(`${curYear}년`));
     const isGoodContent =
       md.length >= 200 &&
       !lower.includes("i'm sorry") &&
       !lower.includes("i cannot") &&
       !lower.includes("i can't assist") &&
-      !lower.includes("죄송합니다");
+      !lower.includes("죄송합니다") &&
+      !hasWrongYear;
     if (isGoodContent) {
       return NextResponse.json({ status: "complete" });
     }
     // 콘텐츠 불량 → 재생성 진행 (fall through)
-    console.log("[generate] 불량 콘텐츠 감지 — 재생성 진행");
+    console.log("[generate] 불량 콘텐츠 감지 — 재생성 진행", { hasWrongYear });
   }
 
   // 2. 주문·입력·상품 조회
