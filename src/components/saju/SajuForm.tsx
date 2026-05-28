@@ -293,8 +293,8 @@ export function SajuForm({ productId, productSlug, productPrice, isLoggedIn, pro
       {/* ── 이메일 (선택) ── */}
       <div className="space-y-2">
         <label htmlFor="saju-email" className="text-sm font-bold text-[#1a1730] block">
-          이메일{" "}
-          <span className="text-xs font-normal text-[#888]">(선택 — 분석지 발송용)</span>
+          이메일(선택){" "}
+          <span className="text-xs font-normal text-[#888]">*입력안하셔도 사주분석 진행됩니다. 향후 분석지 미수령시 발송용</span>
         </label>
         <input
           id="saju-email"
