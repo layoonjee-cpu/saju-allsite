@@ -219,10 +219,13 @@ export async function POST(
       const sec = sections[sectionNum - 1];
       console.log(`[generate] 섹션 ${sectionNum}/${TOTAL}: ${sec.id}`);
 
+      // 월별 섹션(15~26)은 더 많은 토큰 허용, 분析 섹션(1~14, 27)은 표준
+      const isMonthlySection = sectionNum >= 15 && sectionNum <= 26;
+      const tokenLimit = isMonthlySection ? 3000 : 2000;
       const llm = await generateInterpretation({
         system: sec.system,
         user: sec.user,
-        maxTokensOverride: 2000,
+        maxTokensOverride: tokenLimit,
       });
 
       if (isRefusal(llm.text)) {

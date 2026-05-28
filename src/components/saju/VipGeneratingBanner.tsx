@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 
 type GenState = "running" | "failed";
 
-const TOTAL_SECTIONS = 17;
+const TOTAL_SECTIONS = 27;
+
+// 월별 레이블 동적 생성 (결제 시점 기준 12개월)
+const _now = new Date();
+const _cy = _now.getFullYear();
+const _cm = _now.getMonth() + 1;
+const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => {
+  const d = new Date(_cy, _cm - 1 + i, 1);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 운세 심층 분析`;
+});
 
 const SECTION_LABELS = [
   "프롤로그 · 사주팔자 원국 구조",
@@ -22,8 +31,7 @@ const SECTION_LABELS = [
   "건강운 · 체질과 주의 부위",
   "귀인운 · 인간관계 패턴",
   "대운(大運) 흐름 · 황금기와 저점",
-  "세운 분析 · 월별 운세 전반 (1~6개월)",
-  "월별 운세 후반 (7~12개월)",
+  ...MONTH_LABELS,
   "합충형해파 · 개운법 · 종합 결론",
 ];
 
