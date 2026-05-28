@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formatKRW } from "@/lib/utils";
 
-// 12 시진 + 모름 (SajuForm과 동일)
 const SIJU_OPTIONS = [
   { label: "모름 / 선택 안함", value: "unknown" },
   { label: "자시 (子時)  23:30 ~ 01:29", value: "00:00" },
@@ -33,7 +32,7 @@ type PersonInfo = {
   calendar: "solar" | "lunar";
 };
 
-const defaultPerson = (gender: "male" | "female" = "male"): PersonInfo => ({
+const defaultPerson = (gender: "male" | "female"): PersonInfo => ({
   name: "",
   birthYear: "",
   birthMonth: "",
@@ -56,22 +55,25 @@ function validatePerson(p: PersonInfo, label: string): string | null {
   return null;
 }
 
-// ── 1인 정보 섹션 ────────────────────────────────────────────
+// ── 1인 입력 섹션 (SajuForm 스타일과 동일) ──────────────────
 type PersonSectionProps = {
   title: string;
-  borderColor: string;
-  bgColor: string;
   value: PersonInfo;
   onChange: (v: PersonInfo) => void;
 };
 
-function PersonSection({ title, borderColor, bgColor, value: p, onChange }: PersonSectionProps) {
+function PersonSection({ title, value: p, onChange }: PersonSectionProps) {
   const set = <K extends keyof PersonInfo>(key: K, val: PersonInfo[K]) =>
     onChange({ ...p, [key]: val });
 
   return (
-    <div className={`rounded-2xl border-2 ${borderColor} ${bgColor} p-5 space-y-5`}>
-      <h3 className="text-base font-bold text-[#1a1730]">{title}</h3>
+    <div className="space-y-6">
+      {/* 섹션 구분 타이틀 */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-[#e8e4dd]" />
+        <span className="text-sm font-bold text-[#1a1730] px-1 whitespace-nowrap">{title}</span>
+        <div className="flex-1 h-px bg-[#e8e4dd]" />
+      </div>
 
       {/* 성별 */}
       <div className="space-y-2">
@@ -120,6 +122,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
           생년월일 <span className="text-red-500">*</span>
         </p>
         <div className="grid grid-cols-3 gap-2">
+          {/* 년 */}
           <div className="relative">
             <select
               value={p.birthYear}
@@ -134,6 +137,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
           </div>
+          {/* 월 */}
           <div className="relative">
             <select
               value={p.birthMonth}
@@ -147,6 +151,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
           </div>
+          {/* 일 */}
           <div className="relative">
             <select
               value={p.birthDay}
@@ -190,7 +195,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
         </div>
       </div>
 
-      {/* 태어난 시간 (시주) */}
+      {/* 태어난 시간 */}
       <div className="space-y-2">
         <label className="text-sm font-bold text-[#1a1730] block">
           태어난 시간 (시주) <span className="text-red-500">*</span>
@@ -202,9 +207,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
             className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
           >
             {SIJU_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
           <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
@@ -214,7 +217,7 @@ function PersonSection({ title, borderColor, bgColor, value: p, onChange }: Pers
   );
 }
 
-// ── 메인 폼 ───────────────────────────────────────────────────
+// ── 메인 폼 ──────────────────────────────────────────────────
 type Props = {
   productId: string;
   productSlug: string;
@@ -224,8 +227,8 @@ type Props = {
 
 export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: Props) {
   const router = useRouter();
-  const [person, setPerson] = useState<PersonInfo>(defaultPerson("male"));
-  const [partner, setPartner] = useState<PersonInfo>(defaultPerson("female"));
+  const [person, setPerson] = useState<PersonInfo>(defaultPerson("female"));
+  const [partner, setPartner] = useState<PersonInfo>(defaultPerson("male"));
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -236,7 +239,7 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const errA = validatePerson(person, "내");
+    const errA = validatePerson(person, "나");
     if (errA) { toast.error(errA); return; }
     const errB = validatePerson(partner, "상대방");
     if (errB) { toast.error(errB); return; }
@@ -260,7 +263,6 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
           calendar: person.calendar,
           concerns: [],
           customerEmail: email || null,
-          // 상대방
           partnerName: partner.name || undefined,
           partnerBirthDate: makeBirthDate(partner),
           partnerBirthTime: partner.selectedSiju === "unknown" ? null : partner.selectedSiju,
@@ -292,39 +294,18 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
         <span className="text-sm font-mono font-bold text-[#2D5C5C]">{formatKRW(productPrice)}</span>
       </div>
 
-      {/* 안내 */}
-      <div className="rounded-xl bg-rose-50 border border-rose-200/60 px-4 py-3">
-        <p className="text-[13px] text-rose-800/90 leading-snug">
-          💕 두 사람의 생년월일을 입력하시면 합충형해파 분석 · 궁합 · 갈등 해결 방안까지 한 번에 풀어드립니다.
-        </p>
-      </div>
-
       {/* 나의 정보 */}
-      <PersonSection
-        title="💙 나의 정보"
-        borderColor="border-blue-200"
-        bgColor="bg-blue-50/30"
-        value={person}
-        onChange={setPerson}
-      />
-
-      {/* 구분선 */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-[#e8e4dd]" />
-        <span className="text-2xl leading-none select-none">♥</span>
-        <div className="flex-1 h-px bg-[#e8e4dd]" />
-      </div>
+      <PersonSection title="나의 정보" value={person} onChange={setPerson} />
 
       {/* 상대방 정보 */}
-      <PersonSection
-        title="🩷 상대방 정보"
-        borderColor="border-rose-200"
-        bgColor="bg-rose-50/30"
-        value={partner}
-        onChange={setPartner}
-      />
+      <PersonSection title="상대방 정보" value={partner} onChange={setPartner} />
 
-      {/* 이메일 (공통 1개) */}
+      {/* 이메일 구분선 */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="flex-1 h-px bg-[#e8e4dd]" />
+      </div>
+
+      {/* 이메일 */}
       <div className="space-y-2">
         <label htmlFor="love-email" className="text-sm font-bold text-[#1a1730] block">
           이메일(선택){" "}
@@ -340,14 +321,14 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
         />
       </div>
 
-      {/* 버튼 */}
+      {/* 제출 버튼 */}
       {isLoggedIn ? (
         <button
           type="submit"
           disabled={submitting}
           className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-bold hover:bg-[#245050] active:scale-[0.99] transition-all disabled:opacity-60 tracking-wide"
         >
-          {submitting ? "주문 생성 중..." : `결제하러 가기 → ${formatKRW(productPrice)}`}
+          {submitting ? "주문 생성 중..." : "결제하러 가기 →"}
         </button>
       ) : (
         <div className="space-y-2">
@@ -359,9 +340,7 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
           </Link>
           <p className="text-xs text-[#888] text-center">
             결과는 로그인 후{" "}
-            <Link href="/mypage" className="underline text-[#2D5C5C]">
-              마이페이지
-            </Link>
+            <Link href="/mypage" className="underline text-[#2D5C5C]">마이페이지</Link>
             에서 확인할 수 있어요.
           </p>
         </div>
