@@ -42,7 +42,7 @@ async function callOpenAI(req: LlmRequest, model: string, key: string | undefine
       { role: "user", content: req.user },
     ],
     temperature: 0.7,
-    max_tokens: parseInt(process.env.LLM_MAX_TOKENS ?? "8000"),
+    max_tokens: parseInt(process.env.LLM_MAX_TOKENS ?? "4000"),
   });
   const text = completion.choices[0]?.message?.content ?? "";
   return { text, provider: "openai", model };

@@ -9,19 +9,23 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
   const router = useRouter();
   const [state, setState] = useState<GenState>("triggering");
   const [elapsed, setElapsed] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const trigger = useCallback(async () => {
     setState("triggering");
     setElapsed(0);
+    setErrorMsg("");
     try {
       const res = await fetch(`/api/results/${resultId}/generate`, { method: "POST" });
-      const data = await res.json() as { status: string };
+      const data = await res.json() as { status: string; error?: string };
       if (data.status === "complete") {
         router.refresh();
       } else {
+        setErrorMsg(data.error ?? "");
         setState("failed");
       }
-    } catch {
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
       setState("failed");
     }
   }, [resultId, router]);
@@ -62,6 +66,11 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         >
           ⟳ 다시 시도
         </button>
+        {errorMsg && (
+          <p className="mt-3 text-xs font-mono text-red-700/60 break-all">
+            {errorMsg}
+          </p>
+        )}
       </div>
     );
   }
