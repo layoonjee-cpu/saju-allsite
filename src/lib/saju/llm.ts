@@ -23,13 +23,24 @@ export async function generateInterpretation(req: LlmRequest): Promise<LlmRespon
   const provider = (process.env.LLM_PROVIDER ?? "openai") as "openai" | "anthropic" | "gemini";
   const model = process.env.LLM_MODEL ?? "gpt-4o";
 
-  switch (provider) {
-    case "openai":
-      return callOpenAI(req, model, process.env.OPENAI_API_KEY);
-    case "anthropic":
-      return callAnthropic(req, model, process.env.ANTHROPIC_API_KEY);
-    case "gemini":
-      return callGemini(req, model, process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+  try {
+    switch (provider) {
+      case "openai":
+        return await callOpenAI(req, model, process.env.OPENAI_API_KEY);
+      case "anthropic":
+        return await callAnthropic(req, model, process.env.ANTHROPIC_API_KEY);
+      case "gemini":
+        return await callGemini(req, model, process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+    }
+  } catch (err) {
+    // ── 자동 폴백: OpenAI 429/quota 오류 → Anthropic Haiku ──────────
+    const msg = err instanceof Error ? err.message : String(err);
+    const isQuota = msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("exceeded");
+    if (provider === "openai" && isQuota && process.env.ANTHROPIC_API_KEY) {
+      console.warn("[LLM] OpenAI quota 초과 → Anthropic Haiku 자동 폴백");
+      return callAnthropic(req, "claude-3-5-haiku-20241022", process.env.ANTHROPIC_API_KEY);
+    }
+    throw err;
   }
 }
 
