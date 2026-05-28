@@ -168,7 +168,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
         시선이 당신의 사주를 깊이 들여다보고 있습니다
       </h2>
       <p className="text-sm text-muted-foreground mb-5">
-        17개 섹션으로 구성된 심층 분析서를 순서대로 작성합니다.
+        27개 섹션으로 구성된 심층 분析서를 순서대로 작성합니다.
         <br />
         이 페이지를 열어두시면 완료 시 자동으로 표시됩니다.
         {elapsedText}
@@ -219,7 +219,7 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
       </div>
 
       <p className="mt-5 text-xs text-muted-foreground/60">
-        약 <strong>5~7분</strong> 소요됩니다. 페이지를 닫으셔도 되지만,
+        약 <strong>10~15분</strong> 소요됩니다. 페이지를 닫으셔도 되지만,
         열어두시면 완료 즉시 자동 표시됩니다.
       </p>
     </div>
