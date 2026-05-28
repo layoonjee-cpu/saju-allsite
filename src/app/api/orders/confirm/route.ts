@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/server";
 import { confirmTossPayment } from "@/lib/toss/confirm";
+import { sendResendEmail, emailWrapper, resultLinkButton, SITE_URL } from "@/lib/email";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";
 import { buildSajuPrompt } from "@/lib/saju/prompt";
 import { generateInterpretation } from "@/lib/saju/llm";
@@ -282,7 +283,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "결과 저장 실패", detail: resultErr?.message }, { status: 500 });
     }
 
-    return NextResponse.json({ resultId: result.id });
+    // ── 이메일 자동 발송 (delivery_method === "email") ────────────
+    const deliveryMethod = (input as { delivery_method?: string }).delivery_method ?? "web";
+    const customerEmail  = (input as { customer_email?: string | null }).customer_email ?? null;
+
+    if (deliveryMethod === "email" && customerEmail) {
+      const resultUrl = `${SITE_URL}/results/${result.id}`;
+      const html = emailWrapper(`
+        <p style="font-size:16px;color:#1a1730;margin:0 0 8px;font-weight:bold;">${product.name} 분석지가 준비됐습니다 ✨</p>
+        <p style="font-size:14px;color:#4a4a6a;margin:0 0 24px;line-height:1.7;">
+          안녕하세요. 시선 사주 분석이 완료되었습니다.<br>
+          아래 버튼을 클릭하시면 분석지를 열람하실 수 있습니다.
+        </p>
+        ${resultLinkButton(resultUrl)}
+      `);
+      const sent = await sendResendEmail(customerEmail, `[시선] ${product.name} 분석지 도착`, html);
+      if (sent) {
+        await service.from("saju_results")
+          .update({ email_sent_at: new Date().toISOString() })
+          .eq("id", result.id);
+      }
+    }
+
+    return NextResponse.json({ resultId: result.id, deliveryMethod });
   } catch (err) {
     return NextResponse.json(
       {

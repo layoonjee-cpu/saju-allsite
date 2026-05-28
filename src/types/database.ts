@@ -58,6 +58,7 @@ type SajuInputRow = {
   concerns: string[];
   dream_content: string | null;
   customer_email: string | null;
+  delivery_method: string;   // 'web' | 'email' | 'kakao'
   // 연인/궁합 전용
   partner_name: string | null;
   partner_birth_date: string | null;
@@ -163,6 +164,7 @@ export type Database = {
           concerns?: string[];
           dream_content?: string | null;
           customer_email?: string | null;
+          delivery_method?: string;
           partner_name?: string | null;
           partner_birth_date?: string | null;
           partner_birth_time?: string | null;

@@ -229,6 +229,7 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
   const router = useRouter();
   const [person, setPerson] = useState<PersonInfo>(defaultPerson("female"));
   const [partner, setPartner] = useState<PersonInfo>(defaultPerson("male"));
+  const [deliveryMethod, setDeliveryMethod] = useState<"email" | "kakao">("email");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -243,6 +244,10 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
     if (errA) { toast.error(errA); return; }
     const errB = validatePerson(partner, "상대방");
     if (errB) { toast.error(errB); return; }
+    if (deliveryMethod === "email" && !email) {
+      toast.error("이메일 수령을 선택하셨습니다. 이메일 주소를 입력해 주세요");
+      return;
+    }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast.error("올바른 이메일 형식을 입력해 주세요");
       return;
@@ -263,6 +268,7 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
           calendar: person.calendar,
           concerns: [],
           customerEmail: email || null,
+          deliveryMethod,
           partnerName: partner.name || undefined,
           partnerBirthDate: makeBirthDate(partner),
           partnerBirthTime: partner.selectedSiju === "unknown" ? null : partner.selectedSiju,
@@ -300,26 +306,66 @@ export function LoveForm({ productId, productSlug, productPrice, isLoggedIn }: P
       {/* 상대방 정보 */}
       <PersonSection title="상대방 정보" value={partner} onChange={setPartner} />
 
-      {/* 이메일 구분선 */}
-      <div className="flex items-center gap-3 pt-2">
-        <div className="flex-1 h-px bg-[#e8e4dd]" />
-      </div>
+      {/* ── 분석지 수령 방법 ── */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-[#e8e4dd]" />
+        </div>
+        <p className="text-sm font-bold text-[#1a1730]">
+          분석지 받기 <span className="text-red-500">*</span>
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setDeliveryMethod("email")}
+            className={`flex flex-col items-center gap-1.5 py-4 px-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+              deliveryMethod === "email"
+                ? "border-[#2D5C5C] bg-[#2D5C5C]/5 text-[#2D5C5C]"
+                : "border-[#e0dbd0] text-[#888] hover:border-[#2D5C5C]/40"
+            }`}
+          >
+            <span className="text-xl">📧</span>
+            <span>이메일로 받기</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeliveryMethod("kakao")}
+            className={`flex flex-col items-center gap-1.5 py-4 px-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+              deliveryMethod === "kakao"
+                ? "border-[#F9E000] bg-[#FEE500]/10 text-[#1a1730]"
+                : "border-[#e0dbd0] text-[#888] hover:border-[#F9E000]/60"
+            }`}
+          >
+            <span className="text-xl">💬</span>
+            <span>카톡으로 받기</span>
+          </button>
+        </div>
 
-      {/* 이메일 */}
-      <div className="space-y-2">
-        <label htmlFor="love-email" className="text-sm font-bold text-[#1a1730] block">
-          이메일(선택){" "}
-          <span className="text-xs font-normal text-[#888]">*입력안하셔도 사주분석 진행됩니다. 향후 분석지 미수령시 발송용</span>
-        </label>
-        <input
-          id="love-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="example@email.com"
-          className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
-        />
-      </div>
+        {deliveryMethod === "email" && (
+          <div className="space-y-2 pt-1">
+            <label htmlFor="love-email" className="text-sm font-bold text-[#1a1730] block">
+              이메일 주소 <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="love-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@email.com"
+              className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            />
+            <p className="text-xs text-[#888]">결제 완료 후 입력하신 이메일로 분석지를 발송해 드립니다.</p>
+          </div>
+        )}
+
+        {deliveryMethod === "kakao" && (
+          <div className="rounded-xl bg-[#FEE500]/20 border border-[#F9E000]/60 px-4 py-3">
+            <p className="text-xs text-[#1a1730] leading-relaxed">
+              💬 결제 완료 후 <strong>카카오채널을 추가</strong>하신 뒤, 이름과 신청 상품명을 보내주시면 분석지를 카카오톡으로 보내드립니다.
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* 제출 버튼 */}
       {isLoggedIn ? (
