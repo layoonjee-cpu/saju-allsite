@@ -77,6 +77,7 @@ type SajuResultRow = {
   generation_status: string;   // 'complete' | 'generating' | 'failed'
   pdf_url: string | null;
   raw_saju_json: Json | null;  // 운세위키 API 16종 원본 응답
+  email_sent_at: string | null; // 이메일 발송 시각 (7일 열람 만료 기준)
   created_at: string;
 };
 
@@ -88,6 +89,7 @@ type ReviewRow = {
   rating: number;
   content: string;
   is_public: boolean;
+  status: string; // 'pending' | 'approved' | 'rejected'
   created_at: string;
 };
 
@@ -182,6 +184,7 @@ export type Database = {
           generation_status?: string;
           pdf_url?: string | null;
           raw_saju_json?: Json | null;
+          email_sent_at?: string | null;
           created_at?: string;
         };
         Update: Partial<SajuResultRow>;
@@ -197,6 +200,7 @@ export type Database = {
           rating: number;
           content: string;
           is_public?: boolean;
+          status?: string;
           created_at?: string;
         };
         Update: Partial<ReviewRow>;

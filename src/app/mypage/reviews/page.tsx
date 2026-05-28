@@ -21,7 +21,7 @@ export default async function MyReviewsPage() {
   const service = createServiceClient();
   const { data: reviews } = await service
     .from("reviews")
-    .select("id, rating, content, created_at, product_id")
+    .select("id, rating, content, status, created_at, product_id")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -46,7 +46,15 @@ export default async function MyReviewsPage() {
             <li key={r.id} className="py-5">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-ink">{productMap.get(r.product_id) ?? "-"}</span>
-                <Stars value={r.rating} />
+                <div className="flex items-center gap-2">
+                  <Stars value={r.rating} />
+                  {r.status === "pending" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-300">검토중</span>
+                  )}
+                  {r.status === "rejected" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">게시 거절</span>
+                  )}
+                </div>
               </div>
               <p className="mt-2 text-sm text-charcoal leading-relaxed">{r.content}</p>
               <p className="mt-2 text-xs text-mute font-mono">{formatDate(r.created_at)}</p>

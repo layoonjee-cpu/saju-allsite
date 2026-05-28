@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { MyeongsikTable } from "@/components/saju/MyeongsikTable";
 import { ResultBody } from "@/components/saju/ResultBody";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
@@ -8,6 +9,8 @@ import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "결과지" };
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export default async function ResultPage({
   params,
@@ -19,11 +22,30 @@ export default async function ResultPage({
 
   const { data: result } = await service
     .from("saju_results")
-    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url")
+    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url, email_sent_at")
     .eq("id", resultId)
     .maybeSingle();
 
   if (!result) notFound();
+
+  // ─── 7일 열람 만료 체크 ──────────────────────────────────
+  // 이메일을 발송한 결과지에 한해 7일 만료 적용. 어드민은 항상 열람 가능.
+  const isAdmin = await isAdminAuthenticated();
+  const emailSentAt = result.email_sent_at ? new Date(result.email_sent_at).getTime() : null;
+  const isExpired = !isAdmin && emailSentAt !== null && Date.now() - emailSentAt > SEVEN_DAYS_MS;
+
+  if (isExpired) {
+    return (
+      <div className="container py-24 max-w-md text-center">
+        <p className="text-5xl mb-6">⏰</p>
+        <h1 className="text-xl font-semibold text-ink">열람 기간이 만료되었습니다</h1>
+        <p className="text-sm text-mute mt-3 leading-relaxed">
+          분석지 열람 기간(이메일 발송 후 7일)이 지났습니다.<br />
+          추가 문의는 운영자에게 연락해 주세요.
+        </p>
+      </div>
+    );
+  }
 
   const { data: order } = await service
     .from("orders")

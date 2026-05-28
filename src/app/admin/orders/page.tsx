@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { formatKRW } from "@/lib/utils";
 import { SendEmailButton } from "@/components/admin/SendEmailButton";
 import { SajuDataButton } from "@/components/admin/SajuDataButton";
+import { ExtraAnalysisButton } from "@/components/admin/ExtraAnalysisButton";
 
 export const metadata = { title: "주문 관리 | 시선 어드민" };
 export const dynamic = "force-dynamic";
@@ -284,11 +285,18 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                           birthDate={inp?.birth_date ?? null}
                         />
                         {result && result.generation_status === "complete" && (
-                          <SendEmailButton
-                            resultId={result.id}
-                            name={inp?.name ?? "고객"}
-                            hasEmail={!!email}
-                          />
+                          <>
+                            <SendEmailButton
+                              resultId={result.id}
+                              name={inp?.name ?? "고객"}
+                              hasEmail={!!email}
+                            />
+                            <ExtraAnalysisButton
+                              resultId={result.id}
+                              name={inp?.name ?? "고객"}
+                              hasEmail={!!email}
+                            />
+                          </>
                         )}
                       </div>
                     </td>

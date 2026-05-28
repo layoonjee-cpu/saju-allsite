@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { SajuForm } from "@/components/saju/SajuForm";
+import { SajuLabForm } from "@/components/saju/SajuLabForm";
 import { DreamForm } from "@/components/saju/DreamForm";
 import { LoveForm } from "@/components/saju/LoveForm";
 import { formatKRW, formatDate } from "@/lib/utils";
@@ -46,7 +46,7 @@ export default async function ProductDetailPage({
         .from("reviews")
         .select("id, rating, content, created_at")
         .eq("product_id", product.id)
-        .eq("is_public", true)
+        .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(5);
       reviews = r;
@@ -101,16 +101,12 @@ export default async function ProductDetailPage({
             />
           </>
         ) : (
-          <>
-            <h2 className="text-sm font-semibold mb-4 text-ink">사주 정보 입력</h2>
-            <p className="text-xs text-body mb-4">정확할수록 더 정밀한 결과가 나옵니다.</p>
-            <SajuForm
-              productId={product.id}
-              productSlug={product.slug}
-              productPrice={product.price}
-              isLoggedIn={!!user}
-            />
-          </>
+          <SajuLabForm
+            productId={product.id}
+            productSlug={product.slug}
+            productPrice={product.price}
+            isLoggedIn={!!user}
+          />
         )}
       </section>
 

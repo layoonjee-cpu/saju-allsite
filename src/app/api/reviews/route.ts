@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
     product_id: order.product_id,
     rating: parsed.data.rating,
     content: parsed.data.content,
+    is_public: false,   // 운영자 승인 후 공개
+    status: "pending",  // 승인 대기
   });
 
   if (error) {

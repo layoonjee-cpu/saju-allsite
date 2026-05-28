@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendResendEmail, emailWrapper, resultLinkButton, SITE_URL, RESEND_FROM } from "@/lib/email";
 
+const bodySchema = z.object({
+  message: z.string().min(1).max(10000),
+});
+
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ resultId: string }> }
 ) {
   if (!(await isAdminAuthenticated())) {
@@ -12,19 +17,21 @@ export async function POST(
   }
 
   const { resultId } = await params;
-  if (!resultId) {
-    return NextResponse.json({ ok: false, error: "resultId required" }, { status: 400 });
+  const parsed = bodySchema.safeParse(await req.json());
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: "message 필드가 필요합니다" }, { status: 400 });
   }
+  const { message } = parsed.data;
 
   const svc = createServiceClient();
 
-  const { data: result, error: resultErr } = await svc
+  const { data: result } = await svc
     .from("saju_results")
-    .select("id, order_id, generation_status, pdf_url")
+    .select("id, order_id")
     .eq("id", resultId)
     .single();
 
-  if (resultErr || !result) {
+  if (!result) {
     return NextResponse.json({ ok: false, error: "result not found" }, { status: 404 });
   }
 
@@ -38,7 +45,7 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "order not found" }, { status: 404 });
   }
 
-  // 이메일: 게스트 이메일 우선, 없으면 회원 이메일 조회
+  // 이메일 주소 조회
   let email: string | null = order.guest_email ?? null;
   if (!email && order.user_id) {
     try {
@@ -59,18 +66,24 @@ export async function POST(
   const name = input?.name ?? "고객";
 
   const resultUrl = `${SITE_URL}/results/${resultId}`;
-  const isVip = !!result.pdf_url;
-  const subject = isVip
-    ? `[시선] ${name}님의 깊은 시선 VIP 보고서를 확인하세요`
-    : `[시선] ${name}님의 사주 분석 결과를 확인하세요`;
+  const subject = `[시선] ${name}님의 추가 분석 결과를 보내드립니다`;
+
+  // 운영자 메시지를 줄바꿈 보존 HTML로 변환
+  const messageHtml = message
+    .split("\n")
+    .map((line) => `<p style="margin:0 0 10px;">${line || "&nbsp;"}</p>`)
+    .join("");
 
   const bodyHtml = `
     <p style="font-size:16px;color:#1A1A1A;line-height:1.7;">
-      <strong>${name}님</strong>, 안녕하세요.<br><br>
-      ${isVip
-        ? "정성을 담아 작성한 <strong>깊은 시선 VIP 사주 보고서</strong>가 준비되었습니다."
-        : "요청하신 <strong>사주 분석 결과</strong>가 준비되었습니다."}
+      <strong>${name}님</strong>, 안녕하세요.<br>
+      추가 분석 결과를 보내드립니다.
     </p>
+    <hr style="border:none;border-top:1px solid #E8E0D0;margin:24px 0;">
+    <div style="font-size:15px;color:#2A2A2A;line-height:1.9;background:#FAF7F2;border-radius:8px;padding:24px;">
+      ${messageHtml}
+    </div>
+    <hr style="border:none;border-top:1px solid #E8E0D0;margin:24px 0;">
     ${resultLinkButton(resultUrl)}
     <p style="font-size:12px;color:#999;text-align:center;">문의: ${RESEND_FROM}</p>
   `;
@@ -81,7 +94,7 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "email send failed" }, { status: 500 });
   }
 
-  // 발송 성공 시 email_sent_at 기록 (7일 열람 만료 기준)
+  // email_sent_at 갱신 (7일 만료 기준 초기화)
   await svc
     .from("saju_results")
     .update({ email_sent_at: new Date().toISOString() })
