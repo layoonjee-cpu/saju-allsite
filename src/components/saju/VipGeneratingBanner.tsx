@@ -1,47 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-type Props = {
-  resultId: string;
-};
+type GenState = "triggering" | "failed";
 
-export function VipGeneratingBanner({ resultId }: Props) {
+export function VipGeneratingBanner({ resultId }: { resultId: string }) {
   const router = useRouter();
+  const [state, setState] = useState<GenState>("triggering");
   const [elapsed, setElapsed] = useState(0);
-  const [checking, setChecking] = useState(false);
 
-  // 30초마다 generation_status 확인
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (checking) return;
-      setChecking(true);
-      setElapsed((e) => e + 30);
-      try {
-        const res = await fetch(`/api/results/${resultId}/status`);
-        const data = await res.json();
-        // complete 또는 failed → 페이지 새로고침 (배너 사라지고 분석지 또는 오류 표시)
-        if (data.status === "complete" || data.status === "failed") {
-          router.refresh();
-        }
-      } catch {
-        // 네트워크 오류 무시, 다음 주기에 재시도
-      } finally {
-        setChecking(false);
+  const trigger = useCallback(async () => {
+    setState("triggering");
+    setElapsed(0);
+    try {
+      const res = await fetch(`/api/results/${resultId}/generate`, { method: "POST" });
+      const data = await res.json() as { status: string };
+      if (data.status === "complete") {
+        router.refresh();
+      } else {
+        setState("failed");
       }
-    }, 30_000);
+    } catch {
+      setState("failed");
+    }
+  }, [resultId, router]);
 
-    return () => clearInterval(interval);
-  }, [resultId, router, checking]);
+  // 마운트 시 즉시 LLM 트리거
+  useEffect(() => {
+    trigger();
+  }, [trigger]);
 
-  const minutes = Math.floor(elapsed / 60);
-  const seconds = elapsed % 60;
-  const elapsedText = elapsed === 0 ? "" : ` (${minutes > 0 ? `${minutes}분 ` : ""}${seconds}초 경과)`;
+  // 경과 시간 (1초 단위, 생성 중일 때만)
+  useEffect(() => {
+    if (state !== "triggering") return;
+    const t = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(t);
+  }, [state]);
 
+  const min = Math.floor(elapsed / 60);
+  const sec = elapsed % 60;
+  const elapsedText =
+    elapsed === 0 ? "" : ` (${min > 0 ? `${min}분 ` : ""}${sec}초 경과)`;
+
+  // 실패 / 타임아웃 상태
+  if (state === "failed") {
+    return (
+      <div className="my-10 rounded-2xl border border-red-200 bg-red-50/60 p-8 text-center backdrop-blur-sm">
+        <p className="text-3xl mb-3">⚠️</p>
+        <h2 className="text-lg font-semibold text-red-800 mb-2">
+          분석 생성에 시간이 걸리고 있습니다
+        </h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          서버 상황에 따라 분析지 생성이 지연될 수 있습니다.
+          <br />
+          아래 버튼을 눌러 다시 시도해 주세요.
+        </p>
+        <button
+          onClick={trigger}
+          className="px-6 py-2.5 rounded-full bg-[#2D5C5C] text-white text-sm font-medium hover:bg-[#24494A] transition-colors"
+        >
+          ⟳ 다시 시도
+        </button>
+      </div>
+    );
+  }
+
+  // 생성 중 상태
   return (
     <div className="my-10 rounded-2xl border border-amber-200 bg-amber-50/60 p-8 text-center backdrop-blur-sm">
-      {/* 회전 애니메이션 */}
+      {/* 스피너 */}
       <div className="mb-6 flex justify-center">
         <div className="relative h-16 w-16">
           <div className="absolute inset-0 animate-spin rounded-full border-4 border-amber-200 border-t-teal-600" />
@@ -55,24 +83,28 @@ export function VipGeneratingBanner({ resultId }: Props) {
         보고서를 정성스럽게 작성 중입니다
       </h2>
       <p className="text-sm text-muted-foreground">
-        깊은 시선 VIP 보고서는 17개 섹션, 약 10,000자 이상으로 구성됩니다.
+        깊은 시선 VIP 보고서는 17개 섹션으로 구성됩니다.
         <br />
-        약 <strong>2~3분</strong> 후 이 페이지에 분석지가 자동으로 표시됩니다.{elapsedText}
+        약 <strong>1~2분</strong> 후 이 페이지에 분析지가 자동으로 표시됩니다.
+        {elapsedText}
       </p>
 
       <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-          사주 명식 16종 데이터 분석 완료
+          사주 명식 16종 데이터 분析 완료
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" style={{ animationDelay: "0.3s" }} />
-          GPT-4o가 17개 섹션 심층 분석 중
+          <span
+            className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500"
+            style={{ animationDelay: "0.3s" }}
+          />
+          AI가 17개 섹션 심층 분析 중
         </div>
       </div>
 
       <p className="mt-6 text-xs text-muted-foreground/70">
-        이 페이지를 열어두시면 완료 시 자동으로 분석지가 표시됩니다.
+        이 페이지를 열어두시면 완료 시 자동으로 분析지가 표시됩니다.
       </p>
     </div>
   );

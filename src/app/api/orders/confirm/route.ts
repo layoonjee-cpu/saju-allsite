@@ -272,29 +272,13 @@ export async function POST(request: NextRequest) {
       partnerGender: (input.partner_gender ?? undefined) as "male" | "female" | undefined,
     };
 
-    // ── VIP: myeongsik + raw_saju_json 계산 완료 → 미리 확보한 row 업데이트 ──
+    // ── VIP: myeongsik + raw_saju_json 계산 완료 → row 업데이트 후 즉시 반환 ──
+    // LLM은 결과 페이지의 VipGeneratingBanner가 /api/results/{id}/generate 호출로 트리거함
     if (isPremiumVip && vipEarlyResultId) {
       await service
         .from("saju_results")
         .update({ myeongsik: myeongsik as never, raw_saju_json: rawSajuJson as never })
         .eq("id", vipEarlyResultId);
-
-      // LLM 시도 — 실패해도 generating 상태 유지 (어드민 재생성 가능)
-      try {
-        const { system, user } = buildSajuPrompt(promptArgs);
-        const llm = await generateInterpretation({ system, user });
-        await service
-          .from("saju_results")
-          .update({
-            interpretation_md: llm.text,
-            llm_provider: llm.provider,
-            llm_model: llm.model,
-            generation_status: "complete",
-          })
-          .eq("id", vipEarlyResultId);
-      } catch (llmErr) {
-        console.error("[VIP confirm] LLM 실패, generating 상태 유지 (어드민 재생성 가능):", llmErr);
-      }
 
       return NextResponse.json({ resultId: vipEarlyResultId });
     }
