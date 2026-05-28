@@ -209,8 +209,18 @@ export async function POST(
     // ?section=1~10 : Hobby 플랜 60초 제한 내 단일 섹션만 생성
     // 섹션1: interpretation_md 초기화, 섹션2~9: 이어붙이기, 섹션10: complete 처리
     if (isSectionCall && isPremiumProduct) {
+      // ── 이미 완성된 콘텐츠라면 섹션1 호출에서도 즉시 complete 반환 (무한루프 방지) ──
+      // generation_status=complete 이고 충분한 내용(10,000자 이상)이 있으면 재생성 불필요
+      if (result.generation_status === "complete") {
+        const existingMd = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
+        if (existingMd.length >= 10000) {
+          console.log("[generate] 이미 완성된 콘텐츠 감지 — 즉시 complete 반환");
+          return NextResponse.json({ status: "complete" });
+        }
+      }
+
       const sections = buildVipSectionPrompts(promptArgs);
-      const TOTAL = sections.length; // 10
+      const TOTAL = sections.length;
 
       if (sectionNum < 1 || sectionNum > TOTAL) {
         return NextResponse.json({ status: "failed", error: `section out of range: ${sectionNum}` }, { status: 400 });

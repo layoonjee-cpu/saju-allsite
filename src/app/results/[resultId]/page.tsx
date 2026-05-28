@@ -65,22 +65,17 @@ export default async function ResultPage({
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
 
-  // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트 / 잘못된 연도)
+  // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트)
   const isBadContent = (() => {
     if (!isPremiumVip || result.generation_status !== "complete") return false;
     const md = result.interpretation_md ?? "";
     const lower = md.toLowerCase();
-    const curYear = new Date().getFullYear();
-    const hasWrongYear =
-      md.includes("2023년") || md.includes("2024년") ||
-      (curYear >= 2026 && md.includes("2025년") && !md.includes(`${curYear}년`));
     return (
       md.length < 200 ||
       lower.includes("i'm sorry") ||
       lower.includes("i cannot") ||
       lower.includes("i can't assist") ||
-      lower.includes("죄송합니다만") ||
-      hasWrongYear
+      lower.includes("죄송합니다만")
     );
   })();
 
