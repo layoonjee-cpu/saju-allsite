@@ -233,39 +233,71 @@ export default async function ResultPage({
       {isBasicSaju && !showBanner && (
         <section className="mt-10 rounded-2xl overflow-hidden shadow-xl">
           {/* 헤더 */}
-          <div className="bg-[#1a3a38] px-6 pt-7 pb-2 text-center">
+          <div className="bg-[#1a3a38] px-6 pt-7 pb-5 text-center">
             <p className="text-[10px] font-bold tracking-[0.2em] text-teal-300/60 mb-2">UPGRADE · 깊은 시선 VIP</p>
             <h2 className="text-white text-[22px] font-black leading-snug">
               아직 사주의{" "}
-              <span className="text-amber-400 underline decoration-amber-400/40 underline-offset-3">10%</span>
-              밖에<br />못 보셨어요
+              <span className="text-amber-400">10%</span>
+              밖에 못 보셨어요
             </h2>
-            <p className="mt-2.5 text-teal-200/70 text-[13px] leading-relaxed">
-              27개 항목 전체로 나머지{" "}
-              <span className="text-white font-bold">90%</span>를 확인해보세요
+            <p className="mt-2 text-teal-200/70 text-[13px]">
+              아래 <span className="text-white font-bold">27가지 분석</span> 중 오늘 확인하신 건 극히 일부입니다
             </p>
           </div>
 
-          {/* 미확인 항목 리스트 */}
-          <div className="bg-[#1a3a38] px-5 pt-4 pb-5 space-y-2">
-            {[
-              "대운 심층분석 — 황금기와 저점이 오는 시기",
-              "재물운 — 돈이 모이는 구조와 손재수",
-              "직업운 — 맞는 직종과 성공 전략",
-              "연애운 · 결혼운 — 인연의 시기와 배우자 상",
-              "건강운 — 타고난 약한 부위와 관리법",
-              "12개월 월별 상세 운세",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-2.5 bg-white/5 border border-white/8 rounded-xl px-4 py-2.5">
-                <span className="text-amber-400 text-[11px] font-bold shrink-0">→</span>
-                <span className="text-teal-100 text-[13px] leading-snug">{item}</span>
-              </div>
-            ))}
+          {/* 심층 분석 14개 */}
+          <div className="bg-[#1a3a38] px-5 pb-1">
+            <p className="text-[10px] font-bold tracking-widest text-teal-400/70 mb-2 pl-1">— 심층 분석 · 14개 섹션</p>
+            <div className="space-y-1.5">
+              {[
+                ["01", "프롤로그 · 사주팔자 원국 구조"],
+                ["02", "일간의 본질 · 신강신약 분석"],
+                ["03", "음양오행 · 십성(十星) 분포"],
+                ["04", "격국(格局) · 용신(用神) 분석"],
+                ["05", "어린 시절 · 성장 환경 · 타고난 성품"],
+                ["06", "직업 적성 · 재능과 추천 직업군"],
+                ["07", "직장운 · 사업운 · 성공 전략"],
+                ["08", "재물 그릇 · 타고난 경제 에너지"],
+                ["09", "재물운 흐름 · 시기별 전략"],
+                ["10", "연애 성향 · 감정 패턴"],
+                ["11", "이상형 · 배우자운 · 결혼 시기"],
+                ["12", "건강운 · 체질과 주의 부위"],
+                ["13", "귀인운 · 인간관계 패턴"],
+                ["14", "대운(大運) 흐름 · 황금기와 저점"],
+              ].map(([num, label]) => (
+                <div key={num} className="flex items-center gap-2.5 bg-white/5 rounded-lg px-3 py-2">
+                  <span className="text-[10px] font-black text-teal-500 w-5 shrink-0 text-center">{num}</span>
+                  <span className="text-teal-100 text-[12px] leading-snug">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* 가격 + CTA */}
-          <div className="bg-[#0f2625] px-5 py-5 text-center">
-            <p className="text-teal-400/70 text-[11px] tracking-widest mb-1">깊은 시선 사주 (VIP)</p>
+          {/* 월별 운세 12개 */}
+          <div className="bg-[#1a3a38] px-5 pt-4 pb-1">
+            <p className="text-[10px] font-bold tracking-widest text-teal-400/70 mb-2 pl-1">— 월별 운세 · 12개월</p>
+            <div className="bg-white/5 rounded-lg px-4 py-3 flex items-center gap-3">
+              <span className="text-teal-400 text-lg">📅</span>
+              <span className="text-teal-100 text-[12px] leading-snug">현재월부터 12개월 각각 심층 분석 <span className="text-teal-400">(섹션 15~26)</span></span>
+            </div>
+          </div>
+
+          {/* 마무리 */}
+          <div className="bg-[#1a3a38] px-5 pt-4 pb-5">
+            <p className="text-[10px] font-bold tracking-widest text-teal-400/70 mb-2 pl-1">— 마무리 · 1개 섹션</p>
+            <div className="bg-white/5 rounded-lg px-4 py-3 flex items-center gap-3">
+              <span className="text-amber-400 text-lg">✨</span>
+              <span className="text-teal-100 text-[12px] leading-snug">합충형해파 · 개운법 · 종합 결론 <span className="text-teal-400">(섹션 27)</span></span>
+            </div>
+          </div>
+
+          {/* 훅 메시지 + 가격 + CTA */}
+          <div className="bg-[#0f2625] px-5 pt-5 pb-6 text-center">
+            <p className="text-teal-200 text-[13px] leading-relaxed mb-4 font-medium">
+              총 27가지 분석을 통해<br />
+              <span className="text-white font-bold">두 번 다시 사주를 안 보셔도 될</span><br />
+              프리미엄 분석입니다
+            </p>
             <div className="flex items-baseline justify-center gap-2 mb-1">
               <span className="text-white/35 text-sm line-through font-mono">60,000원</span>
               <span className="text-white text-[30px] font-black leading-none font-mono">30,000원</span>
@@ -273,9 +305,9 @@ export default async function ResultPage({
             <p className="text-amber-400 text-[12px] font-bold mb-4">50% 특가</p>
             <Link
               href="/products/premium-saju"
-              className="flex items-center justify-center w-full h-13 py-3.5 rounded-2xl text-[15px] font-bold text-[#0f2625] bg-amber-400 hover:bg-amber-300 active:scale-[0.98] transition-all"
+              className="flex items-center justify-center w-full py-3.5 rounded-2xl text-[15px] font-bold text-[#0f2625] bg-amber-400 hover:bg-amber-300 active:scale-[0.98] transition-all"
             >
-              나머지 90% 확인하러 가기 →
+              나머지 90% 전체 확인하기 →
             </Link>
           </div>
         </section>
