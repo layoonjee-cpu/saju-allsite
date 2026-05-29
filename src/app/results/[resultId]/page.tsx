@@ -132,7 +132,21 @@ export default async function ResultPage({
       {!isDreamReading && !showBanner && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
-          <MyeongsikTable myeongsik={myeongsik} rawJson={result.raw_saju_json ?? undefined} />
+          {/* 궁합: 두 사람 명식 나란히 */}
+          {isLoveSaju && partnerMyeongsikRaw ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">{sajuInput?.name ?? "나"}</p>
+                <MyeongsikTable myeongsik={myeongsik} rawJson={result.raw_saju_json ?? undefined} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">{sajuInput?.partner_name ?? "상대방"}</p>
+                <MyeongsikTable myeongsik={partnerMyeongsikRaw} />
+              </div>
+            </div>
+          ) : (
+            <MyeongsikTable myeongsik={myeongsik} rawJson={result.raw_saju_json ?? undefined} />
+          )}
         </section>
       )}
 

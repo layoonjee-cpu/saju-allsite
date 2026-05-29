@@ -116,7 +116,25 @@ export function MyeongsikTable({ myeongsik, rawJson }: Props) {
   const raw = rawJson && typeof rawJson === "object" ? (rawJson as RawJson) : null;
   const hasRaw = !!(raw?.sipseong || raw?.twelveFortune);
 
-  // ── 6행 리치 테이블 (rawJson 있을 때) ─────────────────────
+  // 각 메타데이터 행 실제 데이터 존재 여부 (모두 "—"이면 행 숨김)
+  const hasSipseongGan = !!(
+    raw?.sipseong?.year?.gan || raw?.sipseong?.month?.gan ||
+    raw?.sipseong?.day?.gan  || raw?.sipseong?.hour?.gan
+  );
+  const hasSipseongJi = !!(
+    raw?.sipseong?.year?.ji || raw?.sipseong?.month?.ji ||
+    raw?.sipseong?.day?.ji  || raw?.sipseong?.hour?.ji
+  );
+  const hasTwelveFortuneData = !!(
+    raw?.twelveFortune?.year || raw?.twelveFortune?.month ||
+    raw?.twelveFortune?.day  || raw?.twelveFortune?.hour
+  );
+  const hasSibisinsalsData = !!(
+    raw?.sibisinsals?.year || raw?.sibisinsals?.month ||
+    raw?.sibisinsals?.day  || raw?.sibisinsals?.hour
+  );
+
+  // ── 리치 테이블 (rawJson 있을 때) ─────────────────────────
   if (hasRaw) {
     return (
       <div className="rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
@@ -129,17 +147,19 @@ export function MyeongsikTable({ myeongsik, rawJson }: Props) {
           ))}
         </div>
 
-        {/* ① 십성(천간) 행 */}
-        <div className="grid grid-cols-4 border-b border-[#f0ede8]">
-          {pillars.map(({ key, label }) => {
-            const sg = raw?.sipseong?.[key]?.gan;
-            return (
-              <div key={`sg-${label}`} className="py-1.5 text-center text-[11px] text-[#999]">
-                {sg || (key === "day" ? "일간" : "—")}
-              </div>
-            );
-          })}
-        </div>
+        {/* ① 십성(천간) 행 — 실제 데이터 있을 때만 */}
+        {hasSipseongGan && (
+          <div className="grid grid-cols-4 border-b border-[#f0ede8]">
+            {pillars.map(({ key, label }) => {
+              const sg = raw?.sipseong?.[key]?.gan;
+              return (
+                <div key={`sg-${label}`} className="py-1.5 text-center text-[11px] text-[#999]">
+                  {sg || (key === "day" ? "일간" : "—")}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* ② 천간 대형 행 */}
         <div className="grid grid-cols-4 border-b border-[#e8e4dd]">
@@ -159,8 +179,8 @@ export function MyeongsikTable({ myeongsik, rawJson }: Props) {
           })}
         </div>
 
-        {/* ③ 지지 대형 행 */}
-        <div className="grid grid-cols-4 border-b border-[#e8e4dd]">
+        {/* ③ 지지 대형 행 — 아래 메타행이 있을 때만 border-b */}
+        <div className={`grid grid-cols-4${hasSipseongJi || hasTwelveFortuneData || hasSibisinsalsData ? " border-b border-[#e8e4dd]" : ""}`}>
           {pillars.map(({ label, pillar }) => {
             const jj = pillar?.jiji ?? "—";
             const color = getColor(jj);
@@ -177,41 +197,47 @@ export function MyeongsikTable({ myeongsik, rawJson }: Props) {
           })}
         </div>
 
-        {/* ④ 십성(지지) 행 */}
-        <div className="grid grid-cols-4 border-b border-[#f0ede8]">
-          {pillars.map(({ key, label }) => {
-            const sj = raw?.sipseong?.[key]?.ji;
-            return (
-              <div key={`sj-${label}`} className="py-1.5 text-center text-[11px] text-[#999]">
-                {sj || "—"}
-              </div>
-            );
-          })}
-        </div>
+        {/* ④ 십성(지지) 행 — 실제 데이터 있을 때만 */}
+        {hasSipseongJi && (
+          <div className={`grid grid-cols-4 ${hasTwelveFortuneData || hasSibisinsalsData ? "border-b border-[#f0ede8]" : ""}`}>
+            {pillars.map(({ key, label }) => {
+              const sj = raw?.sipseong?.[key]?.ji;
+              return (
+                <div key={`sj-${label}`} className="py-1.5 text-center text-[11px] text-[#999]">
+                  {sj || "—"}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* ⑤ 12운성 행 */}
-        <div className="grid grid-cols-4 border-b border-[#f0ede8] bg-[#faf8f5]">
-          {pillars.map(({ key, label }) => {
-            const tf = raw?.twelveFortune?.[key];
-            return (
-              <div key={`tf-${label}`} className="py-1.5 text-center text-[11px] text-[#888]">
-                {typeof tf === "string" ? tf : "—"}
-              </div>
-            );
-          })}
-        </div>
+        {/* ⑤ 12운성 행 — 실제 데이터 있을 때만 */}
+        {hasTwelveFortuneData && (
+          <div className={`grid grid-cols-4 bg-[#faf8f5] ${hasSibisinsalsData ? "border-b border-[#f0ede8]" : ""}`}>
+            {pillars.map(({ key, label }) => {
+              const tf = raw?.twelveFortune?.[key];
+              return (
+                <div key={`tf-${label}`} className="py-1.5 text-center text-[11px] text-[#888]">
+                  {typeof tf === "string" ? tf : "—"}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* ⑥ 12신살 행 */}
-        <div className="grid grid-cols-4">
-          {pillars.map(({ key, label }) => {
-            const ss = raw?.sibisinsals?.[key];
-            return (
-              <div key={`ss-${label}`} className="py-1.5 text-center text-[11px] text-[#888]">
-                {parseSinsal(ss as string | string[] | undefined)}
-              </div>
-            );
-          })}
-        </div>
+        {/* ⑥ 12신살 행 — 실제 데이터 있을 때만 */}
+        {hasSibisinsalsData && (
+          <div className="grid grid-cols-4">
+            {pillars.map(({ key, label }) => {
+              const ss = raw?.sibisinsals?.[key];
+              return (
+                <div key={`ss-${label}`} className="py-1.5 text-center text-[11px] text-[#888]">
+                  {parseSinsal(ss as string | string[] | undefined)}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* 범례 */}
         <div className="border-t border-[#f0ede8] px-4 py-2 flex flex-wrap gap-x-4 gap-y-1 justify-center bg-[#faf8f5]">
