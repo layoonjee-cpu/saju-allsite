@@ -116,7 +116,10 @@ export default function StoryPage() {
               </div>
               <div className={styles.productDesc}>내 사주를 처음 들여다보는 분께 권하는 입문 상품</div>
             </div>
-            <div className={styles.productPrice}>4,900<small>원</small></div>
+            <div className={styles.productPrice} style={{ textAlign: "right" }}>
+              <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through", display: "block", lineHeight: 1.3 }}>9,900원</span>
+              4,900<small>원</small>
+            </div>
           </Link>
 
           <Link href="/products/love-saju" className={styles.productCard}>
@@ -128,7 +131,10 @@ export default function StoryPage() {
               </div>
               <div className={styles.productDesc}>두 사람의 결, 갈등의 원인과 해결의 실마리까지</div>
             </div>
-            <div className={styles.productPrice}>15,000<small>원</small></div>
+            <div className={styles.productPrice} style={{ textAlign: "right" }}>
+              <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through", display: "block", lineHeight: 1.3 }}>50,000원</span>
+              20,000<small>원</small>
+            </div>
           </Link>
 
           <Link href="/products/premium-saju" className={`${styles.productCard} ${styles.productCardVip}`}>
@@ -141,7 +147,10 @@ export default function StoryPage() {
               </div>
               <div className={styles.productDesc}>당신의 인생 전체를 한 권의 책처럼 펼쳐드립니다</div>
             </div>
-            <div className={styles.productCardVipPrice}>20,000<small style={{ fontSize: 11, color: "#9B958B", marginLeft: 2 }}>원</small></div>
+            <div className={styles.productCardVipPrice}>
+              <span style={{ fontSize: 10, color: "#b0a89a", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>60,000원</span>
+              30,000<small style={{ fontSize: 11, color: "#9B958B", marginLeft: 2 }}>원</small>
+            </div>
           </Link>
 
         </div>

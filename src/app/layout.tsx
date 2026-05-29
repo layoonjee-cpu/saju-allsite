@@ -78,6 +78,14 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </span>
         </Link>
 
+        {/* 시선스토리 — 모바일 전용 로고 옆 링크 */}
+        <Link
+          href="/story"
+          className="md:hidden text-[11px] font-bold text-[#2b6e6e] bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full shrink-0 -ml-1 hover:bg-teal-100 transition-colors"
+        >
+          시선스토리
+        </Link>
+
         {/* 상품 메뉴 — 데스크톱만 표시 */}
         <nav className="hidden md:flex items-center gap-0.5">
           {navItems.map((item) => (
