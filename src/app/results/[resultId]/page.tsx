@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -74,6 +75,7 @@ export default async function ResultPage({
   const isLoveSaju = product?.slug === "love-saju";
   const isTodayFortune = product?.slug === "today-fortune";
   const isIljuSticker = product?.slug === "ilju-sticker";
+  const isBasicSaju = product?.slug === "basic-saju";
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
@@ -225,6 +227,58 @@ export default async function ResultPage({
             <ResultBody markdown={result.interpretation_md} />
           </article>
         )
+      )}
+
+      {/* ── 기본사주 → 깊은시선 VIP 업셀 배너 ── */}
+      {isBasicSaju && !showBanner && (
+        <section className="mt-10 rounded-2xl overflow-hidden shadow-xl">
+          {/* 헤더 */}
+          <div className="bg-[#1a3a38] px-6 pt-7 pb-2 text-center">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-teal-300/60 mb-2">UPGRADE · 깊은 시선 VIP</p>
+            <h2 className="text-white text-[22px] font-black leading-snug">
+              아직 사주의{" "}
+              <span className="text-amber-400 underline decoration-amber-400/40 underline-offset-3">10%</span>
+              밖에<br />못 보셨어요
+            </h2>
+            <p className="mt-2.5 text-teal-200/70 text-[13px] leading-relaxed">
+              27개 항목 전체로 나머지{" "}
+              <span className="text-white font-bold">90%</span>를 확인해보세요
+            </p>
+          </div>
+
+          {/* 미확인 항목 리스트 */}
+          <div className="bg-[#1a3a38] px-5 pt-4 pb-5 space-y-2">
+            {[
+              "대운 심층분석 — 황금기와 저점이 오는 시기",
+              "재물운 — 돈이 모이는 구조와 손재수",
+              "직업운 — 맞는 직종과 성공 전략",
+              "연애운 · 결혼운 — 인연의 시기와 배우자 상",
+              "건강운 — 타고난 약한 부위와 관리법",
+              "12개월 월별 상세 운세",
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-2.5 bg-white/5 border border-white/8 rounded-xl px-4 py-2.5">
+                <span className="text-amber-400 text-[11px] font-bold shrink-0">→</span>
+                <span className="text-teal-100 text-[13px] leading-snug">{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* 가격 + CTA */}
+          <div className="bg-[#0f2625] px-5 py-5 text-center">
+            <p className="text-teal-400/70 text-[11px] tracking-widest mb-1">깊은 시선 사주 (VIP)</p>
+            <div className="flex items-baseline justify-center gap-2 mb-1">
+              <span className="text-white/35 text-sm line-through font-mono">60,000원</span>
+              <span className="text-white text-[30px] font-black leading-none font-mono">30,000원</span>
+            </div>
+            <p className="text-amber-400 text-[12px] font-bold mb-4">50% 특가</p>
+            <Link
+              href="/products/premium-saju"
+              className="flex items-center justify-center w-full h-13 py-3.5 rounded-2xl text-[15px] font-bold text-[#0f2625] bg-amber-400 hover:bg-amber-300 active:scale-[0.98] transition-all"
+            >
+              나머지 90% 확인하러 가기 →
+            </Link>
+          </div>
+        </section>
       )}
 
       {/* 분석 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
