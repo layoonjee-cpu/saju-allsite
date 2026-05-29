@@ -11,6 +11,7 @@ import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import { SipsinChart } from "@/components/saju/SipsinChart";
 import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
 import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
+import { IljuStickerCard, type IljuStickerData } from "@/components/saju/IljuStickerCard";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -72,6 +73,7 @@ export default async function ResultPage({
   const isPremiumVip = product?.slug === "premium-saju";
   const isLoveSaju = product?.slug === "love-saju";
   const isTodayFortune = product?.slug === "today-fortune";
+  const isIljuSticker = product?.slug === "ilju-sticker";
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
@@ -94,7 +96,7 @@ export default async function ResultPage({
   const showBanner = isPremiumVip && (isGenerating || isBadContent);
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
-  const showChart = !isDreamReading && !isFree && !showBanner;
+  const showChart = !isDreamReading && !isIljuSticker && !isFree && !showBanner;
 
   // 오늘의 운세 — JSON 파싱 시도 (성공 시 TodayFortuneCard 사용)
   let todayFortuneData: TodayFortuneData | null = null;
@@ -104,6 +106,19 @@ export default async function ResultPage({
         .replace(/^```json\n?/, "")
         .replace(/\n?```$/, "");
       todayFortuneData = JSON.parse(md) as TodayFortuneData;
+    } catch {
+      // JSON 파싱 실패 → fallback: ResultBody로 표시
+    }
+  }
+
+  // 일주스티커 — JSON 파싱 시도 (성공 시 IljuStickerCard 사용)
+  let iljuStickerData: IljuStickerData | null = null;
+  if (isIljuSticker && result.interpretation_md) {
+    try {
+      const md = result.interpretation_md.trim()
+        .replace(/^```json\n?/, "")
+        .replace(/\n?```$/, "");
+      iljuStickerData = JSON.parse(md) as IljuStickerData;
     } catch {
       // JSON 파싱 실패 → fallback: ResultBody로 표시
     }
@@ -143,8 +158,8 @@ export default async function ResultPage({
         <VipDownloadButton resultId={resultId} />
       )}
 
-      {/* 사주 명식표 (꿈해몽·VIP 생성중·불량 콘텐츠 제외) */}
-      {!isDreamReading && !showBanner && (
+      {/* 사주 명식표 (꿈해몽·일주스티커·VIP 생성중·불량 콘텐츠 제외) */}
+      {!isDreamReading && !isIljuSticker && !showBanner && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
           {/* 궁합: 두 사람 명식 나란히 */}
@@ -197,8 +212,11 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* 오늘의 운세: 구조화 카드 (JSON 파싱 성공 시) */}
-      {isTodayFortune && todayFortuneData ? (
+      {/* 일주스티커: 구조화 카드 (JSON 파싱 성공 시) */}
+      {isIljuSticker && iljuStickerData ? (
+        <IljuStickerCard data={iljuStickerData} />
+      ) : /* 오늘의 운세: 구조화 카드 (JSON 파싱 성공 시) */
+      isTodayFortune && todayFortuneData ? (
         <TodayFortuneCard data={todayFortuneData} />
       ) : (
         /* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */

@@ -118,7 +118,36 @@ export function buildSajuPrompt(input: PromptInput): { system: string; user: str
   let user: string;
 
   switch (input.productSlug) {
-    case "today-fortune": {
+    case "ilju-sticker": {
+      user = `[상품] ${input.productName} (\u20a9990)
+
+${sajuInfo}
+
+위 사주의 일주(日柱) 특성을 나타내는 짧고 재치 있는 키워드/문구 12개를 JSON으로만 출력하세요.
+각 키워드는 5~16자 이내, SNS에서 공유하고 싶을 만큼 직관적이고 공감 가는 표현으로 작성합니다.
+마크다운 코드블록(\`\`\`)과 JSON 외 텍스트는 절대 포함하지 마세요.
+
+{
+  "일주": "庚申일주 (경신일주)",
+  "키워드": [
+    "재주가 너무 많아 탈임",
+    "남 밑에 절대 못 있음",
+    ... (총 12개)
+  ]
+}
+
+키워드 구성 기준:
+- 성격/기질 4개 (긍정·부정 혼합)
+- 대인관계·사회성 2개
+- 직업·재능 2개
+- 연애·감정 패턴 2개
+- 운세 특성(신살·격국 등) 2개
+
+반드시 실제 일주 이름(예: 庚申일주)을 정확히 "일주" 필드에 적고,
+사주 원국 데이터를 바탕으로 해당 일주의 실제 특성을 키워드에 반영하세요.`;
+      break;
+    }
+        case "today-fortune": {
       const today = new Date().toLocaleDateString("ko-KR", {
         year: "numeric", month: "long", day: "numeric", weekday: "short",
       });
