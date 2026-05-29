@@ -107,7 +107,7 @@ export default async function ResultPage({
       {!isDreamReading && !showBanner && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
-          <MyeongsikTable myeongsik={myeongsik} />
+          <MyeongsikTable myeongsik={myeongsik} rawJson={result.raw_saju_json ?? undefined} />
         </section>
       )}
 
