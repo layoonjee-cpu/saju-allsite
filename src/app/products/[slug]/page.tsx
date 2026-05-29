@@ -18,6 +18,13 @@ const productImages: Record<string, string> = {
   "premium-saju": "/product-premium.png",
 };
 
+// 정가 표시 (할인 전 가격) — DB 실제 결제가와 별개
+const productOriginalPrices: Record<string, number> = {
+  "basic-saju": 9900,
+  "love-saju": 50000,
+  "premium-saju": 60000,
+};
+
 type Product = { id: string; slug: string; name: string; description: string; price: number };
 type ProductOption = { id: string; slug: string; name: string; price: number };
 type Review = { id: string; rating: number; content: string; created_at: string };
@@ -92,7 +99,21 @@ export default async function ProductDetailPage({
           <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#1a1730]">{product.name}</h1>
           <p className="mt-3 text-sm text-[#4a4a6a] leading-relaxed">{product.description}</p>
-          <p className="mt-4 text-2xl font-mono font-semibold text-[#2D5C5C]">{formatKRW(product.price)}</p>
+          {productOriginalPrices[product.slug] ? (
+            <div className="mt-4 flex items-baseline gap-3 justify-center flex-wrap">
+              <span className="text-sm text-[#aaa] line-through font-mono">
+                정가 {formatKRW(productOriginalPrices[product.slug])}
+              </span>
+              <span className="text-2xl font-mono font-black text-[#2D5C5C]">
+                {formatKRW(product.price)}
+              </span>
+              <span className="text-xs font-bold text-white bg-rose-500 px-2 py-0.5 rounded-full">
+                {Math.round((1 - product.price / productOriginalPrices[product.slug]) * 100)}% OFF
+              </span>
+            </div>
+          ) : (
+            <p className="mt-4 text-2xl font-mono font-semibold text-[#2D5C5C]">{formatKRW(product.price)}</p>
+          )}
         </>
       </header>
 

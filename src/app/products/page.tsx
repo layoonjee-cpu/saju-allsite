@@ -14,6 +14,12 @@ const productImages: Record<string, string> = {
   "premium-saju": "/product-premium.png",
 };
 
+const productOriginalPrices: Record<string, number> = {
+  "basic-saju": 9900,
+  "love-saju": 50000,
+  "premium-saju": 60000,
+};
+
 export const metadata = { title: "상품" };
 
 export default async function ProductsPage() {
@@ -66,7 +72,17 @@ export default async function ProductsPage() {
                 <p className="mt-1.5 text-sm text-[#4a4a6a] leading-relaxed line-clamp-2">
                   {p.description}
                 </p>
-                <p className="mt-4 text-lg font-mono font-semibold text-[#2D5C5C]">{formatKRW(p.price)}</p>
+                {productOriginalPrices[p.slug] ? (
+                  <div className="mt-4 flex items-baseline gap-2 flex-wrap">
+                    <span className="text-xs text-[#bbb] line-through font-mono">{formatKRW(productOriginalPrices[p.slug])}</span>
+                    <span className="text-lg font-mono font-black text-[#2D5C5C]">{formatKRW(p.price)}</span>
+                    <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full">
+                      {Math.round((1 - p.price / productOriginalPrices[p.slug]) * 100)}% OFF
+                    </span>
+                  </div>
+                ) : (
+                  <p className="mt-4 text-lg font-mono font-semibold text-[#2D5C5C]">{formatKRW(p.price)}</p>
+                )}
               </div>
             </Link>
           ))}

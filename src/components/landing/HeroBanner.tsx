@@ -3,8 +3,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { formatKRW } from "@/lib/utils";
 
-const SLIDES = [
+type Slide = {
+  slug: string;
+  name: string;
+  subtitle: string;
+  image: string;
+  price: number;
+  originalPrice?: number;
+  rank: number;
+  badgeLabel: string;
+  badgeColor: string;
+};
+
+const SLIDES: Slide[] = [
   {
     slug: "today-fortune",
     name: "오늘의 운세",
@@ -20,9 +33,10 @@ const SLIDES = [
     name: "연인의 시선",
     subtitle: "당신이 마주할, 인연의 비밀",
     image: "/product-love.png",
-    price: 15000,
+    price: 20000,
+    originalPrice: 50000,
     rank: 2,
-    badgeLabel: "₩15,000",
+    badgeLabel: "60% OFF",
     badgeColor: "bg-rose-500",
   },
   {
@@ -30,9 +44,10 @@ const SLIDES = [
     name: "깊은 시선 VIP",
     subtitle: "사주 원국 정밀 분석 A4 80장",
     image: "/product-premium.png",
-    price: 20000,
+    price: 30000,
+    originalPrice: 60000,
     rank: 3,
-    badgeLabel: "₩20,000",
+    badgeLabel: "50% OFF",
     badgeColor: "bg-[#2b6e6e]",
   },
   {
@@ -51,8 +66,9 @@ const SLIDES = [
     subtitle: "사주 첫걸음, 나를 들여다보다",
     image: "/product-basic.png",
     price: 4900,
+    originalPrice: 9900,
     rank: 5,
-    badgeLabel: "₩4,900",
+    badgeLabel: "50% OFF",
     badgeColor: "bg-amber-600",
   },
   {
@@ -185,11 +201,36 @@ export function HeroBanner() {
               {slide.name}
             </h2>
             <p
-              className="text-white/80 text-[14px] mt-2"
+              className="text-white/70 text-[13px] mt-1"
               style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}
             >
-              '{slide.subtitle}'
+              {slide.subtitle}
             </p>
+
+            {/* 가격 표시 */}
+            {slide.originalPrice ? (
+              <div className="mt-3 flex items-baseline gap-2.5 flex-wrap">
+                <span className="text-white/45 text-[15px] line-through font-medium">
+                  {formatKRW(slide.originalPrice)}
+                </span>
+                <span
+                  className="text-white text-[34px] sm:text-[38px] font-black leading-none tracking-tight"
+                  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.7)" }}
+                >
+                  {formatKRW(slide.price)}
+                </span>
+              </div>
+            ) : slide.price === 0 ? (
+              <p className="mt-3 text-emerald-300 text-[26px] font-black leading-none"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>
+                무료
+              </p>
+            ) : (
+              <p className="mt-3 text-white text-[26px] font-black leading-none"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>
+                {formatKRW(slide.price)}
+              </p>
+            )}
           </div>
         </Link>
 
