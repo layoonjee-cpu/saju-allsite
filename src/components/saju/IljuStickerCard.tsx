@@ -7,6 +7,8 @@
  * 서버 컴포넌트 — 외부 라이브러리 없음, 순수 Tailwind CSS + inline style.
  */
 
+import Image from "next/image";
+
 export type IljuStickerData = {
   일주: string;
   키워드: string[];
@@ -178,10 +180,19 @@ export function IljuStickerCard({ data }: { data: IljuStickerData }) {
       style={{ background: "#faf5e9" }}
     >
       {/* 헤더 */}
-      <div className="px-5 py-4 border-b border-[#e8e2d8]">
-        <p className="text-xs font-mono text-[#9e8c6a] tracking-widest mb-1">ILJU STICKER</p>
-        <p className="text-xl font-bold text-[#2d1f0e]">{data.일주}</p>
-        <p className="text-xs text-[#b09060] mt-1">일주가 말해주는 나의 기질</p>
+      <div className="relative flex items-center gap-4 px-5 py-4 border-b border-[#e8e2d8]">
+        <Image
+          src="/sticker.png"
+          alt="일주스티커 캐릭터"
+          width={72}
+          height={72}
+          className="shrink-0 drop-shadow-sm"
+        />
+        <div>
+          <p className="text-xs font-mono text-[#9e8c6a] tracking-widest mb-1">ILJU STICKER</p>
+          <p className="text-xl font-bold text-[#2d1f0e]">{data.일주}</p>
+          <p className="text-xs text-[#b09060] mt-1">일주가 말해주는 나의 기질</p>
+        </div>
       </div>
 
       {/* 배지 콜라주 */}
