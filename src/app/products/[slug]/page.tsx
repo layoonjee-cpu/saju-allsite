@@ -99,6 +99,42 @@ export default async function ProductDetailPage({
           <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#1a1730]">{product.name}</h1>
           <p className="mt-3 text-sm text-[#4a4a6a] leading-relaxed">{product.description}</p>
+
+          {/* premium-saju 전용 헤더 강화 */}
+          {product.slug === "premium-saju" && (
+            <>
+              {/* 27개 섹션 강조 배지 */}
+              <div className="mt-3 inline-flex items-center gap-1.5 bg-[#1a1730] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                <span>📑</span>
+                <span>27개 섹션으로 사주 총정리</span>
+              </div>
+
+              {/* 커버리지 키워드 배지들 */}
+              <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                {["일주·명식", "대운", "세운", "월운", "직업운", "재물운", "연애·배우자운", "건강운", "귀인·신살", "개운법"].map((kw) => (
+                  <span key={kw}
+                    className="text-[11px] font-semibold text-[#2D5C5C] bg-[#eaf4f4] border border-[#c0dede] px-2 py-0.5 rounded-full">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+
+              {/* 핵심 포인트 3개 */}
+              <ul className="mt-4 space-y-1.5 text-left max-w-xs mx-auto">
+                {[
+                  { icon: "✔", text: "사주의 모든 것 — 명식·격국·신강신약부터 월별 운세까지" },
+                  { icon: "✔", text: "지금 이 시점에 꼭 필요한 실전 조언 포함" },
+                  { icon: "✔", text: "타 서비스 대비 절반 가격, 동일한 깊이" },
+                ].map(({ icon, text }) => (
+                  <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
+                    <span className="text-teal-600 font-bold mt-0.5 shrink-0">{icon}</span>
+                    <span>{text}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
           {productOriginalPrices[product.slug] ? (
             <div className="mt-4 flex items-baseline gap-3 justify-center flex-wrap">
               <span className="text-sm text-[#aaa] line-through font-mono">
