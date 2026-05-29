@@ -8,7 +8,7 @@ import { productsSeed } from "@/config/products.seed";
 const cardImages: Record<string, string | null> = {
   "today-fortune": "/product-today.png",
   "dream-reading": "/product-dream.png",
-  "ilju-sticker": "/sticker 2.png",
+  "ilju-sticker": "/sticker2.png",
   "basic-saju": "/product-basic.png",
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
