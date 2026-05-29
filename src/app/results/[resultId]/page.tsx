@@ -59,8 +59,16 @@ export default async function ResultPage({
     ? await service.from("products").select("name, slug").eq("id", order.product_id).single()
     : { data: null };
 
+  // saju_inputs — 이름·파트너 이름 조회 (궁합 타이틀용)
+  const { data: sajuInput } = await service
+    .from("saju_inputs")
+    .select("name, partner_name")
+    .eq("order_id", result.order_id)
+    .maybeSingle();
+
   const isDreamReading = product?.slug === "dream-reading";
   const isPremiumVip = product?.slug === "premium-saju";
+  const isLoveSaju = product?.slug === "love-saju";
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
@@ -89,7 +97,16 @@ export default async function ResultPage({
     <div className="container py-12 max-w-2xl">
       <header className="mb-10">
         <p className="text-xs font-mono text-mute mb-2">RESULT</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{product?.name ?? "사주 풀이"}</h1>
+        {isLoveSaju && sajuInput?.name && sajuInput?.partner_name ? (
+          <>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {sajuInput.name}님과 {sajuInput.partner_name}님의 궁합 분석
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">{product?.name}</p>
+          </>
+        ) : (
+          <h1 className="text-3xl font-semibold tracking-tight">{product?.name ?? "사주 풀이"}</h1>
+        )}
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
