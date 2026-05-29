@@ -150,7 +150,7 @@ export function IljuStickerCard({ data }: { data: IljuStickerData }) {
             alt=""
             fill
             className="object-cover object-top"
-            style={{ opacity: 0.07 }}
+            style={{ opacity: 0.18 }}
             aria-hidden
           />
         </div>
