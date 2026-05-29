@@ -107,21 +107,21 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
               <Link
                 href="/mypage"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center h-12 w-full rounded-2xl text-[14px] font-semibold text-foreground/70 border border-amber-200 hover:bg-amber-50 transition-colors"
+                className="flex items-center justify-center h-12 w-full rounded-2xl text-[14px] font-bold text-white bg-[#2D5C5C] hover:bg-[#245050] transition-colors"
               >
                 마이페이지
               </Link>
               <Link
                 href="/reset"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center h-10 w-full rounded-xl text-[13px] font-medium text-foreground/45 hover:text-foreground/70 hover:bg-teal-50 transition-colors"
+                className="flex items-center justify-center h-11 w-full rounded-xl text-[13px] font-semibold text-[#2D5C5C] border border-[#2D5C5C]/30 hover:bg-teal-50 transition-colors"
               >
                 비밀번호 재설정
               </Link>
               <form action="/api/auth/signout" method="post">
                 <button
                   type="submit"
-                  className="flex items-center justify-center h-12 w-full rounded-2xl text-[14px] font-semibold text-foreground/60 hover:bg-teal-50 transition-colors"
+                  className="flex items-center justify-center h-11 w-full rounded-xl text-[13px] font-semibold text-[#1a1730]/70 hover:text-[#1a1730] hover:bg-amber-50 transition-colors"
                 >
                   로그아웃
                 </button>
