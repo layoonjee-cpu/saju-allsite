@@ -8,10 +8,14 @@ export const metadata = { title: "후기 작성" };
 
 export default async function WriteReviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderId: string }>;
+  searchParams?: Promise<{ next?: string }>;
 }) {
   const { orderId } = await params;
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const nextUrl = resolvedSearch.next ?? undefined;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirect=/mypage/orders/${orderId}/review`);
@@ -63,8 +67,13 @@ export default async function WriteReviewPage({
             <CardTitle>이미 후기를 작성했어요</CardTitle>
             <CardDescription>주문당 1개의 후기만 등록할 수 있습니다.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Link href="/mypage/reviews" className="text-sm font-medium underline">
+          <CardContent className="space-y-2">
+            {nextUrl && (
+              <Link href={nextUrl} className="block text-sm font-medium text-teal-700 underline">
+                결과 페이지로 돌아가기 →
+              </Link>
+            )}
+            <Link href="/mypage/reviews" className="block text-sm font-medium underline">
               내 후기 보러 가기 →
             </Link>
           </CardContent>
@@ -85,9 +94,14 @@ export default async function WriteReviewPage({
         <p className="text-xs font-mono text-mute mb-2">REVIEW</p>
         <h1 className="text-2xl font-semibold tracking-tight">후기 작성</h1>
       </header>
+      {nextUrl && (
+        <p className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-200 rounded-xl px-4 py-2.5">
+          ✍️ 후기 작성 후 <span className="font-bold">1회 무료 추가 질문</span>이 열립니다. 작성 완료 시 자동으로 결과 페이지로 돌아갑니다.
+        </p>
+      )}
       <Card>
         <CardContent className="pt-6">
-          <ReviewForm orderId={order.id} productName={product?.name ?? "-"} />
+          <ReviewForm orderId={order.id} productName={product?.name ?? "-"} nextUrl={nextUrl} />
         </CardContent>
       </Card>
     </div>

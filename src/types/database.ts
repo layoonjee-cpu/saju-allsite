@@ -80,6 +80,8 @@ type SajuResultRow = {
   pdf_url: string | null;
   raw_saju_json: Json | null;  // 운세위키 API 16종 원본 응답
   email_sent_at: string | null; // 이메일 발송 시각 (7일 열람 만료 기준)
+  extra_question: string | null;        // 후기 작성 후 1회 무료 추가 질문
+  extra_question_answer: string | null; // 추가 질문 LLM 답변
   created_at: string;
 };
 

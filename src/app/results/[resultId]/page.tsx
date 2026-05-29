@@ -13,6 +13,7 @@ import { SipsinChart } from "@/components/saju/SipsinChart";
 import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
 import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
 import { IljuStickerCard, type IljuStickerData } from "@/components/saju/IljuStickerCard";
+import { ExtraQuestionSection } from "@/components/saju/ExtraQuestionSection";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export default async function ResultPage({
 
   const { data: result } = await service
     .from("saju_results")
-    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url, email_sent_at, raw_saju_json")
+    .select("id, myeongsik, interpretation_md, llm_provider, llm_model, created_at, order_id, generation_status, pdf_url, email_sent_at, raw_saju_json, extra_question, extra_question_answer")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -70,6 +71,14 @@ export default async function ResultPage({
     .eq("order_id", result.order_id)
     .maybeSingle();
 
+  // 후기 작성 여부 (추가 질문 잠금 해제 조건)
+  const { data: existingReview } = await service
+    .from("reviews")
+    .select("id")
+    .eq("order_id", result.order_id)
+    .maybeSingle();
+  const hasReview = !!existingReview;
+
   const isDreamReading = product?.slug === "dream-reading";
   const isPremiumVip = product?.slug === "premium-saju";
   const isLoveSaju = product?.slug === "love-saju";
@@ -79,6 +88,8 @@ export default async function ResultPage({
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
+  // 추가 질문 기능: 결제금액 1900원 이상 상품에 한해 표시
+  const showExtraQuestion = (order?.amount ?? 0) >= 1900 && !isTodayFortune && !isIljuSticker;
 
   // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트)
   const isBadContent = (() => {
@@ -313,11 +324,22 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* 분석 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
+      {/* 분析 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
       {!isFree && !showBanner && (
         <ResultShareButtons
           resultId={resultId}
-          productName={product?.name ?? "사주 분석"}
+          productName={product?.name ?? "사주 분析"}
+        />
+      )}
+
+      {/* 추가 질문 섹션 (1900원 이상 결제 상품, 배너·오류 상태 제외) */}
+      {showExtraQuestion && !showBanner && (
+        <ExtraQuestionSection
+          resultId={resultId}
+          hasReview={hasReview}
+          reviewUrl={`/mypage/orders/${result.order_id}/review?next=/results/${resultId}`}
+          existingQuestion={result.extra_question ?? null}
+          existingAnswer={result.extra_question_answer ?? null}
         />
       )}
     </div>

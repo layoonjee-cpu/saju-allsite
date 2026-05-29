@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 type Props = {
   orderId: string;
   productName: string;
+  /** 후기 제출 후 이동할 URL (결과 페이지로 돌아가기 용) */
+  nextUrl?: string;
 };
 
-export function ReviewForm({ orderId, productName }: Props) {
+export function ReviewForm({ orderId, productName, nextUrl }: Props) {
   const router = useRouter();
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState("");
@@ -33,8 +35,10 @@ export function ReviewForm({ orderId, productName }: Props) {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "후기 저장 실패");
-      toast.success("후기가 등록되었습니다");
-      router.push("/mypage/reviews");
+      toast.success(nextUrl
+        ? "후기가 등록되었습니다. 추가 질문 페이지로 이동합니다."
+        : "후기가 등록되었습니다");
+      router.push(nextUrl ?? "/mypage/reviews");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "오류가 발생했습니다");
