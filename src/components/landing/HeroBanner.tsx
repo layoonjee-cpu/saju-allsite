@@ -55,6 +55,16 @@ const SLIDES = [
     badgeLabel: "₩4,900",
     badgeColor: "bg-amber-600",
   },
+  {
+    slug: "ilju-sticker",
+    name: "일주스티커",
+    subtitle: "내 일주의 기질을 키워드로 만나다",
+    image: "/sticker2.png",
+    price: 990,
+    rank: 6,
+    badgeLabel: "₩990",
+    badgeColor: "bg-orange-500",
+  },
 ];
 
 const INTERVAL_MS = 3500;
