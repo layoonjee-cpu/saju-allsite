@@ -96,6 +96,56 @@ export default async function ProductDetailPage({
         </>
       </header>
 
+      {/* ── 상품별 상세 소개 ── */}
+      {product.slug === "today-fortune" && (
+        <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-[#f0ede8] bg-[#faf8f5]">
+            <p className="text-sm font-semibold text-[#2d2d2d]">📋 오늘 확인할 수 있는 것</p>
+          </div>
+          <ul className="px-5 py-4 space-y-2.5">
+            {[
+              { icon: "📍", text: "오늘의 핵심 기운 — 하루를 관통하는 사주 포인트" },
+              { icon: "🔔", text: "주의점과 조언 — 오늘 피해야 할 상황과 마음가짐" },
+              { icon: "✨", text: "오늘의 추천 행동 — 기운을 살리는 실천 제안" },
+              { icon: "🍀", text: "행운 아이템 · 색상 · 음식 · 방위" },
+              { icon: "🎲", text: "행운의 로또번호 6개" },
+            ].map(({ icon, text }) => (
+              <li key={text} className="flex items-start gap-3 text-sm text-[#3a3a4a]">
+                <span className="text-base leading-snug">{icon}</span>
+                <span className="leading-snug">{text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {product.slug === "premium-saju" && (
+        <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-[#f0ede8] bg-[#faf8f5]">
+            <p className="text-sm font-semibold text-[#2d2d2d]">📑 분석 구성 — 7 PARTS</p>
+          </div>
+          <ul className="px-5 py-4 space-y-3">
+            {[
+              { part: "PART 01", title: "사주팔자 상세분석", desc: "원국 구조·성품·삶의 패턴·오행 수치 분석" },
+              { part: "PART 02", title: "내 인생의 황금기", desc: "대운별 황금기·저점·암흑기 연도와 전략" },
+              { part: "PART 03", title: "연애운과 배우자운", desc: "연애 성향·이상형·결혼 시기 전망" },
+              { part: "PART 04", title: "재물운 분석", desc: "재물 그릇·투자 성향·상승하강 시기" },
+              { part: "PART 05", title: "직업과 성공의 운명", desc: "적성·추천 직업군·성공 전략" },
+              { part: "PART 06", title: "건강운과 개운법", desc: "체질·주의 부위·용신 기반 실천 개운" },
+              { part: "PART 07", title: "향후 3개월 핵심 운세", desc: "월운 데이터 기반 월별 흐름과 조언" },
+            ].map(({ part, title, desc }) => (
+              <li key={part} className="flex items-start gap-3">
+                <span className="shrink-0 text-[10px] font-bold font-mono text-[#2D5C5C] bg-[#eaf4f4] rounded px-1.5 py-0.5 mt-0.5">{part}</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#1a1730]">{title}</p>
+                  <p className="text-xs text-[#888] mt-0.5">{desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section>
         {product.slug === "dream-reading" ? (
           <DreamForm
