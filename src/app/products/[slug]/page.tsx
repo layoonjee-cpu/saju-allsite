@@ -146,6 +146,50 @@ export default async function ProductDetailPage({
         </section>
       )}
 
+      {product.slug === "love-saju" && (
+        <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-[#f0ede8] bg-[#faf8f5]">
+            <p className="text-sm font-semibold text-[#2d2d2d]">💑 분석 구성 — 10가지 심층 궁합</p>
+          </div>
+          <ul className="px-5 py-4 space-y-3">
+            {([
+              { icon: "🔮", label: "두 사람의 사주 명식 개요", desc: "두 명식 나란히 비교 + 오행 분포 차트 시각화" },
+              { icon: "⚡", label: "합충형해파(合沖刑害破) 심층 분석", desc: "두 사람 간 천간·지지 교차 관계 분석" },
+              { icon: "🌊", label: "오행(五行) 상생·상극과 에너지 궁합", desc: "오행 균형·불균형이 관계에 미치는 영향" },
+              { icon: "🔥", label: "속궁합 분석 — 두 사람의 성적 에너지 궁합", desc: "성향·역할·케미 전면 분석", highlight: true },
+              { icon: "🌿", label: "성격·기질 궁합", desc: "두 사람이 만났을 때 드러나는 시너지와 마찰" },
+              { icon: "💬", label: "연애 스타일 차이와 소통 방식", desc: "표현 방식·요구 온도·대화 패턴 비교" },
+              { icon: "🌀", label: "갈등의 패턴과 근본 원인", desc: "반복되는 충돌 구조를 명리학으로 풀이" },
+              { icon: "🌱", label: "갈등 해결 방안과 관계 개선 조언", desc: "사주 기반 실질적 솔루션 제안" },
+              { icon: "✨", label: "관계의 강점과 함께 성장하는 방향", desc: "두 사람의 가능성과 시너지 포인트" },
+              { icon: "📌", label: "두 사람을 위한 종합 실천 제안", desc: "사주 궁합을 활용한 관계 전략 정리" },
+            ] as { icon: string; label: string; desc: string; highlight?: boolean }[]).map(
+              ({ icon, label, desc, highlight }) => (
+                <li
+                  key={label}
+                  className={`flex items-start gap-3 rounded-xl px-3 py-2.5 ${
+                    highlight ? "bg-rose-50 border border-rose-200" : ""
+                  }`}
+                >
+                  <span className="text-base leading-snug mt-0.5">{icon}</span>
+                  <div>
+                    <p className={`text-sm font-semibold ${highlight ? "text-rose-700" : "text-[#1a1730]"}`}>
+                      {label}
+                      {highlight && (
+                        <span className="ml-2 text-[10px] font-bold text-rose-500 bg-rose-100 px-1.5 py-0.5 rounded-full align-middle">
+                          성인 콘텐츠 포함
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-[#888] mt-0.5">{desc}</p>
+                  </div>
+                </li>
+              )
+            )}
+          </ul>
+        </section>
+      )}
+
       <section>
         {product.slug === "dream-reading" ? (
           <DreamForm
