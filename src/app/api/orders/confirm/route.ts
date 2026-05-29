@@ -286,7 +286,9 @@ export async function POST(request: NextRequest) {
     // ── 비-VIP 상품: 인라인 LLM 호출 ────────────────────────────
     const { system, user } = buildSajuPrompt(promptArgs);
 
-    const llm = await generateInterpretation({ system, user });
+    // love-saju(궁합)는 8,000~10,000자 목표 → 더 많은 토큰 할당
+    const maxTokensOverride = isLoveSaju ? 6000 : undefined;
+    const llm = await generateInterpretation({ system, user, maxTokensOverride });
 
     const { data: result, error: resultErr } = await service
       .from("saju_results")
