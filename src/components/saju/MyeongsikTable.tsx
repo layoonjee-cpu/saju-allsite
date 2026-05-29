@@ -239,21 +239,6 @@ export function MyeongsikTable({ myeongsik, rawJson }: Props) {
           </div>
         )}
 
-        {/* 범례 */}
-        <div className="border-t border-[#f0ede8] px-4 py-2 flex flex-wrap gap-x-4 gap-y-1 justify-center bg-[#faf8f5]">
-          {[
-            { color: "#16a34a", label: "목(木)" },
-            { color: "#dc2626", label: "화(火)" },
-            { color: "#d97706", label: "토(土)" },
-            { color: "#64748b", label: "금(金)" },
-            { color: "#1d4ed8", label: "수(水)" },
-          ].map(({ color, label }) => (
-            <span key={label} className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
-              <span className="text-[10px] text-[#aaa]">{label}</span>
-            </span>
-          ))}
-        </div>
       </div>
     );
   }
