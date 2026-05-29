@@ -164,6 +164,31 @@ export function OhaengChart({ myeongsik }: Props) {
           천간·지지 각 1개씩 산정 / 총 {total}개
         </p>
       </div>
+
+      {/* ── 설명 박스 ─────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <div className="rounded-xl bg-[#fff5f5] border border-red-100 px-4 py-3">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold text-red-600 mb-1">
+            <span className="w-2 h-2 rounded-full bg-red-400 inline-block shrink-0" />
+            음양이란
+          </p>
+          <p className="text-[11px] leading-relaxed text-[#555]">
+            세상 만물을 이루는 두 가지 상반된 기운입니다.<br />
+            <strong>양(陽)</strong>은 빛, 발산, 활동적인 에너지를 의미하며,<br />
+            <strong>음(陰)</strong>은 어둠, 수렴, 차분한 에너지를 뜻합니다.
+          </p>
+        </div>
+        <div className="rounded-xl bg-[#f0fdf4] border border-green-100 px-4 py-3">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold text-green-700 mb-1">
+            <span className="w-2 h-2 rounded-full bg-green-500 inline-block shrink-0" />
+            오행이란
+          </p>
+          <p className="text-[11px] leading-relaxed text-[#555]">
+            목화토금수 다섯 가지 기운의 분포입니다. 많은 기운은 나의 <strong>핵심 성향</strong>을,<br />
+            적은 기운은 <strong>보완이 필요한 부분</strong>을 나타냅니다.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
