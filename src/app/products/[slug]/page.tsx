@@ -12,6 +12,7 @@ import { productsSeed } from "@/config/products.seed";
 const productImages: Record<string, string> = {
   "today-fortune": "/product-today.png",
   "dream-reading": "/product-dream.png",
+  "ilju-sticker": "/sticker.png",
   "basic-saju": "/product-basic.png",
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
