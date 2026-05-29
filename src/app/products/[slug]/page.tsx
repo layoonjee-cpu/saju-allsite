@@ -121,28 +121,66 @@ export default async function ProductDetailPage({
 
       {product.slug === "premium-saju" && (
         <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
-          <div className="px-5 py-3.5 border-b border-[#f0ede8] bg-[#faf8f5]">
-            <p className="text-sm font-semibold text-[#2d2d2d]">📑 분석 구성 — 7 PARTS</p>
+          {/* 헤더 */}
+          <div className="px-5 py-3.5 border-b border-[#f0ede8] bg-[#faf8f5] flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#2d2d2d]">📑 분석 구성</p>
+            <span className="text-[11px] font-bold text-[#2D5C5C] bg-[#eaf4f4] px-2 py-0.5 rounded-full">총 27개 섹션</span>
           </div>
-          <ul className="px-5 py-4 space-y-3">
-            {[
-              { part: "PART 01", title: "사주팔자 상세분석", desc: "원국 구조·성품·삶의 패턴·오행 수치 분석" },
-              { part: "PART 02", title: "내 인생의 황금기", desc: "대운별 황금기·저점·암흑기 연도와 전략" },
-              { part: "PART 03", title: "연애운과 배우자운", desc: "연애 성향·이상형·결혼 시기 전망" },
-              { part: "PART 04", title: "재물운 분석", desc: "재물 그릇·투자 성향·상승하강 시기" },
-              { part: "PART 05", title: "직업과 성공의 운명", desc: "적성·추천 직업군·성공 전략" },
-              { part: "PART 06", title: "건강운과 개운법", desc: "체질·주의 부위·용신 기반 실천 개운" },
-              { part: "PART 07", title: "향후 3개월 핵심 운세", desc: "월운 데이터 기반 월별 흐름과 조언" },
-            ].map(({ part, title, desc }) => (
-              <li key={part} className="flex items-start gap-3">
-                <span className="shrink-0 text-[10px] font-bold font-mono text-[#2D5C5C] bg-[#eaf4f4] rounded px-1.5 py-0.5 mt-0.5">{part}</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#1a1730]">{title}</p>
-                  <p className="text-xs text-[#888] mt-0.5">{desc}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+
+          {/* 분석 섹션 14개 */}
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-[11px] font-bold tracking-widest text-[#aaa] mb-3">— 사주 심층 분석 · 14개 섹션</p>
+            <ul className="space-y-2.5">
+              {[
+                { n: "01", title: "프롤로그 · 사주팔자 원국 구조",      desc: "시주·일주·월주·년주 전체 구조와 에너지 흐름 개관" },
+                { n: "02", title: "일간의 본질 · 신강신약 분석",        desc: "일간 오행의 성질, 뿌리 깊이, 강약 판정" },
+                { n: "03", title: "음양오행 · 십성(十星) 분포",         desc: "8글자 전체 음양 비율, 오행 과다·부족, 십성 구성 비율" },
+                { n: "04", title: "격국(格局) · 용신(用神) 분석",       desc: "격국 성립 여부·성격·파격, 용신·기신·희신 지정" },
+                { n: "05", title: "어린 시절 · 성장 환경 · 타고난 성품", desc: "년주·월주가 드러내는 가정환경과 기질" },
+                { n: "06", title: "직업 적성 · 재능과 추천 직업군",     desc: "식상·재성·관성 구조로 보는 천직 분야" },
+                { n: "07", title: "직장운 · 사업운 · 성공 전략",        desc: "관성 구조·합충에 따른 커리어 패턴과 전략" },
+                { n: "08", title: "재물 그릇 · 타고난 경제 에너지",     desc: "재성 강약·통근 여부로 읽는 재물 그릇 크기" },
+                { n: "09", title: "재물운 흐름 · 시기별 전략",          desc: "대운·세운 기반 재물 상승·하강 시기와 투자 조언" },
+                { n: "10", title: "연애 성향 · 감정 패턴",              desc: "정재·편재·관성으로 보는 이성 에너지와 표현 방식" },
+                { n: "11", title: "이상형 · 배우자운 · 결혼 시기",      desc: "배우자궁 분석, 인연 시기 예측, 결혼 안정도" },
+                { n: "12", title: "건강운 · 체질과 주의 부위",          desc: "오행 과부족이 드러내는 체질 약점과 관리법" },
+                { n: "13", title: "귀인운 · 인간관계 패턴",             desc: "천을귀인·문창귀인 등 귀인 구조와 사람 운" },
+                { n: "14", title: "대운(大運) 흐름 · 황금기와 저점",    desc: "현재 대운부터 향후 3개 대운의 에너지 등락 예측" },
+              ].map(({ n, title, desc }) => (
+                <li key={n} className="flex items-start gap-3">
+                  <span className="shrink-0 text-[10px] font-bold font-mono text-[#2D5C5C] bg-[#eaf4f4] rounded px-1.5 py-0.5 mt-0.5 min-w-[30px] text-center">{n}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1a1730]">{title}</p>
+                    <p className="text-xs text-[#888] mt-0.5 leading-snug">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 월별 운세 12개 */}
+          <div className="px-5 pt-4 pb-2 mt-1 border-t border-[#f0ede8]">
+            <p className="text-[11px] font-bold tracking-widest text-[#aaa] mb-3">— 월별 상세 운세 · 12개월</p>
+            <div className="rounded-xl bg-[#f8f5f0] border border-[#ede8e0] px-4 py-3 flex items-start gap-3">
+              <span className="shrink-0 text-[10px] font-bold font-mono text-[#c4913a] bg-[#fdf5e6] border border-[#e8d8b0] rounded px-1.5 py-0.5 mt-0.5">15–26</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1a1730]">현재월부터 12개월 각각 심층 분석</p>
+                <p className="text-xs text-[#888] mt-0.5 leading-snug">간지·십성·12운성 표 + 직업·재물·인간관계·건강 문단 + 이달의 핵심 키워드</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 마무리 */}
+          <div className="px-5 pt-4 pb-4 mt-1 border-t border-[#f0ede8]">
+            <p className="text-[11px] font-bold tracking-widest text-[#aaa] mb-3">— 마무리 · 1개 섹션</p>
+            <div className="rounded-xl bg-[#1a1730] px-4 py-3 flex items-start gap-3">
+              <span className="shrink-0 text-[10px] font-bold font-mono text-[#c4913a] bg-[#c4913a]/20 rounded px-1.5 py-0.5 mt-0.5">27</span>
+              <div>
+                <p className="text-sm font-semibold text-white">합충형해파 · 개운법 · 종합 결론</p>
+                <p className="text-xs text-white/60 mt-0.5 leading-snug">신살·합충 종합 + 용신 기반 실천 개운법 + 당신에게 보내는 마지막 메시지</p>
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
