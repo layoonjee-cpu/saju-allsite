@@ -112,7 +112,7 @@ export default function StoryPage() {
             <div className={styles.productInfo}>
               <div className={styles.nameRow}>
                 <span className={styles.productName}>가벼운 시선 사주</span>
-                <span className={styles.productMeta}>A4 3장 · 입문</span>
+                <span className={styles.productMeta}>기본 사주풀이 · 입문</span>
               </div>
               <div className={styles.productDesc}>내 사주를 처음 들여다보는 분께 권하는 입문 상품</div>
             </div>
@@ -127,7 +127,7 @@ export default function StoryPage() {
             <div className={styles.productInfo}>
               <div className={styles.nameRow}>
                 <span className={styles.productName}>연인의 시선</span>
-                <span className={styles.productMeta}>A4 10장 · 궁합</span>
+                <span className={styles.productMeta}>10가지 궁합분석 · 심층</span>
               </div>
               <div className={styles.productDesc}>두 사람의 결, 갈등의 원인과 해결의 실마리까지</div>
             </div>
@@ -143,7 +143,7 @@ export default function StoryPage() {
             <div className={styles.productInfo}>
               <div className={styles.nameRow}>
                 <span className={styles.productName}>깊은 시선 사주</span>
-                <span className={styles.productMeta}>A4 80장 · 완전판</span>
+                <span className={styles.productMeta}>27개 섹션 · 완전분석</span>
               </div>
               <div className={styles.productDesc}>당신의 인생 전체를 한 권의 책처럼 펼쳐드립니다</div>
             </div>
@@ -162,7 +162,7 @@ export default function StoryPage() {
           <div className={styles.premiumHeader}>
             <div className={styles.premiumLabel}>PREMIUM</div>
             <h2 className={styles.premiumTitle}>깊은 시선 사주 (VIP)</h2>
-            <div className={styles.premiumSub}>A4 80장 · 정통 명리학 16종 분석 도구의 총체</div>
+            <div className={styles.premiumSub}>27개 섹션 심층분석 · 정통 명리학 16종 도구의 총체</div>
           </div>
 
           <div className={styles.statsGrid}>
@@ -171,8 +171,8 @@ export default function StoryPage() {
               <div className={styles.statLabel}>분석 도구</div>
             </div>
             <div className={styles.statCard}>
-              <div className={styles.statValue}>80<small>장</small></div>
-              <div className={styles.statLabel}>A4 분량</div>
+              <div className={styles.statValue}>27<small>개</small></div>
+              <div className={styles.statLabel}>심층 섹션</div>
             </div>
             <div className={styles.statCard}>
               <div className={styles.statValue}>15<small>개월</small></div>
