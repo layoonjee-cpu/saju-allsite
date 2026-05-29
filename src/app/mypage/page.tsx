@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ResetPasswordButton } from "@/components/auth/ResetPasswordButton";
 
 export const metadata = { title: "마이페이지" };
 
@@ -14,6 +15,10 @@ export default async function MyPage() {
     .select("display_name, email")
     .eq("id", user.id)
     .maybeSingle();
+
+  // 카카오 로그인 유저는 비밀번호 없음 → 재설정 불필요
+  const isEmailUser = user.app_metadata?.provider === "email";
+  const userEmail = profile?.email ?? user.email ?? "";
 
   const items = [
     { href: "/mypage/orders", label: "결제 내역 / 결과지" },
@@ -42,6 +47,11 @@ export default async function MyPage() {
             </Link>
           </li>
         ))}
+        {isEmailUser && (
+          <li>
+            <ResetPasswordButton email={userEmail} />
+          </li>
+        )}
         <li>
           <form action="/api/auth/signout" method="post">
             <button
