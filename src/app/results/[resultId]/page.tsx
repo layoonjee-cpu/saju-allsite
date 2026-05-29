@@ -9,6 +9,7 @@ import { ResultShareButtons } from "@/components/saju/ResultShareButtons";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
 import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import { SipsinChart } from "@/components/saju/SipsinChart";
+import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -93,6 +94,13 @@ export default async function ResultPage({
   const myeongsik = result.myeongsik as unknown as Myeongsik;
   const showChart = !isDreamReading && !isFree && !showBanner;
 
+  // 궁합 오행 비교 차트용 — raw_saju_json에 _partner_myeongsik 이 저장된 경우 추출
+  const partnerMyeongsikRaw = (() => {
+    if (!isLoveSaju || !result.raw_saju_json) return null;
+    const raw = result.raw_saju_json as Record<string, unknown>;
+    return (raw._partner_myeongsik as Myeongsik | undefined) ?? null;
+  })();
+
   return (
     <div className="container py-12 max-w-2xl">
       <header className="mb-10">
@@ -128,8 +136,21 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* 오행 분포 차트 (꿈해몽·무료·VIP생성중 제외) */}
-      {showChart && (
+      {/* 궁합 오행 분포 비교 차트 — love-saju + 파트너 명식이 저장된 경우만 */}
+      {isLoveSaju && partnerMyeongsikRaw && !showBanner && (
+        <section className="mb-8">
+          <h2 className="text-sm font-semibold mb-3 text-ink">오행 분포 비교</h2>
+          <LoveOhaengChart
+            mainMyeongsik={myeongsik}
+            partnerMyeongsik={partnerMyeongsikRaw}
+            nameA={sajuInput?.name ?? "나"}
+            nameB={sajuInput?.partner_name ?? "상대방"}
+          />
+        </section>
+      )}
+
+      {/* 오행 분포 차트 (꿈해몽·무료·VIP생성중 제외, 궁합은 위 비교차트로 대체) */}
+      {showChart && !isLoveSaju && (
         <section className="mb-10">
           <OhaengChart myeongsik={myeongsik} />
         </section>

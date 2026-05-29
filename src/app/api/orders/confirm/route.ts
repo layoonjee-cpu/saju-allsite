@@ -290,6 +290,14 @@ export async function POST(request: NextRequest) {
     const maxTokensOverride = isLoveSaju ? 6000 : undefined;
     const llm = await generateInterpretation({ system, user, maxTokensOverride });
 
+    // love-saju: 파트너 myeongsik을 raw_saju_json에 임베드 (오행 비교 차트용)
+    const finalRawJson = isLoveSaju && partnerMyeongsik
+      ? {
+          ...((rawSajuJson as Record<string, unknown> | null) ?? {}),
+          _partner_myeongsik: partnerMyeongsik,
+        }
+      : rawSajuJson;
+
     const { data: result, error: resultErr } = await service
       .from("saju_results")
       .insert({
@@ -298,7 +306,7 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
-        raw_saju_json: rawSajuJson as never, // 16종 원본 응답
+        raw_saju_json: finalRawJson as never, // 16종 원본 응답 (+파트너 명식)
       })
       .select("id")
       .single();
