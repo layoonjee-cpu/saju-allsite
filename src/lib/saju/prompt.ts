@@ -118,16 +118,33 @@ export function buildSajuPrompt(input: PromptInput): { system: string; user: str
   let user: string;
 
   switch (input.productSlug) {
-    case "today-fortune":
+    case "today-fortune": {
+      const today = new Date().toLocaleDateString("ko-KR", {
+        year: "numeric", month: "long", day: "numeric", weekday: "short",
+      });
       user = `[상품] ${input.productName} (무료)
 
 ${sajuInfo}
 
-오늘의 사주 기운을 바탕으로 오늘 하루의 흐름과 핵심 조언을 작성하세요.
-- 분량: 150자 이내
-- 형식: 마크다운 헤딩 없이, 2~3문장의 자연스러운 문장으로 작성합니다.
-- 내용: 오늘의 전반적 기운 + 유리한 행동 또는 주의사항 한 가지 + 짧은 응원 메시지`;
+오늘(${today})의 사주 기운을 분석하여 아래 JSON 형식으로만 응답하세요.
+JSON 외 다른 텍스트, 마크다운 코드블록(\`\`\`)은 절대 포함하지 마세요.
+
+{
+  "포인트": "오늘 하루의 핵심 기운을 2~3문장으로 서술 (긍정적·실용적)",
+  "주의점": "오늘 주의해야 할 점을 2~3문장으로 구체적으로 서술",
+  "추천": "오늘 실천 가능한 행동 추천을 2~3문장으로 서술",
+  "행운아이템": ["아이템1", "아이템2", "아이템3"],
+  "행운색": "색 이름 (예: 주황색)",
+  "행운음식": "음식 또는 음료 이름 (예: 따뜻한 차 한 잔)",
+  "행운방위": "방위 (예: 북쪽)",
+  "로또번호": [숫자1, 숫자2, 숫자3, 숫자4, 숫자5, 숫자6]
+}
+
+모든 필드는 일간 오행·음양·십성을 기반으로 오늘 날짜 기운에 맞게 생성합니다.
+로또 번호는 1~45 사이 서로 다른 숫자 6개를 오름차순으로 배열합니다.
+행운 아이템은 일상에서 접할 수 있는 구체적 사물 3가지입니다.`;
       break;
+    }
 
     case "basic-saju":
       user = `[상품] ${input.productName} (₩4,900) — A4 3장 분량 목표 (2,000~2,500자)

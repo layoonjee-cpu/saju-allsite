@@ -10,6 +10,7 @@ import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
 import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import { SipsinChart } from "@/components/saju/SipsinChart";
 import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
+import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -70,6 +71,7 @@ export default async function ResultPage({
   const isDreamReading = product?.slug === "dream-reading";
   const isPremiumVip = product?.slug === "premium-saju";
   const isLoveSaju = product?.slug === "love-saju";
+  const isTodayFortune = product?.slug === "today-fortune";
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
@@ -93,6 +95,19 @@ export default async function ResultPage({
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
   const showChart = !isDreamReading && !isFree && !showBanner;
+
+  // 오늘의 운세 — JSON 파싱 시도 (성공 시 TodayFortuneCard 사용)
+  let todayFortuneData: TodayFortuneData | null = null;
+  if (isTodayFortune && result.interpretation_md) {
+    try {
+      const md = result.interpretation_md.trim()
+        .replace(/^```json\n?/, "")
+        .replace(/\n?```$/, "");
+      todayFortuneData = JSON.parse(md) as TodayFortuneData;
+    } catch {
+      // JSON 파싱 실패 → fallback: ResultBody로 표시
+    }
+  }
 
   // 궁합 오행 비교 차트용 — raw_saju_json에 _partner_myeongsik 이 저장된 경우 추출
   const partnerMyeongsikRaw = (() => {
@@ -182,11 +197,16 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */}
-      {!showBanner && !isBadContent && result.interpretation_md && (
-        <article>
-          <ResultBody markdown={result.interpretation_md} />
-        </article>
+      {/* 오늘의 운세: 구조화 카드 (JSON 파싱 성공 시) */}
+      {isTodayFortune && todayFortuneData ? (
+        <TodayFortuneCard data={todayFortuneData} />
+      ) : (
+        /* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */
+        !showBanner && !isBadContent && result.interpretation_md && (
+          <article>
+            <ResultBody markdown={result.interpretation_md} />
+          </article>
+        )
       )}
 
       {/* 분석 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
