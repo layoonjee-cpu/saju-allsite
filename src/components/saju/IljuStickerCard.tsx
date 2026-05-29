@@ -7,110 +7,55 @@
  * 서버 컴포넌트 — 외부 라이브러리 없음, 순수 Tailwind CSS + inline style.
  */
 
-
 export type IljuStickerData = {
   일주: string;
   키워드: string[];
 };
 
-// ── 배지 스타일 (index % 7 순환) ─────────────────────────
-type BadgeStyle = {
-  bg: string;
-  text: string;
-  border?: string;
-  shape: "rounded-2xl" | "rounded-full" | "rounded-xl" | "hexagon" | "rounded-3xl" | "diamond";
-  px: string;
-  py: string;
-  extraClass?: string;
-};
-
-const BADGE_STYLES: BadgeStyle[] = [
-  // 0: dark brown 정사각 카드
-  {
-    bg: "#3d3028",
-    text: "#ffffff",
-    shape: "rounded-2xl",
-    px: "px-5",
-    py: "py-4",
-    extraClass: "min-w-[80px]",
-  },
+// ── 배지 스타일 정의 (index % 7 순환) ────────────────────
+const BADGE_STYLES = [
+  // 0: dark brown 사각
+  { bg: "#3d3028", text: "#ffffff", border: "", radius: "14px", px: 18, py: 12 },
   // 1: dark green 원형
-  {
-    bg: "#1a4a30",
-    text: "#ffffff",
-    shape: "rounded-full",
-    px: "px-5",
-    py: "py-5",
-    extraClass: "aspect-square flex items-center justify-center min-w-[80px]",
-  },
-  // 2: white 가로 직사각형
-  {
-    bg: "#ffffff",
-    text: "#333333",
-    border: "#d0c9bf",
-    shape: "rounded-xl",
-    px: "px-5",
-    py: "py-3",
-  },
-  // 3: olive gold 육각형
-  {
-    bg: "#6b5d3f",
-    text: "#ffffff",
-    shape: "hexagon",
-    px: "px-4",
-    py: "py-5",
-    extraClass: "min-w-[90px]",
-  },
+  { bg: "#1a4a30", text: "#ffffff", border: "", radius: "9999px", px: 18, py: 18 },
+  // 2: white 직사각
+  { bg: "#ffffff", text: "#333333", border: "#cfc8be", radius: "10px", px: 18, py: 10 },
+  // 3: olive gold 육각형 (clip-path로 처리)
+  { bg: "#6b5d3f", text: "#ffffff", border: "", radius: "0px", px: 16, py: 18, hexagon: true },
   // 4: gray pill
-  {
-    bg: "#5a5a5a",
-    text: "#ffffff",
-    shape: "rounded-full",
-    px: "px-6",
-    py: "py-3",
-  },
-  // 5: tan/beige 큰 사각
-  {
-    bg: "#c4a882",
-    text: "#2d1a0e",
-    shape: "rounded-3xl",
-    px: "px-5",
-    py: "py-4",
-    extraClass: "min-w-[90px]",
-  },
-  // 6: white 마름모
-  {
-    bg: "#ffffff",
-    text: "#333333",
-    border: "#c4b89a",
-    shape: "diamond",
-    px: "px-5",
-    py: "py-5",
-    extraClass: "min-w-[80px] aspect-square flex items-center justify-center",
-  },
-];
+  { bg: "#5a5a5a", text: "#ffffff", border: "", radius: "9999px", px: 20, py: 10 },
+  // 5: tan/beige 사각
+  { bg: "#c4a882", text: "#2d1a0e", border: "", radius: "18px", px: 18, py: 12 },
+  // 6: white 마름모 (inline style로 처리)
+  { bg: "#ffffff", text: "#333333", border: "#c4b89a", radius: "8px", px: 16, py: 16, diamond: true },
+] as const;
 
-// ── 키워드 길이에 따른 폰트 클래스 ───────────────────────
+// ── 키워드 길이 → 폰트 클래스 ────────────────────────────
 function fontClass(kw: string): string {
   const len = kw.length;
-  if (len <= 6) return "text-xl font-black";
-  if (len <= 10) return "text-base font-bold";
-  return "text-sm font-semibold";
+  if (len <= 5)  return "text-lg font-black";
+  if (len <= 8)  return "text-base font-bold";
+  if (len <= 11) return "text-sm font-bold";
+  return "text-xs font-semibold";
 }
 
 // ── 개별 배지 ────────────────────────────────────────────
 function Badge({ keyword, idx }: { keyword: string; idx: number }) {
   const s = BADGE_STYLES[idx % BADGE_STYLES.length];
+  const fc = fontClass(keyword);
 
-  if (s.shape === "hexagon") {
+  // 육각형
+  if ("hexagon" in s && s.hexagon) {
     return (
       <div
-        className={`relative inline-flex items-center justify-center text-center ${s.px} ${s.py} ${s.extraClass ?? ""} ${fontClass(keyword)}`}
+        className={`inline-flex items-center justify-center text-center ${fc}`}
         style={{
           background: s.bg,
           color: s.text,
-          clipPath:
-            "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+          clipPath: "polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)",
+          width: 90,
+          height: 90,
+          flexShrink: 0,
         }}
       >
         {keyword}
@@ -118,48 +63,43 @@ function Badge({ keyword, idx }: { keyword: string; idx: number }) {
     );
   }
 
-  if (s.shape === "diamond") {
+  // 마름모
+  if ("diamond" in s && s.diamond) {
     return (
       <div
-        className={`relative inline-flex items-center justify-center text-center ${s.extraClass ?? ""}`}
-        style={{ padding: "20px 18px" }}
+        className="relative inline-flex items-center justify-center"
+        style={{ width: 88, height: 88, flexShrink: 0 }}
       >
-        {/* 마름모 배경 */}
         <div
           className="absolute inset-0"
           style={{
             background: s.bg,
-            border: s.border ? `1.5px solid ${s.border}` : undefined,
+            border: `1.5px solid ${s.border}`,
+            borderRadius: s.radius,
             transform: "rotate(45deg)",
-            borderRadius: "6px",
           }}
         />
-        <span
-          className={`relative z-10 ${fontClass(keyword)}`}
-          style={{ color: s.text, transform: "rotate(0deg)" }}
-        >
+        <span className={`relative z-10 text-center px-1 ${fc}`} style={{ color: s.text }}>
           {keyword}
         </span>
       </div>
     );
   }
 
-  const radiusClass =
-    s.shape === "rounded-2xl"
-      ? "rounded-2xl"
-      : s.shape === "rounded-full"
-        ? "rounded-full"
-        : s.shape === "rounded-xl"
-          ? "rounded-xl"
-          : "rounded-3xl";
-
+  // 일반 배지
   return (
     <div
-      className={`inline-flex items-center justify-center text-center ${radiusClass} ${s.px} ${s.py} ${s.extraClass ?? ""} ${fontClass(keyword)}`}
+      className={`inline-flex items-center justify-center text-center ${fc}`}
       style={{
         background: s.bg,
         color: s.text,
         border: s.border ? `1.5px solid ${s.border}` : undefined,
+        borderRadius: s.radius,
+        paddingLeft: s.px,
+        paddingRight: s.px,
+        paddingTop: s.py,
+        paddingBottom: s.py,
+        flexShrink: 0,
       }}
     >
       {keyword}
@@ -169,9 +109,7 @@ function Badge({ keyword, idx }: { keyword: string; idx: number }) {
 
 // ── 컴포넌트 ─────────────────────────────────────────────
 export function IljuStickerCard({ data }: { data: IljuStickerData }) {
-  const keywords = Array.isArray(data.키워드)
-    ? data.키워드.slice(0, 12)
-    : [];
+  const keywords = Array.isArray(data.키워드) ? data.키워드.slice(0, 12) : [];
 
   return (
     <div
@@ -182,11 +120,14 @@ export function IljuStickerCard({ data }: { data: IljuStickerData }) {
       <div className="px-5 py-4 border-b border-[#e8e2d8]">
         <p className="text-xs font-mono text-[#9e8c6a] tracking-widest mb-1">ILJU STICKER</p>
         <p className="text-xl font-bold text-[#2d1f0e]">{data.일주}</p>
-        <p className="text-xs text-[#b09060] mt-1">일주가 말해주는 나의 기질</p>
+        <p className="text-xs text-[#b09060] mt-0.5">일주가 말해주는 나의 기질</p>
       </div>
 
-      {/* 배지 콜라주 */}
-      <div className="px-5 py-6 flex flex-wrap gap-3 items-center justify-center">
+      {/* 배지 콜라주 — 촘촘한 flex wrap */}
+      <div
+        className="px-4 py-5 flex flex-wrap justify-center items-center"
+        style={{ gap: "8px" }}
+      >
         {keywords.map((kw, i) => (
           <Badge key={i} keyword={kw} idx={i} />
         ))}
