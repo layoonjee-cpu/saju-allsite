@@ -124,7 +124,7 @@ export default async function ProductDetailPage({
                 {[
                   { icon: "✔", text: "사주의 모든 것 — 명식·격국·신강신약부터 월별 운세까지" },
                   { icon: "✔", text: "지금 이 시점에 꼭 필요한 실전 조언 포함" },
-                  { icon: "✔", text: "타 서비스 대비 절반 가격, 동일한 깊이" },
+                  { icon: "✔", text: "타업체 대비 절반 가격, 두 배 이상의 심층 리포트 (강추)" },
                 ].map(({ icon, text }) => (
                   <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
                     <span className="text-teal-600 font-bold mt-0.5 shrink-0">{icon}</span>
