@@ -31,7 +31,7 @@ export const productsSeed: ProductSeed[] = [
   {
     slug: "basic-saju",
     name: "가벼운 시선",
-    description: "나의 사주로 읽는 타고난 성향과 운의 흐름 리포트",
+    description: "일주·성격·재물·연애·직업 — 명리학자가 당신의 인생을 9챕터로 솔직하게 읽어드립니다",
     price: 4900,
     display_order: 20,
     is_active: true,

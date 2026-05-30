@@ -63,7 +63,7 @@ const SLIDES: Slide[] = [
   {
     slug: "basic-saju",
     name: "가벼운 시선",
-    subtitle: "사주 첫걸음, 나를 들여다보다",
+    subtitle: "일주·성격·재물·연애·직업 9챕터 심층 풀이",
     image: "/product-basic.png",
     price: 4900,
     originalPrice: 9900,

@@ -112,9 +112,9 @@ export default function StoryPage() {
             <div className={styles.productInfo}>
               <div className={styles.nameRow}>
                 <span className={styles.productName}>가벼운 시선 사주</span>
-                <span className={styles.productMeta}>기본 사주풀이 · 입문</span>
+                <span className={styles.productMeta}>9챕터 심층 풀이 · 4,900원</span>
               </div>
-              <div className={styles.productDesc}>내 사주를 처음 들여다보는 분께 권하는 입문 상품</div>
+              <div className={styles.productDesc}>일주·성격·재물·연애·직업까지 — 명리학자가 당신의 인생을 솔직하게 읽어드립니다</div>
             </div>
             <div className={styles.productPrice} style={{ textAlign: "right" }}>
               <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through", display: "block", lineHeight: 1.3 }}>9,900원</span>
