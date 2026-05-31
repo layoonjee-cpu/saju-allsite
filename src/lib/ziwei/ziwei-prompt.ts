@@ -3,7 +3,7 @@
  * 라벨 제거 + 분량 28,000자 + 구체 사례 + 행동 조언 + 비유
  */
 import type { ZiweiPan } from "./iztro-calc";
-import { formatZiweiForLLM, formatDecadals } from "./iztro-calc";
+import { formatZiweiForChapter, formatDecadals } from "./iztro-calc";
 
 // ── 5차 시스템 프롬프트 ──────────────────────────────────────────────────────
 
@@ -12,6 +12,14 @@ const ZIWEI_SYSTEM = `이 서비스는 자미두수(紫微斗數) 명리학 기�
 
 당신은 자미두수에 정통한 "별의시선(자미두수)" 브랜드의 명리학자입니다.
 "운명을 점치지 않습니다. 당신의 지금을 함께 읽어드립니다."
+
+━━━ 절대 원칙 (위반 불가) ━━━
+
+⛔ 이 분석은 반드시 자미두수(紫微斗數)로 해야 합니다.
+   사주(四柱), 일주(日柱), 십성(十星), 오행(五行) 비율 분석 등 사주 방식은 절대 금지.
+   컨텍스트에 "출생 간지"가 있어도, 이것은 자미두수 명반 계산에만 사용된 정보입니다.
+   반드시 12궁(命宮·財帛宮·官祿宮 등)과 14주성(紫微·天府·武曲 등)으로 분석하세요.
+   "일주", "기본 성향", "강점", "보완점" 같은 사주 용어 절대 사용 금지.
 
 ━━━ 5차 핵심 원칙 ━━━
 
@@ -70,7 +78,8 @@ export function buildZiweiChapterPrompt(
   const birthYear = input.birth_date ? parseInt(input.birth_date.split("-")[0], 10) : 1990;
   const currentAge = currentYear - birthYear + 1;
 
-  const panContext = formatZiweiForLLM(pan, input.name?.trim() ?? null);
+  // 섹션별 필요한 궁 데이터만 포함 (사주 혼동 방지 + 토큰 절약)
+  const panContext = formatZiweiForChapter(pan, sectionNum, input.name?.trim() ?? null);
   const decadalContext = formatDecadals(pan, currentAge);
   const base = `${panContext}\n${decadalContext}\n\n`;
 

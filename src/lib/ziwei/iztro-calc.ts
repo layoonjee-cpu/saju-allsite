@@ -174,10 +174,10 @@ export function formatZiweiForLLM(pan: ZiweiPan, userName?: string | null): stri
   const bodyPalace = palaces.find((p) => p.isBodyPalace);
 
   const nameStr = userName ? `이름: ${userName}\n` : "";
-  const header = `[자미두수 명반 요약]
+  const header = `[자미두수(紫微斗數) 명반 분석 데이터 — 이하는 자미두수 명반 정보입니다. 사주(四柱) 분석이 아닙니다.]
 
 ${nameStr}양력 생년월일: ${pan.solarDate as string}
-사주 (四柱): ${pan.chineseDate as string}
+출생 간지(干支): ${pan.chineseDate as string}
 오행국(五行局): ${pan.fiveElementsClass as string}
 
 명궁(命宮) 위치: ${soulPalace.earthlyBranch}궁 (${soulPalace.heavenlyStem}${soulPalace.earthlyBranch})
@@ -260,4 +260,70 @@ export function formatDecadals(pan: ZiweiPan, currentAge: number): string {
   });
 
   return `[대운(大限) 전체 흐름]\n${lines.join("\n")}`;
+}
+
+// ── 챕터별 최소 컨텍스트 포맷터 ──────────────────────────────────────────────
+
+/**
+ * 특정 챕터에 필요한 궁 데이터만 추출하는 컨텍스트 (토큰 절약 + 집중도 향상)
+ * 섹션마다 관련 궁만 넣어 LLM 혼란 방지
+ */
+export function formatZiweiForChapter(
+  pan: ZiweiPan,
+  sectionNum: number,
+  userName?: string | null
+): string {
+  const palaces = extractPalaces(pan);
+
+  // 섹션별 관련 궁 매핑
+  const SECTION_PALACES: Record<number, string[]> = {
+    1:  [],                                      // 전체 요약
+    2:  ["명궁"],
+    3:  ["명궁", "복덕궁"],                       // 신궁은 보통 복덕궁 근처
+    4:  ["명궁", "재백궁", "관록궁", "부처궁"],
+    5:  [],                                      // 사화 — 전체 궁 필요
+    6:  ["형제궁", "노복궁"],
+    7:  ["부처궁"],
+    8:  ["자녀궁"],
+    9:  ["재백궁", "관록궁", "전택궁"],
+    10: ["전택궁"],
+    11: ["관록궁"],
+    12: ["천이궁"],
+    13: ["질액궁"],
+    14: ["복덕궁"],
+    15: ["부모궁"],
+    16: [],                                      // 대운+유년 — 전체 필요
+  };
+
+  const relevantNames = SECTION_PALACES[sectionNum] ?? [];
+  const soulPalace = palaces.find((p) => p.isSoulPalace) ?? palaces[0];
+  const bodyPalace = palaces.find((p) => p.isBodyPalace);
+  const nameStr = userName ? `이름: ${userName}\n` : "";
+
+  const baseHeader = `[자미두수(紫微斗數) 명반 — 섹션 ${sectionNum} 분석용 데이터]
+⚠️ 이 데이터는 자미두수 명반입니다. 절대로 사주(四柱) 방식으로 분석하지 마세요.
+
+${nameStr}양력 생년월일: ${pan.solarDate as string}
+출생 간지(干支): ${pan.chineseDate as string}
+오행국(五行局): ${pan.fiveElementsClass as string}
+명궁(命宮): ${soulPalace.earthlyBranch}궁 (${soulPalace.heavenlyStem}${soulPalace.earthlyBranch}) — ${soulPalace.majorStars.map(s => `${s.name}(${s.brightness})`).join(", ") || "없음"}
+신궁(身宮): ${bodyPalace ? `${bodyPalace.earthlyBranch}궁 (${bodyPalace.name})` : "명궁과 동일"}
+`;
+
+  // 전체 궁이 필요한 섹션 (1, 5, 16)
+  if (relevantNames.length === 0) {
+    const sihwa = formatSihwa(palaces);
+    const allPalaces = palaces.map(p => formatPalace(p)).join("\n");
+    return baseHeader + "\n" + sihwa + "\n[12궁 전체]\n" + allPalaces;
+  }
+
+  // 특정 궁만 추출
+  const filtered = palaces.filter(p =>
+    relevantNames.some(name => p.name.includes(name.replace("궁", "")))
+  );
+
+  const sihwa = formatSihwa(palaces); // 사화는 항상 포함 (어느 궁에 있는지 알아야 함)
+  const palaceData = filtered.map(p => formatPalace(p)).join("\n");
+
+  return baseHeader + "\n" + sihwa + "\n[분석 대상 궁]\n" + palaceData;
 }
