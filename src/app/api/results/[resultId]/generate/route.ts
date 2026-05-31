@@ -241,7 +241,7 @@ export async function POST(
       const zLlm = await generateInterpretation({
         system: zSystem,
         user: zUser,
-        maxTokensOverride: sectionNum === 9 ? 4000 : sectionNum === 16 ? 6000 : 2500,
+        maxTokensOverride: sectionNum === 9 ? 6000 : sectionNum === 16 ? 8000 : sectionNum === 2 || sectionNum === 5 || sectionNum === 7 || sectionNum === 11 ? 4000 : 3000,
       });
 
       // 거부 응답 검증
