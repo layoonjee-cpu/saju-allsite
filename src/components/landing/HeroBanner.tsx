@@ -165,7 +165,7 @@ export function HeroBanner() {
               src={SLIDES[prev].image}
               alt=""
               fill
-              className="object-cover object-top"
+              className="object-cover object-center"
               sizes="(max-width: 512px) 100vw, 512px"
               aria-hidden
             />
@@ -177,7 +177,7 @@ export function HeroBanner() {
             src={slide.image}
             alt={slide.name}
             fill
-            className="object-cover object-top"
+            className="object-cover object-center"
             style={{
               opacity: fading ? 0 : 1,
               transition: "opacity 0.45s ease",
