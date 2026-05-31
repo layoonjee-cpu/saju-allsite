@@ -103,7 +103,7 @@ export function ZiweiPanChart({ rawJson }: Props) {
                       />
                       {/* 중앙 텍스트 */}
                       <text x={CELL_W * 2} y={CELL_H + 28} textAnchor="middle" fill="#c4913a" fontSize={11} fontWeight="bold">
-                        별의 시선 · 星의 視線
+                        별의시선(자미두수)
                       </text>
                       <text x={CELL_W * 2} y={CELL_H + 48} textAnchor="middle" fill="#fff" fontSize={10}>
                         {solarDate}

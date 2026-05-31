@@ -217,7 +217,7 @@ export function ZiweiForm({ productId, productPrice, isLoggedIn }: Props) {
           ? "처리 중..."
           : productPrice === 0
           ? "명반 무료로 보기 →"
-          : `결제하고 별의 시선 받기 ₩${productPrice.toLocaleString()} →`}
+          : `결제하고 별의시선(자미두수) 받기 ₩${productPrice.toLocaleString()} →`}
       </button>
 
       <p className="text-center text-[11px] text-[#aaa]">

@@ -144,10 +144,10 @@ export function ZiweiGeneratingBanner({ resultId }: { resultId: string }) {
       </div>
 
       <p className="mb-1 text-xs font-medium tracking-widest text-[#c4913a] uppercase">
-        星의 視線 · 별의 시선 자미두수 분석
+        紫微斗數 · 별의시선(자미두수) 분석
       </p>
       <h2 className="mb-1 text-xl font-semibold text-white">
-        별의 시선이 당신의 명반을 깊이 들여다보고 있습니다
+        별의시선(자미두수)이 당신의 명반을 깊이 들여다보고 있습니다
       </h2>
       <p className="text-sm text-white/60 mb-5">
         16개 챕터로 구성된 자미두수 분석서를 순서대로 작성합니다.

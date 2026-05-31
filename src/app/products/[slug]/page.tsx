@@ -474,7 +474,7 @@ export default async function ProductDetailPage({
 
             {/* 차별성 다크박스 */}
             <div className="mt-5 rounded-xl bg-[#c4913a]/10 border border-[#c4913a]/30 px-4 py-3">
-              <p className="text-xs font-bold text-[#c4913a] mb-2">✦ 별의 시선만의 분석 방식</p>
+              <p className="text-xs font-bold text-[#c4913a] mb-2">✦ 별의시선(자미두수)만의 분석 방식</p>
               <ul className="space-y-1">
                 {[
                   "4단 심층 풀이 강제: 명리 근거 → 의미 → 일상 사례 → 조언",

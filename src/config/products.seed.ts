@@ -54,7 +54,7 @@ export const productsSeed: ProductSeed[] = [
   },
   {
     slug: "ziwei-saju",
-    name: "별의 시선",
+    name: "별의시선(자미두수)",
     description: "12개 별이 비추는 당신 인생의 12개 영역 — 자미두수(紫微斗數) 정밀 분석 보고서",
     price: 30000,
     display_order: 50,
