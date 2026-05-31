@@ -49,6 +49,7 @@ const navItems = [
   { label: "가벼운 사주", href: "/products/basic-saju" },
   { label: "연인·궁합", href: "/products/love-saju", badge: "인기", badgeColor: "from-rose-500 to-pink-500" },
   { label: "깊은 시선 VIP", href: "/products/premium-saju", badge: "추천", badgeColor: "from-teal-600 to-cyan-600" },
+  { label: "자미두수", href: "/products/ziwei-saju", badge: "NEW", badgeColor: "from-violet-600 to-purple-600" },
 ];
 
 function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {

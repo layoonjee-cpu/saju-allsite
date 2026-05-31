@@ -81,6 +81,17 @@ const SLIDES: Slide[] = [
     badgeLabel: "₩990",
     badgeColor: "bg-orange-500",
   },
+  {
+    slug: "ziwei-saju",
+    name: "별의시선(자미두수)",
+    subtitle: "12개 별이 비추는 인생의 12개 영역",
+    image: "/product-ziwei.png",
+    price: 30000,
+    originalPrice: 60000,
+    rank: 7,
+    badgeLabel: "50% OFF",
+    badgeColor: "bg-violet-600",
+  },
 ];
 
 const INTERVAL_MS = 3500;

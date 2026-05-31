@@ -12,6 +12,7 @@ const cardImages: Record<string, string | null> = {
   "basic-saju": "/product-basic.png",
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
+  "ziwei-saju": "/product-ziwei.png",
 };
 
 const cardGradients: Record<string, string> = {
