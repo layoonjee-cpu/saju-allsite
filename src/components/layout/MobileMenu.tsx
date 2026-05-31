@@ -100,6 +100,35 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
           ))}
         </nav>
 
+        {/* 상품 바로가기 */}
+        <div className="shrink-0 px-4 pt-3 pb-2 border-t border-amber-200/50">
+          <p className="text-[10px] font-bold tracking-widest text-[#aaa] mb-2 px-1">— 상품 바로가기</p>
+          <div className="space-y-1">
+            {[
+              { href: "/products/ziwei-saju",   label: "별의시선(자미두수)", price: "30,000원", icon: "⭐", color: "#7c3aed" },
+              { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "30,000원", icon: "📜", color: "#2b6e6e" },
+              { href: "/products/love-saju",     label: "연인의 시선",         price: "20,000원", icon: "💑", color: "#e85c8a" },
+              { href: "/products/basic-saju",    label: "가벼운 시선",         price: "4,900원",  icon: "✍️", color: "#2b6e6e" },
+              { href: "/products/dream-reading", label: "꿈꾸는 시선",         price: "1,900원",  icon: "🌙", color: "#6d28d9" },
+              { href: "/products/ilju-sticker",  label: "일주스티커",          price: "990원",    icon: "🔖", color: "#c4913a" },
+              { href: "/products/today-fortune", label: "오늘의 운세",         price: "무료",     icon: "☀️", color: "#16a34a" },
+            ].map(({ href, label, price, icon, color }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-amber-50/80 transition-colors"
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="text-base leading-none">{icon}</span>
+                  <span className="text-[13px] font-semibold" style={{ color }}>{label}</span>
+                </span>
+                <span className="text-[11px] font-mono text-[#aaa]">{price}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* 하단 인증 영역 */}
         <div className="shrink-0 px-4 pb-8 pt-3 border-t border-amber-200/50 space-y-2">
           {isLoggedIn ? (

@@ -57,8 +57,8 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
     <header className="sticky top-0 z-50 border-b border-amber-200/50 bg-amber-50/80 backdrop-blur-xl shadow-[0_1px_12px_rgba(26,23,48,0.07)]">
       <div className="container flex h-16 items-center justify-between gap-4">
 
-        {/* 로고 */}
-        <Link href="/" className="flex items-center shrink-0">
+        {/* 로고 — 데스크톱 */}
+        <Link href="/" className="hidden md:flex items-center shrink-0">
           <span
             className="font-bold text-[20px] tracking-tight"
             style={{
@@ -79,12 +79,36 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </span>
         </Link>
 
-        {/* 시선스토리 — 모바일 전용 로고 옆 링크 */}
+        {/* 상품소개 — 모바일 좌측 */}
+        <Link href="/products" className="md:hidden flex items-center shrink-0">
+          <span
+            className="font-bold text-[19px] tracking-tight"
+            style={{
+              fontFamily: "Georgia, serif",
+              background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            상품소개
+          </span>
+        </Link>
+
+        {/* 시선스토리 — 모바일 중앙 컬러바 */}
         <Link
           href="/story"
-          className="md:hidden text-[11px] font-bold text-[#2b6e6e] bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full shrink-0 -ml-1 hover:bg-teal-100 transition-colors"
+          className="md:hidden flex items-center justify-center px-4 py-1.5 rounded-xl shrink-0"
+          style={{
+            background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%)",
+          }}
         >
-          시선스토리
+          <span
+            className="font-bold text-[17px] tracking-tight text-white"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            시선스토리
+          </span>
         </Link>
 
         {/* 상품 메뉴 — 데스크톱만 표시 */}
