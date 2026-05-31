@@ -11,6 +11,8 @@ import {
   ALL_FIELDS,
   type BirthInfo,
 } from "@/lib/saju/saju-api";
+import { buildZiweiChapterPrompt, ZIWEI_TOTAL_SECTIONS } from "@/lib/ziwei/ziwei-prompt";
+import type { ZiweiPan } from "@/lib/ziwei/iztro-calc";
 
 export const maxDuration = 300;
 
@@ -129,9 +131,14 @@ export async function POST(
     const rawSajuJson: unknown = result.raw_saju_json ?? null;
 
     const isDreamReading = product.slug === "dream-reading";
+    const isZiweiProduct = product.slug === "ziwei-saju";
 
     if (isDreamReading) {
       myeongsik = { year: null, month: null, day: null, hour: null } as unknown as Myeongsik;
+    } else if (isZiweiProduct) {
+      // 자미두수: raw_saju_json이 iztro pan 데이터 → ganjiToMyeongsik 불필요
+      // myeongsik은 section handler에서 직접 사용하지 않으므로 placeholder로 설정
+      myeongsik = result.myeongsik as Myeongsik ?? { year: null, month: null, day: null, hour: null } as unknown as Myeongsik;
     } else if (rawSajuJson) {
       // DB에 저장된 raw_saju_json 재사용 (사주 API 재호출 불필요)
       const converted = ganjiToMyeongsik(rawSajuJson);
@@ -203,6 +210,72 @@ export async function POST(
         lower.includes("i can't assist") ||
         lower.includes("죄송합니다만 이 요청은")
       );
+    }
+
+
+    // ── 자미두수 섹션별 호출 처리 (ZiweiGeneratingBanner 순차 호출) ───────────
+    const isZiwei = product.slug === "ziwei-saju";
+    if (isSectionCall && isZiwei) {
+      if (result.generation_status === "complete") {
+        const existingMd = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
+        if (existingMd.length >= 5000) {
+          return NextResponse.json({ status: "complete" });
+        }
+      }
+
+      const ziweiPan = (rawSajuJson as ZiweiPan | null);
+      if (!ziweiPan) {
+        return NextResponse.json({ status: "failed", error: "명반 데이터 없음" }, { status: 400 });
+      }
+
+      if (sectionNum < 1 || sectionNum > ZIWEI_TOTAL_SECTIONS) {
+        return NextResponse.json({ status: "failed", error: `section out of range: ${sectionNum}` }, { status: 400 });
+      }
+
+      const { system: zSystem, user: zUser } = buildZiweiChapterPrompt(
+        sectionNum,
+        ziweiPan,
+        input as SajuInputRow
+      );
+
+      const zLlm = await generateInterpretation({
+        system: zSystem,
+        user: zUser,
+        maxTokensOverride: sectionNum === 9 ? 4000 : sectionNum === 16 ? 6000 : 2500,
+      });
+
+      // 거부 응답 검증
+      const zLower = zLlm.text.toLowerCase();
+      if (zLlm.text.trim().length < 100 || zLower.includes("i'm sorry") || zLower.includes("죄송합니다만")) {
+        return NextResponse.json({ status: "section_skipped", section: sectionNum, total: ZIWEI_TOTAL_SECTIONS });
+      }
+
+      if (sectionNum === 1) {
+        await svc.from("saju_results").update({
+          interpretation_md: zLlm.text,
+          llm_provider: zLlm.provider,
+          llm_model: zLlm.model,
+          generation_status: "generating",
+        }).eq("id", resultId);
+      } else {
+        const { data: cur } = await svc
+          .from("saju_results")
+          .select("interpretation_md")
+          .eq("id", resultId)
+          .single();
+
+        const appended = (cur?.interpretation_md ?? "") + "\n\n---\n\n" + zLlm.text;
+        await svc.from("saju_results").update({
+          interpretation_md: appended,
+          generation_status: sectionNum === ZIWEI_TOTAL_SECTIONS ? "complete" : "generating",
+        }).eq("id", resultId);
+      }
+
+      return NextResponse.json({
+        status: sectionNum === ZIWEI_TOTAL_SECTIONS ? "complete" : "section_complete",
+        section: sectionNum,
+        total: ZIWEI_TOTAL_SECTIONS,
+      });
     }
 
     // ── 섹션별 호출 처리 (VipGeneratingBanner 클라이언트 순차 호출) ──

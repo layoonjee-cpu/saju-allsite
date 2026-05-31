@@ -15,6 +15,7 @@ import {
   ALL_FIELDS,
   type BirthInfo,
 } from "@/lib/saju/saju-api";
+import { calcZiweiPan, extractMyeongsikFromPan } from "@/lib/ziwei/iztro-calc";
 
 const bodySchema = z.object({
   paymentKey: z.string().min(1),
@@ -158,6 +159,53 @@ export async function POST(request: NextRequest) {
 
   if (!input || !product) {
     return NextResponse.json({ error: "사주 입력 또는 상품 조회 실패" }, { status: 500 });
+  }
+
+
+  // ── 자미두수: iztro 명반 계산 → generating 행 즉시 삽입 후 반환 ─────────
+  // luckyloveme API 불필요 — iztro가 로컬에서 명반 계산 (~1초)
+  if (product.slug === "ziwei-saju") {
+    try {
+      const birthHour = input.birth_time && !input.time_unknown
+        ? parseInt(input.birth_time.split(":")[0], 10)
+        : 12; // 시간 미상 → 정오(오시) 기본값
+      const pan = calcZiweiPan(
+        input.birth_date ?? "1990-01-01",
+        birthHour,
+        input.gender as "male" | "female",
+        input.calendar === "lunar"
+      );
+      const myeongsik = extractMyeongsikFromPan(pan);
+
+      const { data: ziweiRow, error: ziweiErr } = await service
+        .from("saju_results")
+        .insert({
+          order_id: order.id,
+          myeongsik: myeongsik as never,
+          raw_saju_json: pan as never,
+          interpretation_md: "",
+          llm_provider: process.env.LLM_PROVIDER ?? "anthropic",
+          llm_model: process.env.LLM_MODEL ?? "claude-sonnet-4-5",
+          generation_status: "generating",
+        })
+        .select("id")
+        .single();
+
+      if (ziweiErr || !ziweiRow) {
+        const { data: existing } = await service
+          .from("saju_results")
+          .select("id")
+          .eq("order_id", order.id)
+          .maybeSingle();
+        if (existing) return NextResponse.json({ resultId: existing.id });
+        return NextResponse.json({ error: "결과 초기화 실패", detail: ziweiErr?.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ resultId: ziweiRow.id });
+    } catch (ziweiCalcErr) {
+      console.error("[ziwei-confirm] iztro 계산 실패:", ziweiCalcErr);
+      return NextResponse.json({ error: "명반 계산 실패", detail: String(ziweiCalcErr) }, { status: 500 });
+    }
   }
 
   // ── VIP: 사주 API 이전에 결과 행 미리 확보 ──────────────────────────

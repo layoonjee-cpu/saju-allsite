@@ -14,6 +14,8 @@ import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
 import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
 import { IljuStickerCard, type IljuStickerData } from "@/components/saju/IljuStickerCard";
 import { ExtraQuestionSection } from "@/components/saju/ExtraQuestionSection";
+import { ZiweiPanChart } from "@/components/saju/ZiweiPanChart";
+import { ZiweiGeneratingBanner } from "@/components/saju/ZiweiGeneratingBanner";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -85,15 +87,16 @@ export default async function ResultPage({
   const isTodayFortune = product?.slug === "today-fortune";
   const isIljuSticker = product?.slug === "ilju-sticker";
   const isBasicSaju = product?.slug === "basic-saju";
+  const isZiwei = product?.slug === "ziwei-saju";
   const isGenerating = result.generation_status === "generating";
   const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
   // 추가 질문 기능: 결제금액 1900원 이상 상품에 한해 표시
-  const showExtraQuestion = (order?.amount ?? 0) >= 1900 && !isTodayFortune && !isIljuSticker;
+  const showExtraQuestion = (order?.amount ?? 0) >= 1900 && !isTodayFortune && !isIljuSticker && !isZiwei;
 
   // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트)
   const isBadContent = (() => {
-    if (!isPremiumVip || result.generation_status !== "complete") return false;
+    if (!(isPremiumVip || isZiwei) || result.generation_status !== "complete") return false;
     const md = result.interpretation_md ?? "";
     const lower = md.toLowerCase();
     return (
@@ -107,6 +110,7 @@ export default async function ResultPage({
 
   // 배너 표시 조건: 생성중이거나 불량 콘텐츠 감지됨
   const showBanner = isPremiumVip && (isGenerating || isBadContent);
+  const showZiweiBanner = isZiwei && (isGenerating || isBadContent);
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
   const showChart = !isDreamReading && !isIljuSticker && !isFree && !showBanner;
@@ -161,6 +165,24 @@ export default async function ResultPage({
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
+      {/* ── 자미두수 명반 차트 + 배너 ──────────────────────────────────────── */}
+      {isZiwei && result.raw_saju_json && !showZiweiBanner && (
+        <section className="mb-6">
+          <h2 className="text-sm font-semibold mb-3 text-ink">명반(命盤)</h2>
+          <ZiweiPanChart rawJson={result.raw_saju_json} />
+        </section>
+      )}
+
+      {showZiweiBanner && (
+        <ZiweiGeneratingBanner resultId={resultId} />
+      )}
+
+      {isZiwei && !showZiweiBanner && !isBadContent && result.interpretation_md && (
+        <article>
+          <ResultBody markdown={result.interpretation_md} />
+        </article>
+      )}
+
       {/* VIP 생성 중 배너 (생성중 OR 불량 콘텐츠 감지) */}
       {showBanner && (
         <VipGeneratingBanner resultId={resultId} />
@@ -171,8 +193,8 @@ export default async function ResultPage({
         <VipDownloadButton resultId={resultId} />
       )}
 
-      {/* 사주 명식표 (꿈해몽·일주스티커·VIP 생성중·불량 콘텐츠 제외) */}
-      {!isDreamReading && !isIljuSticker && !showBanner && (
+      {/* 사주 명식표 (꿈해몽·일주스티커·자미두수·VIP 생성중·불량 콘텐츠 제외) */}
+      {!isDreamReading && !isIljuSticker && !isZiwei && !showBanner && (
         <section className="mb-6">
           <h2 className="text-sm font-semibold mb-3 text-ink">사주 명식</h2>
           {/* 궁합: 두 사람 명식 나란히 */}
@@ -232,8 +254,8 @@ export default async function ResultPage({
       isTodayFortune && todayFortuneData ? (
         <TodayFortuneCard data={todayFortuneData} />
       ) : (
-        /* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠면 숨김) */
-        !showBanner && !isBadContent && result.interpretation_md && (
+        /* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠 또는 자미두수이면 숨김) */
+        !showBanner && !showZiweiBanner && !isZiwei && !isBadContent && result.interpretation_md && (
           <article>
             <ResultBody markdown={result.interpretation_md} />
           </article>

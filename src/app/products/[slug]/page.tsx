@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { SajuForm } from "@/components/saju/SajuForm";
 import { DreamForm } from "@/components/saju/DreamForm";
 import { LoveForm } from "@/components/saju/LoveForm";
+import { ZiweiForm } from "@/components/saju/ZiweiForm";
 import { formatKRW, formatDate } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
@@ -16,6 +17,7 @@ const productImages: Record<string, string> = {
   "basic-saju": "/product-basic.png",
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
+  "ziwei-saju": "/product-ziwei.png",
 };
 
 // 정가 표시 (할인 전 가격) — DB 실제 결제가와 별개
@@ -23,6 +25,7 @@ const productOriginalPrices: Record<string, number> = {
   "basic-saju": 9900,
   "love-saju": 50000,
   "premium-saju": 60000,
+  "ziwei-saju": 60000,
 };
 
 type Product = { id: string; slug: string; name: string; description: string; price: number };
@@ -99,6 +102,42 @@ export default async function ProductDetailPage({
           <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#1a1730]">{product.name}</h1>
           <p className="mt-3 text-sm text-[#4a4a6a] leading-relaxed">{product.description}</p>
+
+          {/* ziwei-saju 전용 헤더 강화 */}
+          {product.slug === "ziwei-saju" && (
+            <>
+              {/* 16챕터 강조 배지 */}
+              <div className="mt-3 inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: "linear-gradient(135deg, #1a1730, #3d2f6b)" }}>
+                <span>⭐</span>
+                <span>16챕터 자미두수 정밀 분석</span>
+              </div>
+
+              {/* 커버리지 키워드 배지들 */}
+              <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                {["명궁·신궁", "사화분석★", "재백궁★★", "부처궁", "관록궁", "대운흐름", "유년분석", "12궁 전체"].map((kw) => (
+                  <span key={kw}
+                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ color: "#7c3aed", background: "#f0ebff", border: "1px solid #c4b5fd" }}>
+                    {kw}
+                  </span>
+                ))}
+              </div>
+
+              {/* 핵심 포인트 3개 */}
+              <ul className="mt-4 space-y-1.5 text-left max-w-xs mx-auto">
+                {[
+                  { text: "사주와 다른 별도 명리 체계 — 12개 인생 영역 각각을 정밀하게 분석" },
+                  { text: "재백궁 강화 챕터 5,000자 — 재물 그릇·흐름·시기 집중 분석" },
+                  { text: "자미두수 정통 4×4 명반 시각화 — 별의 밝기·사화까지 한눈에" },
+                ].map(({ text }) => (
+                  <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
+                    <span className="font-bold mt-0.5 shrink-0" style={{ color: "#7c3aed" }}>✔</span>
+                    <span>{text}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           {/* basic-saju 전용 헤더 강화 */}
           {product.slug === "basic-saju" && (
@@ -373,6 +412,86 @@ export default async function ProductDetailPage({
         </section>
       )}
 
+      {/* ziwei-saju 전용 16챕터 상세 섹션 */}
+      {product.slug === "ziwei-saju" && (
+        <section className="mb-10 rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid rgba(196,145,58,0.3)", background: "linear-gradient(135deg, #1a1730 0%, #2d2050 100%)" }}>
+          {/* 헤더 */}
+          <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "rgba(196,145,58,0.2)" }}>
+            <p className="text-sm font-semibold text-[#c4913a]">⭐ 분석 구성</p>
+            <span className="text-[11px] font-bold text-[#c4913a] bg-[#c4913a]/10 border border-[#c4913a]/20 px-2 py-0.5 rounded-full">총 16개 챕터</span>
+          </div>
+
+          {/* 사주 vs 자미두수 비교 */}
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-[11px] font-bold tracking-widest text-white/30 mb-3">— 자미두수(紫微斗數)란?</p>
+            <div className="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+              {[
+                { label: "분석 단위", saju: "8글자 (천간·지지)", ziwei: "12궁 × 14주성 × 사화" },
+                { label: "시각화", saju: "4×2 사주 명식표", ziwei: "4×4 명반 도식" },
+                { label: "강점", saju: "전체 기질 종합 분석", ziwei: "영역별 정밀 분석" },
+                { label: "재물운", saju: "재성 구조 분석", ziwei: "재백궁 5,000자 집중 분석" },
+              ].map(({ label, saju, ziwei }) => (
+                <div key={label} className="grid grid-cols-3 text-[11px] border-b border-white/5 last:border-0">
+                  <div className="px-3 py-2 text-white/40 font-semibold">{label}</div>
+                  <div className="px-3 py-2 text-white/50">{saju}</div>
+                  <div className="px-3 py-2 text-[#c4913a] font-semibold">{ziwei}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 16챕터 목록 */}
+          <div className="px-5 pt-4 pb-4">
+            <p className="text-[11px] font-bold tracking-widest text-white/30 mb-3">— 16개 챕터 상세 구성</p>
+            <ul className="space-y-2.5">
+              {[
+                { n: "도입", title: "명반 전체 도식 + 오행국·명궁·신궁 요약", desc: "자미두수 명반 한눈에 보기", special: false },
+                { n: "01", title: "명궁(命宮) — 당신이라는 별의 본질", desc: "명궁 주성 분석, 타고난 본질 기질, 삶의 패턴", special: false },
+                { n: "02", title: "신궁(身宮) — 당신이 평생 머무는 자리", desc: "후천적으로 에너지를 쏟는 영역", special: false },
+                { n: "03", title: "주성(主星) 종합 분석", desc: "14주성 조합 패턴과 인생 핵심 영향", special: false },
+                { n: "04", title: "사화(四化) — 화록·화권·화과·화기", desc: "인생을 좌우하는 네 가지 변화의 기운 ★핵심 챕터", special: false },
+                { n: "05", title: "형제궁·노복궁 — 인간관계의 자리", desc: "형제·친구·직장 동료와의 관계 패턴", special: false },
+                { n: "06", title: "부처궁(夫妻宮) — 배우자와 결혼 생활", desc: "이상형·결혼 시기·결혼 생활 흐름", special: false },
+                { n: "07", title: "자녀궁(子女宮)", desc: "자녀운, 또는 후배·제자·창작물 영역", special: false },
+                { n: "08", title: "재백궁(財帛宮) ★★ — 재물의 흐름과 그릇", desc: "재물 그릇·정재/편재·손재 패턴·대운별 흐름·분야별 분석", special: true },
+                { n: "09", title: "전택궁(田宅宮) — 부동산·집·고향", desc: "부동산운, 이사·매매 적기, 방위", special: false },
+                { n: "10", title: "관록궁(官祿宮) — 직업과 사회적 성취", desc: "적합 직업군, 직장 vs 사업, 명예운", special: false },
+                { n: "11", title: "천이궁(遷移宮) — 이동·여행·해외운", desc: "이주 가능성, 해외 활동, 거주지 이동 영향", special: false },
+                { n: "12", title: "질액궁(疾厄宮) — 건강과 신체", desc: "타고난 체질, 주의 부위 경향", special: false },
+                { n: "13", title: "복덕궁(福德宮) — 정신적 만족과 내면", desc: "행복을 느끼는 영역, 취미·종교적 성향", special: false },
+                { n: "14", title: "부모궁(父母宮) — 부모와의 관계", desc: "부모 인연, 성장 배경, 유산 가능성", special: false },
+                { n: "15+", title: "대운·유년(大限·流年) — 10년 운명의 지도", desc: "대운 전체 흐름 + 향후 10년 유년 정밀 분석", special: false },
+              ].map(({ n, title, desc, special }) => (
+                <li key={n} className={`flex items-start gap-3 rounded-xl px-3 py-2.5 ${special ? "bg-[#c4913a]/10 border border-[#c4913a]/30" : ""}`}>
+                  <span className={`shrink-0 text-[10px] font-bold font-mono rounded px-1.5 py-0.5 mt-0.5 min-w-[30px] text-center ${special ? "text-[#c4913a] bg-[#c4913a]/20" : "text-white/60 bg-white/10"}`}>{n}</span>
+                  <div>
+                    <p className={`text-sm font-semibold ${special ? "text-[#c4913a]" : "text-white/80"}`}>{title}</p>
+                    <p className="text-xs text-white/40 mt-0.5 leading-snug">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* 차별성 다크박스 */}
+            <div className="mt-5 rounded-xl bg-[#c4913a]/10 border border-[#c4913a]/30 px-4 py-3">
+              <p className="text-xs font-bold text-[#c4913a] mb-2">✦ 별의 시선만의 분석 방식</p>
+              <ul className="space-y-1">
+                {[
+                  "4단 심층 풀이 강제: 명리 근거 → 의미 → 일상 사례 → 조언",
+                  "\"솔직히 말씀드리면~\" 직설적 통찰 + \"~하셨을 거예요\" 과거 진단",
+                  "코칭 문서 아님 — \"내 인생을 정확히 짚어줬다\"는 통찰·위로 중심",
+                ].map((t) => (
+                  <li key={t} className="text-[11px] text-white/60 flex items-start gap-1.5">
+                    <span className="text-[#c4913a] shrink-0 mt-0.5">·</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section>
         {product.slug === "dream-reading" ? (
           <DreamForm
@@ -383,6 +502,13 @@ export default async function ProductDetailPage({
           />
         ) : product.slug === "love-saju" ? (
           <LoveForm
+            productId={product.id}
+            productSlug={product.slug}
+            productPrice={product.price}
+            isLoggedIn={!!user}
+          />
+        ) : product.slug === "ziwei-saju" ? (
+          <ZiweiForm
             productId={product.id}
             productSlug={product.slug}
             productPrice={product.price}
