@@ -157,7 +157,7 @@ export function HeroBanner() {
         <Link
           href={`/products/${slide.slug}`}
           className="block relative w-full overflow-hidden rounded-3xl shadow-2xl"
-          style={{ aspectRatio: "3/4" }}
+          style={{ aspectRatio: "3/4", background: "linear-gradient(160deg, #1a1730 0%, #2d2050 50%, #1a3030 100%)" }}
         >
           {/* 이전 슬라이드 (fade-out) */}
           {prev !== null && (
@@ -165,7 +165,7 @@ export function HeroBanner() {
               src={SLIDES[prev].image}
               alt=""
               fill
-              className="object-cover object-center"
+              className="object-contain"
               sizes="(max-width: 512px) 100vw, 512px"
               aria-hidden
             />
@@ -177,7 +177,7 @@ export function HeroBanner() {
             src={slide.image}
             alt={slide.name}
             fill
-            className="object-cover object-center"
+            className="object-contain"
             style={{
               opacity: fading ? 0 : 1,
               transition: "opacity 0.45s ease",

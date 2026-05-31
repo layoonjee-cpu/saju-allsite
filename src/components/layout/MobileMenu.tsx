@@ -101,29 +101,30 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
         </nav>
 
         {/* 상품 바로가기 */}
-        <div className="shrink-0 px-4 pt-3 pb-2 border-t border-amber-200/50">
-          <p className="text-[10px] font-bold tracking-widest text-[#aaa] mb-2 px-1">— 상품 바로가기</p>
-          <div className="space-y-1">
+        <div className="shrink-0 px-3 pt-3 pb-2 border-t border-amber-200/50 bg-[#faf7f2]">
+          <p className="text-[10px] font-bold tracking-widest text-[#999] mb-2 px-1">— 상품 바로가기</p>
+          <div className="space-y-1.5">
             {[
-              { href: "/products/ziwei-saju",   label: "별의시선(자미두수)", price: "30,000원", icon: "⭐", color: "#7c3aed" },
-              { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "30,000원", icon: "📜", color: "#2b6e6e" },
-              { href: "/products/love-saju",     label: "연인의 시선",         price: "20,000원", icon: "💑", color: "#e85c8a" },
-              { href: "/products/basic-saju",    label: "가벼운 시선",         price: "4,900원",  icon: "✍️", color: "#2b6e6e" },
-              { href: "/products/dream-reading", label: "꿈꾸는 시선",         price: "1,900원",  icon: "🌙", color: "#6d28d9" },
-              { href: "/products/ilju-sticker",  label: "일주스티커",          price: "990원",    icon: "🔖", color: "#c4913a" },
-              { href: "/products/today-fortune", label: "오늘의 운세",         price: "무료",     icon: "☀️", color: "#16a34a" },
-            ].map(({ href, label, price, icon, color }) => (
+              { href: "/products/ziwei-saju",   label: "별의시선(자미두수)", price: "30,000원", icon: "⭐", color: "#6d28d9", bg: "#f3f0ff" },
+              { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "30,000원", icon: "📜", color: "#1a4a3a", bg: "#eaf4f0" },
+              { href: "/products/love-saju",     label: "연인의 시선",         price: "20,000원", icon: "💑", color: "#9d174d", bg: "#fdf2f8" },
+              { href: "/products/basic-saju",    label: "가벼운 시선",         price: "4,900원",  icon: "✍️", color: "#1a4a3a", bg: "#f0f9f4" },
+              { href: "/products/dream-reading", label: "꿈꾸는 시선",         price: "1,900원",  icon: "🌙", color: "#4c1d95", bg: "#f5f3ff" },
+              { href: "/products/ilju-sticker",  label: "일주스티커",          price: "990원",    icon: "🔖", color: "#92400e", bg: "#fffbeb" },
+              { href: "/products/today-fortune", label: "오늘의 운세",         price: "무료",     icon: "☀️", color: "#065f46", bg: "#ecfdf5" },
+            ].map(({ href, label, price, icon, color, bg }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-amber-50/80 transition-colors"
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-opacity active:opacity-70"
+                style={{ backgroundColor: bg }}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className="text-base leading-none">{icon}</span>
-                  <span className="text-[13px] font-semibold" style={{ color }}>{label}</span>
+                  <span className="text-[16px] leading-none">{icon}</span>
+                  <span className="text-[13px] font-bold" style={{ color }}>{label}</span>
                 </span>
-                <span className="text-[11px] font-mono text-[#aaa]">{price}</span>
+                <span className="text-[12px] font-semibold" style={{ color }}>{price}</span>
               </Link>
             ))}
           </div>
