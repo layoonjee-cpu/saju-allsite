@@ -153,6 +153,22 @@ export default function StoryPage() {
             </div>
           </Link>
 
+          <Link href="/products/ziwei-saju" className={`${styles.productCard} ${styles.productCardZiwei}`}>
+            <div className={styles.zweiBadge}>NEW · 자미두수</div>
+            <div className={`${styles.iconHanja} ${styles.iconHanjaLg} ${styles.iconHanjaStar}`}>星</div>
+            <div className={styles.productInfo}>
+              <div className={styles.nameRow}>
+                <span className={styles.productName}>별의시선(자미두수)</span>
+                <span className={styles.productMeta}>16챕터 · 12궁 정밀분석</span>
+              </div>
+              <div className={styles.productDesc}>12개 별이 비추는 당신의 재물·직업·연애·건강 — 영역별 깊이 있는 분석</div>
+            </div>
+            <div className={styles.productCardZiweiPrice}>
+              <span style={{ fontSize: 10, color: "#b3a8d0", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>60,000원</span>
+              30,000<small style={{ fontSize: 11, color: "#9b8ec4", marginLeft: 2 }}>원</small>
+            </div>
+          </Link>
+
         </div>
       </section>
 
