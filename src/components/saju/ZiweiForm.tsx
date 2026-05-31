@@ -1,7 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { formatKRW } from "@/lib/utils";
+
+// 12 시진 + 모름 (자미두수도 동일한 시진 사용)
+const SIJU_OPTIONS = [
+  { label: "모름 / 선택 안함", value: "unknown" },
+  { label: "자시 (子時)  23:30 ~ 01:29", value: "00:00" },
+  { label: "축시 (丑時)  01:30 ~ 03:29", value: "02:00" },
+  { label: "인시 (寅時)  03:30 ~ 05:29", value: "04:00" },
+  { label: "묘시 (卯時)  05:30 ~ 07:29", value: "06:00" },
+  { label: "진시 (辰時)  07:30 ~ 09:29", value: "08:00" },
+  { label: "사시 (巳時)  09:30 ~ 11:29", value: "10:00" },
+  { label: "오시 (午時)  11:30 ~ 13:29", value: "12:00" },
+  { label: "미시 (未時)  13:30 ~ 15:29", value: "14:00" },
+  { label: "신시 (申時)  15:30 ~ 17:29", value: "16:00" },
+  { label: "유시 (酉時)  17:30 ~ 19:29", value: "18:00" },
+  { label: "술시 (戌時)  19:30 ~ 21:29", value: "20:00" },
+  { label: "해시 (亥時)  21:30 ~ 23:29", value: "22:00" },
+];
 
 type Props = {
   productId: string;
@@ -10,46 +30,60 @@ type Props = {
   isLoggedIn: boolean;
 };
 
-const HOURS = Array.from({ length: 24 }, (_, i) => {
-  const h = String(i).padStart(2, "0");
-  return { value: `${h}:00`, label: `${h}시` };
-});
-
-export function ZiweiForm({ productId, productPrice, isLoggedIn }: Props) {
+export function ZiweiForm({ productId, productSlug, productPrice, isLoggedIn }: Props) {
   const router = useRouter();
+
   const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [birthTime, setBirthTime] = useState("12:00");
-  const [timeUnknown, setTimeUnknown] = useState(false);
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [selectedSiju, setSelectedSiju] = useState("unknown");
   const [gender, setGender] = useState<"male" | "female">("female");
   const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    const y = parseInt(birthYear);
+    const m = parseInt(birthMonth);
+    const d = parseInt(birthDay);
 
-    if (!birthDate) {
-      setError("생년월일을 입력해 주세요.");
+    if (!birthYear || !birthMonth || !birthDay) {
+      toast.error("생년월일을 모두 입력해 주세요");
       return;
     }
-    if (!isLoggedIn && !email) {
-      setError("결과 수신을 위해 이메일을 입력해 주세요.");
+    if (y < 1900 || y > new Date().getFullYear()) {
+      toast.error("올바른 년도를 입력해 주세요");
+      return;
+    }
+    if (m < 1 || m > 12) {
+      toast.error("올바른 월을 입력해 주세요 (1~12)");
+      return;
+    }
+    if (d < 1 || d > 31) {
+      toast.error("올바른 일을 입력해 주세요 (1~31)");
+      return;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("올바른 이메일 형식을 입력해 주세요");
       return;
     }
 
-    setLoading(true);
+    const birthDate = `${String(y)}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const timeUnknown = selectedSiju === "unknown";
+    const birthTime = timeUnknown ? null : selectedSiju;
+
+    setSubmitting(true);
     try {
-      const res = await fetch("/api/orders/create", {
+      const createRes = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId,
-          name: name || null,
+          name,
           birthDate,
-          birthTime: timeUnknown ? null : birthTime,
+          birthTime,
           timeUnknown,
           gender,
           calendar,
@@ -57,172 +91,228 @@ export function ZiweiForm({ productId, productPrice, isLoggedIn }: Props) {
           customerEmail: email || null,
         }),
       });
+      const createJson = await createRes.json();
+      if (!createRes.ok) throw new Error(createJson.error ?? "주문 생성 실패");
 
-      const data = (await res.json()) as { orderId?: string; amount?: number; error?: string };
-      if (!res.ok || !data.orderId) {
-        setError(data.error ?? "주문 생성에 실패했습니다.");
-        return;
-      }
+      const { orderId, amount } = createJson;
 
-      if (data.amount === 0) {
-        // 무료 상품 (현재 ziwei-saju는 유료지만 혹시를 위한 분기)
-        const fc = await fetch("/api/orders/free-confirm", {
+      if (amount === 0) {
+        toast.loading("명반을 계산하고 있어요...", { id: "ziwei-loading" });
+        const freeRes = await fetch("/api/orders/free-confirm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: data.orderId }),
+          body: JSON.stringify({ orderId }),
         });
-        const fd = (await fc.json()) as { resultId?: string };
-        if (fd.resultId) router.push(`/results/${fd.resultId}`);
+        const freeJson = await freeRes.json();
+        toast.dismiss("ziwei-loading");
+        if (!freeRes.ok) throw new Error(freeJson.error ?? "분析 실패");
+        router.push(`/results/${freeJson.resultId}`);
       } else {
-        router.push(`/checkout/${data.orderId}`);
+        router.push(`/checkout/${orderId}`);
       }
-    } catch {
-      setError("오류가 발생했습니다. 다시 시도해 주세요.");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      toast.dismiss("ziwei-loading");
+      toast.error(err instanceof Error ? err.message : "오류가 발생했습니다");
+      setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* 이름 */}
-      <div>
-        <label className="block text-sm font-semibold text-[#1a1730] mb-1.5">
-          이름 <span className="text-[11px] text-[#aaa] font-normal">(선택 — 보고서에 사용됩니다)</span>
-        </label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="홍길동"
-          className="w-full h-11 rounded-xl border border-[#d0cce8] bg-white px-4 text-sm text-[#1a1730] placeholder:text-[#bbb] focus:outline-none focus:border-[#4a3f7a] focus:ring-1 focus:ring-[#4a3f7a]/20 transition-colors"
-        />
+    <form onSubmit={handleSubmit} className="space-y-6">
+
+      {/* ── 신청 상품 (읽기 전용) ── */}
+      <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-[#2D5C5C]/8 border border-[#2D5C5C]/25">
+        <div>
+          <p className="text-[11px] text-[#2D5C5C] font-semibold tracking-wider uppercase mb-0.5">신청 상품</p>
+          <p className="text-sm font-semibold text-[#1a1730]">별의시선(자미두수)</p>
+        </div>
+        <span className="text-sm font-mono font-bold text-[#2D5C5C]">
+          {productPrice === 0 ? "무료" : formatKRW(productPrice)}
+        </span>
       </div>
 
-      {/* 생년월일 + 양음력 */}
-      <div>
-        <label className="block text-sm font-semibold text-[#1a1730] mb-1.5">
-          생년월일 <span className="text-rose-500">*</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            required
-            className="flex-1 h-11 rounded-xl border border-[#d0cce8] bg-white px-4 text-sm text-[#1a1730] focus:outline-none focus:border-[#4a3f7a] focus:ring-1 focus:ring-[#4a3f7a]/20 transition-colors"
-          />
-          <div className="flex rounded-xl overflow-hidden border border-[#d0cce8]">
-            {(["solar", "lunar"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCalendar(c)}
-                className={`px-3 text-xs font-semibold transition-colors ${
-                  calendar === c
-                    ? "bg-[#1a1730] text-white"
-                    : "bg-white text-[#888] hover:bg-[#f0eef8]"
+      {/* ── 성별 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">성별 <span className="text-red-500">*</span></p>
+        <div className="flex gap-3">
+          {(["male", "female"] as const).map((g) => (
+            <label key={g} className="flex items-center gap-2 cursor-pointer select-none">
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  gender === g ? "border-[#E91E8C]" : "border-[#ccc]"
                 }`}
+                onClick={() => setGender(g)}
               >
-                {c === "solar" ? "양력" : "음력"}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 출생시간 */}
-      <div>
-        <label className="block text-sm font-semibold text-[#1a1730] mb-1.5">
-          출생 시간
-          <span className="text-[11px] text-[#aaa] font-normal ml-1">(정확할수록 명반 정밀도 상승)</span>
-        </label>
-        <div className="flex gap-2 items-center">
-          <select
-            value={birthTime}
-            onChange={(e) => setBirthTime(e.target.value)}
-            disabled={timeUnknown}
-            className="flex-1 h-11 rounded-xl border border-[#d0cce8] bg-white px-3 text-sm text-[#1a1730] focus:outline-none focus:border-[#4a3f7a] transition-colors disabled:opacity-40"
-          >
-            {HOURS.map((h) => (
-              <option key={h.value} value={h.value}>{h.label}</option>
-            ))}
-          </select>
-          <label className="flex items-center gap-1.5 text-xs text-[#888] cursor-pointer whitespace-nowrap">
-            <input
-              type="checkbox"
-              checked={timeUnknown}
-              onChange={(e) => setTimeUnknown(e.target.checked)}
-              className="rounded"
-            />
-            모름
-          </label>
-        </div>
-      </div>
-
-      {/* 성별 */}
-      <div>
-        <label className="block text-sm font-semibold text-[#1a1730] mb-1.5">성별</label>
-        <div className="flex gap-2">
-          {(["female", "male"] as const).map((g) => (
-            <button
-              key={g}
-              type="button"
-              onClick={() => setGender(g)}
-              className={`flex-1 h-11 rounded-xl text-sm font-semibold transition-all border ${
-                gender === g
-                  ? "bg-[#1a1730] text-white border-[#1a1730]"
-                  : "bg-white text-[#888] border-[#d0cce8] hover:border-[#4a3f7a]"
-              }`}
-            >
-              {g === "female" ? "여성 ♀" : "남성 ♂"}
-            </button>
+                {gender === g && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E91E8C] block" />
+                )}
+              </span>
+              <span
+                className={`text-sm font-medium ${gender === g ? "text-[#1a1730]" : "text-[#888]"}`}
+                onClick={() => setGender(g)}
+              >
+                {g === "male" ? "남성" : "여성"}
+              </span>
+            </label>
           ))}
         </div>
       </div>
 
-      {/* 이메일 (미로그인 시) */}
-      {!isLoggedIn && (
-        <div>
-          <label className="block text-sm font-semibold text-[#1a1730] mb-1.5">
-            이메일 <span className="text-rose-500">*</span>
-            <span className="text-[11px] text-[#aaa] font-normal ml-1">(결과 링크 발송)</span>
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="example@email.com"
-            className="w-full h-11 rounded-xl border border-[#d0cce8] bg-white px-4 text-sm text-[#1a1730] placeholder:text-[#bbb] focus:outline-none focus:border-[#4a3f7a] focus:ring-1 focus:ring-[#4a3f7a]/20 transition-colors"
-          />
+      {/* ── 이름 ── */}
+      <div className="space-y-2">
+        <label htmlFor="ziwei-name" className="text-sm font-bold text-[#1a1730] block">
+          이름 <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="ziwei-name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="이름을 입력해 주세요"
+          className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+        />
+      </div>
+
+      {/* ── 생년월일 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">
+          생년월일 <span className="text-red-500">*</span>
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="relative">
+            <select
+              value={birthYear}
+              onChange={(e) => setBirthYear(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">년도</option>
+              {Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => {
+                const y = new Date().getFullYear() - i;
+                return <option key={y} value={String(y)}>{y}년</option>;
+              })}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+          <div className="relative">
+            <select
+              value={birthMonth}
+              onChange={(e) => setBirthMonth(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">월</option>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={String(m)}>{m}월</option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+          <div className="relative">
+            <select
+              value={birthDay}
+              onChange={(e) => setBirthDay(e.target.value)}
+              className="w-full h-12 pl-3 pr-8 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+            >
+              <option value="">일</option>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={String(d)}>{d}일</option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 달력 ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-bold text-[#1a1730]">달력 <span className="text-red-500">*</span></p>
+        <div className="flex gap-4">
+          {(["solar", "lunar"] as const).map((c) => (
+            <label key={c} className="flex items-center gap-2 cursor-pointer select-none">
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  calendar === c ? "border-[#E91E8C]" : "border-[#ccc]"
+                }`}
+                onClick={() => setCalendar(c)}
+              >
+                {calendar === c && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E91E8C] block" />
+                )}
+              </span>
+              <span
+                className={`text-sm font-medium ${calendar === c ? "text-[#1a1730]" : "text-[#888]"}`}
+                onClick={() => setCalendar(c)}
+              >
+                {c === "solar" ? "양력" : "음력"}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 태어난 시간 (시주) ── */}
+      <div className="space-y-2">
+        <label htmlFor="ziwei-siju" className="text-sm font-bold text-[#1a1730] block">
+          태어난 시간 (시주) <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <select
+            id="ziwei-siju"
+            value={selectedSiju}
+            onChange={(e) => setSelectedSiju(e.target.value)}
+            className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm appearance-none focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+          >
+            {SIJU_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#999] text-xs">▼</span>
+        </div>
+      </div>
+
+      {/* ── 이메일 (선택) ── */}
+      <div className="space-y-2">
+        <label htmlFor="ziwei-email" className="text-sm font-bold text-[#1a1730] block">
+          이메일(선택){" "}
+          <span className="text-xs font-normal text-[#888]">*입력안하셔도 진행됩니다. 향후 분析지 미수령시 발송용</span>
+        </label>
+        <input
+          id="ziwei-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="example@email.com"
+          className="w-full h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
+        />
+      </div>
+
+      {/* ── 제출 버튼 ── */}
+      {isLoggedIn ? (
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-bold hover:bg-[#245050] active:scale-[0.99] transition-all disabled:opacity-60 mt-2 tracking-wide"
+        >
+          {submitting ? "주문 생성 중..." : "결제하러 가기 →"}
+        </button>
+      ) : (
+        <div className="space-y-2 mt-2">
+          <Link
+            href={`/login?redirect=${encodeURIComponent(`/products/${productSlug}`)}`}
+            className="w-full h-14 rounded-xl bg-[#2D5C5C] text-white text-base font-bold hover:bg-[#245050] transition-colors flex items-center justify-center tracking-wide"
+          >
+            로그인하고 결제하기 →
+          </Link>
+          <p className="text-xs text-[#888] text-center">
+            결과는 로그인 후{" "}
+            <Link href="/mypage" className="underline text-[#2D5C5C]">
+              마이페이지
+            </Link>
+            에서 확인할 수 있어요.
+          </p>
         </div>
       )}
-
-      {error && (
-        <p className="text-sm text-rose-600 bg-rose-50 rounded-lg px-4 py-2.5">{error}</p>
-      )}
-
-      {/* 제출 버튼 */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full h-13 rounded-2xl text-[15px] font-bold text-white transition-all disabled:opacity-60"
-        style={{
-          background: loading
-            ? "#6b6b8a"
-            : "linear-gradient(135deg, #1a1730 0%, #3d2f6b 50%, #c4913a 100%)",
-        }}
-      >
-        {loading
-          ? "처리 중..."
-          : productPrice === 0
-          ? "명반 무료로 보기 →"
-          : `결제하고 별의시선(자미두수) 받기 ₩${productPrice.toLocaleString()} →`}
-      </button>
-
-      <p className="text-center text-[11px] text-[#aaa]">
-        ⭐ 토스페이먼츠 안전 결제 · 결과는 이 화면에 바로 표시됩니다
-      </p>
     </form>
   );
 }

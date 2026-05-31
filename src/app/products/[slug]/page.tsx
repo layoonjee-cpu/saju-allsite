@@ -472,21 +472,38 @@ export default async function ProductDetailPage({
               ))}
             </ul>
 
-            {/* 차별성 다크박스 */}
-            <div className="mt-5 rounded-xl bg-[#c4913a]/10 border border-[#c4913a]/30 px-4 py-3">
-              <p className="text-xs font-bold text-[#c4913a] mb-2">✦ 별의시선(자미두수)만의 분석 방식</p>
-              <ul className="space-y-1">
-                {[
-                  "4단 심층 풀이 강제: 명리 근거 → 의미 → 일상 사례 → 조언",
-                  "\"솔직히 말씀드리면~\" 직설적 통찰 + \"~하셨을 거예요\" 과거 진단",
-                  "코칭 문서 아님 — \"내 인생을 정확히 짚어줬다\"는 통찰·위로 중심",
-                ].map((t) => (
-                  <li key={t} className="text-[11px] text-white/60 flex items-start gap-1.5">
-                    <span className="text-[#c4913a] shrink-0 mt-0.5">·</span>
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* 자미두수란? */}
+            <div className="mt-6 rounded-xl border border-white/10 overflow-hidden">
+              <div className="px-4 py-3 border-b border-white/10" style={{ background: "rgba(196,145,58,0.12)" }}>
+                <p className="text-xs font-bold text-[#c4913a] tracking-widest">— 자미두수(紫微斗數)란?</p>
+              </div>
+              <div className="px-4 py-4 space-y-3">
+                <p className="text-[13px] text-white/75 leading-relaxed">
+                  자미두수는 약 <strong className="text-white/90">1,000년 전 중국 송나라</strong>에서 정립된 동양 명리학의 한 체계로,
+                  출생 시각을 기준으로 하늘의 <strong className="text-white/90">14개 주성(主星)과 보조성들</strong>이 12궁(宮)에 배치되는 원리를 분석합니다.
+                </p>
+                <p className="text-[13px] text-white/75 leading-relaxed">
+                  사주(四柱)가 한 사람의 <strong className="text-white/90">전체 기질과 운의 큰 흐름</strong>을 보여준다면,
+                  자미두수는 인생을 <strong className="text-[#c4913a]">재물·직업·연애·건강·이동·부모</strong> 등 <strong className="text-white/90">12개 영역으로 나누어</strong> 각각을 독립적으로 정밀하게 분석합니다.
+                </p>
+                <p className="text-[13px] text-white/75 leading-relaxed">
+                  "내 재물운은 어떤 구조인가?", "어떤 직업 환경이 맞는가?", "배우자는 어떤 사람일까?" —
+                  <strong className="text-white/90"> 영역별 깊이 있는 답</strong>을 원할 때 자미두수가 더 강력합니다.
+                </p>
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {[
+                    { icon: "🌟", label: "14주성", desc: "12궁에 배치" },
+                    { icon: "🏛️", label: "12궁", desc: "인생 12개 영역" },
+                    { icon: "✨", label: "사화(四化)", desc: "녹·권·과·기 운의 흐름" },
+                  ].map(({ icon, label, desc }) => (
+                    <div key={label} className="rounded-lg bg-white/5 px-3 py-2.5 text-center">
+                      <p className="text-base mb-1">{icon}</p>
+                      <p className="text-[11px] font-bold text-[#c4913a]">{label}</p>
+                      <p className="text-[10px] text-white/40 mt-0.5">{desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
