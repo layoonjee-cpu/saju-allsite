@@ -64,19 +64,20 @@ export function GeneratePdfButton({ resultId, name, hasPdf }: Props) {
   const idleLabel = hasPdf ? "📄 PDF 재생성" : "📄 PDF 생성";
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={state === "generating" || state === "done"}
-      title={
-        state === "idle"
-          ? `${name}님 분석지 PDF 생성`
-          : state === "error"
-          ? errorMsg
-          : undefined
-      }
-      className={`text-[11px] font-medium transition-colors ${STYLES[state]}`}
-    >
-      {state === "idle" ? idleLabel : LABELS[state]}
-    </button>
+    <span className="inline-flex flex-col gap-0.5">
+      <button
+        onClick={handleClick}
+        disabled={state === "generating" || state === "done"}
+        title={state === "idle" ? `${name}님 분석지 PDF 생성` : undefined}
+        className={`text-[11px] font-medium transition-colors ${STYLES[state]}`}
+      >
+        {state === "idle" ? idleLabel : LABELS[state]}
+      </button>
+      {state === "error" && errorMsg && (
+        <span className="text-[10px] text-red-500 max-w-[160px] break-words leading-tight">
+          {errorMsg}
+        </span>
+      )}
+    </span>
   );
 }

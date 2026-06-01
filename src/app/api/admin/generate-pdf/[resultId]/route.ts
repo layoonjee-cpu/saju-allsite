@@ -85,7 +85,10 @@ export async function POST(
 
   if (uploadErr) {
     console.error("[generate-pdf] Storage 업로드 실패:", uploadErr);
-    return NextResponse.json({ ok: false, error: "스토리지 업로드 실패" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: `스토리지 업로드 실패: ${uploadErr.message}` },
+      { status: 500 }
+    );
   }
 
   // 5. pdf_url 업데이트
