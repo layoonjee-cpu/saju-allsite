@@ -166,6 +166,21 @@ export async function POST(request: NextRequest) {
 
     const llm = await generateInterpretation({ system, user: userPrompt });
 
+    const lowerFree = llm.text.toLowerCase();
+    const isRefusalFree =
+      llm.text.trim().length < 200 ||
+      lowerFree.includes("i'm sorry") ||
+      lowerFree.includes("i cannot") ||
+      lowerFree.includes("i can't assist") ||
+      lowerFree.includes("죄송합니다만");
+
+    if (isRefusalFree) {
+      return NextResponse.json(
+        { error: "LLM 거부 응답", detail: llm.text.slice(0, 120) },
+        { status: 500 }
+      );
+    }
+
     const { data: result, error: resultErr } = await service
       .from("saju_results")
       .insert({
@@ -174,7 +189,8 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
-        raw_saju_json: rawSajuJson as never, // 16종 원본 응답
+        raw_saju_json: rawSajuJson as never,
+        generation_status: "complete",
       })
       .select("id")
       .single();

@@ -60,6 +60,7 @@ async function callAnthropic(req: LlmRequest, model: string, key: string | undef
   const message = await client.messages.create({
     model,
     max_tokens: req.maxTokensOverride ?? 8096,
+    temperature: 0.9,
     system: req.system,
     messages: [{ role: "user", content: req.user }],
   });

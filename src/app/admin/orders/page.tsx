@@ -7,6 +7,7 @@ import { SendEmailButton } from "@/components/admin/SendEmailButton";
 import { SajuDataButton } from "@/components/admin/SajuDataButton";
 import { ExtraAnalysisButton } from "@/components/admin/ExtraAnalysisButton";
 import { RegenerateButton } from "@/components/admin/RegenerateButton";
+import { GeneratePdfButton } from "@/components/admin/GeneratePdfButton";
 
 export const metadata = { title: "주문 관리 | 시선 어드민" };
 export const dynamic = "force-dynamic";
@@ -305,6 +306,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                               hasEmail={!!email}
                             />
                           </>
+                        )}
+                        {/* PDF 버튼: 결과가 존재하면 generation_status 무관하게 표시 */}
+                        {result && (
+                          <GeneratePdfButton
+                            resultId={result.id}
+                            name={inp?.name ?? "고객"}
+                            hasPdf={!!result.pdf_url}
+                          />
                         )}
                       </div>
                     </td>

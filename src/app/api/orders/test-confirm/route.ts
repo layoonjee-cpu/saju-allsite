@@ -152,6 +152,21 @@ export async function POST(request: NextRequest) {
 
     const llm = await generateInterpretation({ system, user });
 
+    const lower = llm.text.toLowerCase();
+    const isRefusal =
+      llm.text.trim().length < 200 ||
+      lower.includes("i'm sorry") ||
+      lower.includes("i cannot") ||
+      lower.includes("i can't assist") ||
+      lower.includes("죄송합니다만");
+
+    if (isRefusal) {
+      return NextResponse.json(
+        { error: "LLM 거부 응답", detail: llm.text.slice(0, 120) },
+        { status: 500 }
+      );
+    }
+
     const { data: result, error: resultErr } = await service
       .from("saju_results")
       .insert({
@@ -160,6 +175,7 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
+        generation_status: "complete",
       })
       .select("id")
       .single();

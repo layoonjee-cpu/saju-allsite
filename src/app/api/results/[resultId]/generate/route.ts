@@ -422,7 +422,11 @@ export async function POST(
     } else {
       // ── 단일 호출 (기본) ────────────────────────────────────────────
       const { system, user } = buildSajuPrompt(promptArgs);
-      const llm = await generateInterpretation({ system, user });
+      const llm = await generateInterpretation({
+        system,
+        user,
+        maxTokensOverride: product.slug === "love-saju" ? 8000 : undefined,
+      });
       llmText = llm.text;
       llmProvider = llm.provider;
       llmModel = llm.model;

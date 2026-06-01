@@ -10,12 +10,12 @@ import { ResultShareButtons } from "@/components/saju/ResultShareButtons";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
 import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import { SipsinChart } from "@/components/saju/SipsinChart";
-import { LoveOhaengChart } from "@/components/saju/LoveOhaengChart";
 import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
 import { IljuStickerCard, type IljuStickerData } from "@/components/saju/IljuStickerCard";
 import { ExtraQuestionSection } from "@/components/saju/ExtraQuestionSection";
 import { ZiweiPanChart } from "@/components/saju/ZiweiPanChart";
 import { ZiweiGeneratingBanner } from "@/components/saju/ZiweiGeneratingBanner";
+import { SajuRegenerateBanner } from "@/components/saju/SajuRegenerateBanner";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
 
@@ -96,24 +96,31 @@ export default async function ResultPage({
 
   // 불량 콘텐츠 감지 (LLM 거부 응답 / 너무 짧은 텍스트)
   const isBadContent = (() => {
-    if (!(isPremiumVip || isZiwei) || result.generation_status !== "complete") return false;
     const md = result.interpretation_md ?? "";
     const lower = md.toLowerCase();
-    return (
-      md.length < 200 ||
+    const hasRefusal =
       lower.includes("i'm sorry") ||
       lower.includes("i cannot") ||
       lower.includes("i can't assist") ||
-      lower.includes("죄송합니다만")
-    );
+      lower.includes("죄송합니다만");
+
+    if (isPremiumVip || isZiwei) {
+      if (result.generation_status !== "complete") return false;
+      return md.length < 200 || hasRefusal;
+    }
+
+    // 다른 상품: 거부 응답 문구가 있으면 불량 콘텐츠
+    return hasRefusal;
   })();
 
   // 배너 표시 조건: 생성중이거나 불량 콘텐츠 감지됨
   const showBanner = isPremiumVip && (isGenerating || isBadContent);
   const showZiweiBanner = isZiwei && (isGenerating || isBadContent);
+  // basic-saju 등 일반 상품에서 불량 콘텐츠 감지 시 자동 재생성 배너
+  const showRegenerateBanner = !isPremiumVip && !isZiwei && isBadContent;
 
   const myeongsik = result.myeongsik as unknown as Myeongsik;
-  const showChart = !isDreamReading && !isIljuSticker && !isFree && !showBanner;
+  const showChart = !isDreamReading && !isIljuSticker && !isFree && !showBanner && !showRegenerateBanner;
 
   // 오늘의 운세 — JSON 파싱 시도 (성공 시 TodayFortuneCard 사용)
   let todayFortuneData: TodayFortuneData | null = null;
@@ -215,20 +222,23 @@ export default async function ResultPage({
         </section>
       )}
 
-      {/* 궁합 오행 분포 비교 차트 — love-saju + 파트너 명식이 저장된 경우만 */}
-      {isLoveSaju && partnerMyeongsikRaw && !showBanner && (
-        <section className="mb-8">
-          <h2 className="text-sm font-semibold mb-3 text-ink">오행 분포 비교</h2>
-          <LoveOhaengChart
-            mainMyeongsik={myeongsik}
-            partnerMyeongsik={partnerMyeongsikRaw}
-            nameA={sajuInput?.name ?? "나"}
-            nameB={sajuInput?.partner_name ?? "상대방"}
-          />
+      {/* 궁합 오행 분포 — 내 차트 항상 표시, 파트너 차트는 데이터 있을 때만 */}
+      {isLoveSaju && showChart && (
+        <section className="mb-8 space-y-6">
+          <div>
+            <p className="text-sm font-semibold mb-3 text-ink">{sajuInput?.name ?? "나"}</p>
+            <OhaengChart myeongsik={myeongsik} />
+          </div>
+          {partnerMyeongsikRaw && (
+            <div>
+              <p className="text-sm font-semibold mb-3 text-ink">{sajuInput?.partner_name ?? "상대방"}</p>
+              <OhaengChart myeongsik={partnerMyeongsikRaw} />
+            </div>
+          )}
         </section>
       )}
 
-      {/* 오행 분포 차트 (꿈해몽·무료·VIP생성중 제외, 궁합은 위 비교차트로 대체) */}
+      {/* 오행 분포 차트 (꿈해몽·무료·VIP생성중 제외, 궁합은 위에서 처리) */}
       {showChart && !isLoveSaju && (
         <section className="mb-10">
           <OhaengChart myeongsik={myeongsik} />
@@ -247,6 +257,9 @@ export default async function ResultPage({
         </section>
       )}
 
+      {/* 일반 상품 불량 콘텐츠 자동 재생성 배너 (basic-saju 등) */}
+      {showRegenerateBanner && <SajuRegenerateBanner resultId={resultId} />}
+
       {/* 일주스티커: 구조화 카드 (JSON 파싱 성공 시) */}
       {isIljuSticker && iljuStickerData ? (
         <IljuStickerCard data={iljuStickerData} />
@@ -255,7 +268,7 @@ export default async function ResultPage({
         <TodayFortuneCard data={todayFortuneData} />
       ) : (
         /* 마크다운 결과 (배너 표시 중이거나 불량 콘텐츠 또는 자미두수이면 숨김) */
-        !showBanner && !showZiweiBanner && !isZiwei && !isBadContent && result.interpretation_md && (
+        !showBanner && !showZiweiBanner && !showRegenerateBanner && !isZiwei && !isBadContent && result.interpretation_md && (
           <article>
             <ResultBody markdown={result.interpretation_md} />
           </article>

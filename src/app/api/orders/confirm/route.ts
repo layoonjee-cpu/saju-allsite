@@ -338,6 +338,27 @@ export async function POST(request: NextRequest) {
     const maxTokensOverride = isLoveSaju ? 6000 : undefined;
     const llm = await generateInterpretation({ system, user, maxTokensOverride });
 
+    // LLM 거부 응답 검증 (결제는 정상 승인된 상태이므로 500 반환 후 어드민 재생성)
+    const lowerConfirm = llm.text.toLowerCase();
+    const isRefusalConfirm =
+      llm.text.trim().length < 200 ||
+      lowerConfirm.includes("i'm sorry") ||
+      lowerConfirm.includes("i cannot") ||
+      lowerConfirm.includes("i can't assist") ||
+      lowerConfirm.includes("죄송합니다만");
+
+    if (isRefusalConfirm) {
+      console.error("[confirm] LLM 거부 응답:", llm.text.slice(0, 120));
+      return NextResponse.json(
+        {
+          error: "사주 해석 생성 실패 (LLM 거부)",
+          detail: llm.text.slice(0, 120),
+          hint: "결제는 정상 승인되었습니다. /admin/orders 에서 수동 재생성하거나 환불을 진행하세요.",
+        },
+        { status: 500 }
+      );
+    }
+
     // love-saju: 파트너 myeongsik을 raw_saju_json에 임베드 (오행 비교 차트용)
     const finalRawJson = isLoveSaju && partnerMyeongsik
       ? {
@@ -354,7 +375,8 @@ export async function POST(request: NextRequest) {
         interpretation_md: llm.text,
         llm_provider: llm.provider,
         llm_model: llm.model,
-        raw_saju_json: finalRawJson as never, // 16종 원본 응답 (+파트너 명식)
+        raw_saju_json: finalRawJson as never,
+        generation_status: "complete",
       })
       .select("id")
       .single();
