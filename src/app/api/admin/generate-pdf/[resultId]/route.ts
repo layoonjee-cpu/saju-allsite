@@ -71,7 +71,11 @@ export async function POST(
   }
 
   // 4. Supabase Storage 업로드
-  const filePath = `${resultId}.pdf`;
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const safeName = (input?.name ?? "고객").replace(/[/\\:*?"<>|]/g, "").replace(/\s+/g, "_");
+  const safeProd = (typeof productName === "string" ? productName : "사주분석")
+    .replace(/[/\\:*?"<>|()\s]/g, "");
+  const filePath = `${safeProd}_${safeName}_${dateStr}.pdf`;
   const { error: uploadErr } = await svc.storage
     .from("vip-pdfs")
     .upload(filePath, pdfBuffer, {
