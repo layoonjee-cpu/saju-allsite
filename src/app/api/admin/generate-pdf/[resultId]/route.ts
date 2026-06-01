@@ -39,10 +39,11 @@ export async function POST(
     svc.from("saju_inputs").select("name, birth_date, birth_time, time_unknown, gender, calendar").eq("order_id", result.order_id).maybeSingle(),
   ]);
 
-  const productName = order
-    ? await svc.from("products").select("name").eq("id", order.product_id).single()
-        .then(({ data }) => data?.name ?? "사주 분석")
-    : "사주 분석";
+  const { data: product } = order
+    ? await svc.from("products").select("slug, name").eq("id", order.product_id).single()
+    : { data: null };
+  const productName = product?.name ?? "사주 분석";
+  const productSlug = product?.slug ?? "saju";
 
   const generatedAt = new Date().toLocaleDateString("ko-KR", {
     year: "numeric", month: "long", day: "numeric",
@@ -53,7 +54,7 @@ export async function POST(
   try {
     pdfBuffer = await generateSajuPdf({
       interpretationMd: result.interpretation_md,
-      productName: typeof productName === "string" ? productName : "사주 분석",
+      productName,
       customerName: input?.name ?? null,
       birthDate: input?.birth_date ?? null,
       birthTime: input?.birth_time ?? null,
@@ -71,11 +72,10 @@ export async function POST(
   }
 
   // 4. Supabase Storage 업로드
+  // Storage 키는 ASCII만 허용 → slug 기반으로 구성
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const safeName = (input?.name ?? "고객").replace(/[/\\:*?"<>|]/g, "").replace(/\s+/g, "_");
-  const safeProd = (typeof productName === "string" ? productName : "사주분석")
-    .replace(/[/\\:*?"<>|()\s]/g, "");
-  const filePath = `${safeProd}_${safeName}_${dateStr}.pdf`;
+  const shortId = resultId.replace(/-/g, "").slice(0, 8);
+  const filePath = `${productSlug}_${dateStr}_${shortId}.pdf`;
   const { error: uploadErr } = await svc.storage
     .from("vip-pdfs")
     .upload(filePath, pdfBuffer, {
