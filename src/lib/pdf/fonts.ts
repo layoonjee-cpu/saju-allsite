@@ -9,8 +9,8 @@ export function registerKoreanFonts() {
   Font.register({
     family: "NotoSansKR",
     fonts: [
-      { src: path.join(fontsDir, "NotoSansKR-Regular.woff2"), fontWeight: 400 },
-      { src: path.join(fontsDir, "NotoSansKR-Bold.woff2"), fontWeight: 700 },
+      { src: path.join(fontsDir, "NotoSansKR-Regular.ttf"), fontWeight: 400 },
+      { src: path.join(fontsDir, "NotoSansKR-Bold.ttf"), fontWeight: 700 },
     ],
   });
   registered = true;

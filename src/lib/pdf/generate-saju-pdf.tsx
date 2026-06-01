@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F9F9",
   },
   coverBrand: {
+    fontFamily: FONT,
     fontSize: 11,
     fontWeight: 700,
     color: "#2D5C5C",
@@ -38,6 +39,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   coverTitle: {
+    fontFamily: FONT,
     fontSize: 26,
     fontWeight: 700,
     color: "#1A1A1A",
@@ -45,6 +47,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
   coverSubtitle: {
+    fontFamily: FONT,
     fontSize: 14,
     fontWeight: 400,
     color: "#555555",
@@ -57,12 +60,14 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   coverInfoRow: {
+    fontFamily: FONT,
     fontSize: 11,
     color: "#444444",
     marginBottom: 8,
     fontWeight: 400,
   },
   coverInfoLabel: {
+    fontFamily: FONT,
     fontWeight: 700,
     color: "#2D5C5C",
   },
@@ -76,6 +81,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   coverFooterText: {
+    fontFamily: FONT,
     fontSize: 9,
     color: "#AAAAAA",
   },
