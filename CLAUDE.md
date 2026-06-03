@@ -160,6 +160,7 @@ if (isSajuApiConfigured()) {
 | `NEXT_PUBLIC_TOSS_CLIENT_KEY` | ✅ | 토스페이먼츠 클라이언트 |
 | `LLM_PROVIDER` | ✅ | `openai` 또는 `anthropic` |
 | `LLM_MODEL` | ✅ | 예: `gpt-4o` |
+| `LLM_MAX_TOKENS` | ✅ | `6000` — 기본사주 5,000자 미잘림 (Vercel에도 별도 추가) |
 | `OPENAI_API_KEY` | 조건부 | LLM_PROVIDER=openai 시 필수 |
 | `ANTHROPIC_API_KEY` | 조건부 | LLM_PROVIDER=anthropic 시 필수 |
 | `SAJU_API_URL` | 권장 | `https://luckyloveme.com/api/saju-full-analysis` |
@@ -167,4 +168,74 @@ if (isSajuApiConfigured()) {
 | `ADMIN_PASSWORD` | ✅ | 어드민 로그인 비밀번호 |
 | `ADMIN_ID` | 선택 | 어드민 로그인 아이디 |
 | `RESEND_API_KEY` | 선택 | 이메일 발송 |
-| `NEXT_PUBLIC_SITE_URL` | ✅ | 배포 도메인 (예: https://www.saju7.kr) |
+| `NEXT_PUBLIC_SITE_URL` | ✅ | 배포 도메인 — PDF 폰트 fetch에도 사용됨 |
+
+---
+
+## PDF 생성 기능 (어드민 전용)
+
+### 개요
+어드민 주문 관리 페이지에서 분석 완료된 결과지를 PDF로 생성·다운로드하는 기능.
+`@react-pdf/renderer` (순수 JS, Vercel 서버리스 호환) 사용.
+
+### 관련 파일
+```
+src/lib/pdf/
+  fonts.ts                    ← 폰트 등록 (NEXT_PUBLIC_SITE_URL 기반 HTTP fetch)
+  markdown-to-elements.tsx    ← 마크다운 → react-pdf 엘리먼트
+  generate-saju-pdf.tsx       ← PDF 문서 생성 → Buffer 반환
+  fonts/
+    NotoSansKR-Regular.ttf    ← public/fonts/에도 동일 파일 있음
+    NotoSansKR-Bold.ttf
+
+src/app/api/admin/
+  generate-pdf/[resultId]/route.ts   ← POST: PDF 생성 → Supabase Storage 업로드
+  download-pdf/[resultId]/route.ts   ← GET: 5분 서명 URL 반환
+
+src/components/admin/GeneratePdfButton.tsx
+public/fonts/
+  NotoSansKR-Regular.ttf      ← CDN 서빙용 (fonts.ts가 HTTP로 fetch)
+  NotoSansKR-Bold.ttf
+```
+
+### 폰트 로딩 방식 (중요)
+Vercel 서버리스에서 `process.cwd()/public/` 접근 불가 → `NEXT_PUBLIC_SITE_URL` 기반 HTTP URL로 fetch.
+```typescript
+// fonts.ts 핵심 로직
+const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+Font.register({ src: `${base}/fonts/NotoSansKR-Regular.ttf`, ... });
+```
+
+### Supabase Storage 파일명 규칙
+- **Storage 키 (ASCII only)**: `{productSlug}_{YYYYMMDD}_{resultId_앞8자리}.pdf`
+  - 예: `basic-saju_20260602_fb318095.pdf`
+- **다운로드 파일명 (한국어)**: `createSignedUrl`의 `download` 옵션으로 설정
+  - 예: `가벼운시선_나윤지_20260602.pdf`
+
+> ⚠️ Supabase Storage는 한국어 파일명(키) 업로드 시 `Invalid key` 400 에러 발생.
+> 반드시 Storage 키는 ASCII만 사용할 것.
+
+---
+
+## LLM 거부 응답 처리
+
+Claude 사용 시 점술/사주 프롬프트가 안전 필터에 걸릴 수 있음.
+
+### 방지 조치
+- `src/lib/saju/prompt.ts`: "점쟁이", "과거를 맞히듯" 등 표현 제거
+- `confirm/test-confirm/free-confirm` 라우트: `isRefusal()` 체크 후 거부 응답 DB 저장 차단
+- 결과 페이지: `isBadContent` 감지 시 `SajuRegenerateBanner` 자동 표시 후 재생성
+
+### isRefusal 패턴
+```typescript
+function isRefusal(text: string): boolean {
+  const lower = text.toLowerCase();
+  return (
+    text.trim().length < 200 ||
+    lower.includes("i'm sorry") ||
+    lower.includes("i cannot") ||
+    lower.includes("i can't assist") ||
+    lower.includes("죄송합니다만")
+  );
+}
+```
