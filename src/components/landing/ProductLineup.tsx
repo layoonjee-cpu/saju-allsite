@@ -13,6 +13,7 @@ const cardImages: Record<string, string | null> = {
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
   "ziwei-saju": "/product-ziwei.png",
+  "tarot-siren": "/product-tarot.png",
 };
 
 const cardGradients: Record<string, string> = {

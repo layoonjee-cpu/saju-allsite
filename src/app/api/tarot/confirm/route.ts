@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   // tarot_readings 조회 (카드 정보 포함)
   const { data: reading } = await svc
     .from("tarot_readings")
-    .select("id, category, question, card_1_id, card_1_reversed, card_2_id, card_2_reversed, card_3_id, card_3_reversed")
+    .select("id, name, card_1_id, card_1_reversed, card_2_id, card_2_reversed, card_3_id, card_3_reversed")
     .eq("order_id", order.id)
     .single();
 
@@ -79,8 +79,7 @@ export async function POST(req: NextRequest) {
   let readingText = "";
   try {
     const { system, user } = buildTarotPrompt(
-      reading.category,
-      reading.question,
+      reading.name ?? "당신",
       { id: reading.card_1_id, reversed: reading.card_1_reversed },
       { id: reading.card_2_id, reversed: reading.card_2_reversed },
       { id: reading.card_3_id, reversed: reading.card_3_reversed },

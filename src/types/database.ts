@@ -107,8 +107,9 @@ type SajuApiCallRow = {
 type TarotReadingRow = {
   id: string;
   order_id: string;
-  category: "연애" | "금전" | "직업" | "기타";
-  question: string;
+  name: string | null;
+  category: "연애" | "금전" | "직업" | "기타" | null;
+  question: string | null;
   card_1_id: number;
   card_1_reversed: boolean;
   card_2_id: number;
@@ -246,8 +247,9 @@ export type Database = {
         Insert: {
           id?: string;
           order_id: string;
-          category: "연애" | "금전" | "직업" | "기타";
-          question: string;
+          name?: string | null;
+          category?: "연애" | "금전" | "직업" | "기타" | null;
+          question?: string | null;
           card_1_id: number;
           card_1_reversed?: boolean;
           card_2_id: number;

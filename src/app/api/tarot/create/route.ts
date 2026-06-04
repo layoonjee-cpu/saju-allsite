@@ -3,8 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
-  category: z.enum(["연애", "금전", "직업", "기타"]),
-  question: z.string().min(10).max(100),
+  name: z.string().min(1).max(20),
   card1Id: z.number().int().min(0).max(77),
   card1Reversed: z.boolean(),
   card2Id: z.number().int().min(0).max(77),
@@ -21,8 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
 
-  const { category, question, card1Id, card1Reversed, card2Id, card2Reversed, card3Id, card3Reversed, guestEmail } =
-    parsed.data;
+  const { name, card1Id, card1Reversed, card2Id, card2Reversed, card3Id, card3Reversed, guestEmail } = parsed.data;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -33,7 +31,6 @@ export async function POST(req: NextRequest) {
 
   const svc = createServiceClient();
 
-  // 상품 조회
   const { data: product } = await svc
     .from("products")
     .select("id, price")
@@ -44,10 +41,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "상품을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  // 주문 ID 생성 (Toss 형식: 영숫자 + 하이픈, max 64자)
   const orderId = `tarot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  // orders 레코드 생성
   const { data: order, error: orderErr } = await svc
     .from("orders")
     .insert({
@@ -66,11 +61,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "주문 생성에 실패했습니다." }, { status: 500 });
   }
 
-  // tarot_readings 레코드 생성 (reading_text는 결제 완료 후 채움)
   const { error: readingErr } = await svc.from("tarot_readings").insert({
     order_id: order.id,
-    category,
-    question,
+    name,
     card_1_id: card1Id,
     card_1_reversed: card1Reversed,
     card_2_id: card2Id,

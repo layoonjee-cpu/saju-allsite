@@ -92,6 +92,16 @@ const SLIDES: Slide[] = [
     badgeLabel: "50% OFF",
     badgeColor: "bg-violet-600",
   },
+  {
+    slug: "tarot-siren",
+    name: "타로의 시선",
+    subtitle: "78장 오리엔탈 타로 3카드 리딩",
+    image: "/product-tarot.png",
+    price: 5000,
+    rank: 8,
+    badgeLabel: "₩5,000",
+    badgeColor: "bg-[#c9a84c]",
+  },
 ];
 
 const INTERVAL_MS = 3500;

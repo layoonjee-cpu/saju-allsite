@@ -144,7 +144,7 @@ export default async function TarotResultPage({
 
         {/* 공유 버튼 */}
         <div className="mt-10">
-          <TarotShareButtons readingId={readingId} question={reading.question} />
+          <TarotShareButtons readingId={readingId} question={reading.question ?? ""} />
         </div>
 
         {/* 다시 질문하기 */}
