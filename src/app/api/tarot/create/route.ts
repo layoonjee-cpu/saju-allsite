@@ -4,7 +4,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
   name: z.string().min(1).max(20),
-  question: z.string().max(300).optional(),
+  question: z.string().max(80).optional(),
   card1Id: z.number().int().min(0).max(77),
   card1Reversed: z.boolean(),
   card2Id: z.number().int().min(0).max(77),

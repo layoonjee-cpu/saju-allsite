@@ -89,15 +89,15 @@ export default function TarotPage() {
 
         {/* 질문 입력 */}
         <div>
-          <p className="text-xs text-gray-400 mb-2 text-center">고민 또는 질문 <span className="text-gray-600">(선택, 300자 이내)</span></p>
+          <p className="text-xs text-gray-400 mb-2 text-center">고민 또는 질문 <span className="text-gray-600">(선택, 80자 이내)</span></p>
           <textarea
             value={question}
-            onChange={(e) => setQuestion(e.target.value.slice(0, 300))}
-            placeholder="예: 요즘 직장을 옮겨야 할지 고민이에요. 지금 방향이 맞는 건지 알고 싶어요."
-            rows={3}
+            onChange={(e) => setQuestion(e.target.value.slice(0, 80))}
+            placeholder="예: 직장을 옮겨야 할지 고민이에요."
+            rows={2}
             className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#c9a84c] resize-none"
           />
-          <p className="text-right text-[10px] text-gray-600 mt-1">{question.length}/300</p>
+          <p className="text-right text-[10px] text-gray-600 mt-1">{question.length}/80</p>
         </div>
 
         {/* 안내 문구 */}
