@@ -169,6 +169,37 @@ export default function StoryPage() {
             </div>
           </Link>
 
+          {/* ── 타로의 시선 ── */}
+          <Link href="/tarot" className={`${styles.productCard} ${styles.productCardTarot}`}>
+            <div className={styles.tarotBadge}>TAROT · 타로의 시선</div>
+            <div className={styles.tarotImageWrapper}>
+              <Image
+                src="/product-tarot.png"
+                alt="타로의 시선"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className={styles.tarotImageGradient} />
+            </div>
+            <div className={styles.tarotBody}>
+              <div className={styles.tarotName}>타로의 시선</div>
+              <div className={styles.tarotMeta}>78장 오리엔탈 타로 · 3카드 리딩</div>
+              <div className={styles.tarotDesc}>
+                지금 이 순간의 고민에 타로가 답합니다. 이름을 적고, 78장 중 3장을 뽑으면 — 현재 상황·흐름과 조언·앞으로의 방향을 리딩해드립니다.
+              </div>
+              <div className={styles.tarotPoints}>
+                <span className={styles.tarotPoint}>연애·금전·직업·일상 고민 모두 가능</span>
+                <span className={styles.tarotPoint}>고민을 직접 입력해 맞춤 리딩 제공</span>
+                <span className={styles.tarotPoint}>결제 후 즉시 웹에서 결과 확인</span>
+              </div>
+              <div className={styles.tarotPriceRow}>
+                <div className={styles.tarotPrice}>5,000<small style={{ fontSize: 13, marginLeft: 2 }}>원</small></div>
+                <span style={{ fontSize: 12, color: "rgba(201,168,76,0.7)", letterSpacing: 1 }}>카드 선택 후 결제 →</span>
+              </div>
+            </div>
+          </Link>
+
         </div>
       </section>
 

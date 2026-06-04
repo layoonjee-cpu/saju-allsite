@@ -372,6 +372,99 @@
 .productCardZiwei .productMeta { color: #7c3aed; font-weight: 500; }
 .productCardZiweiPrice { font-size: 20px; color: #7c3aed; text-align: right; flex-shrink: 0; }
 
+/* ── 타로의 시선 카드 ── */
+.productCardTarot {
+  border: none !important;
+  padding: 0 !important;
+  position: relative;
+  margin-top: 12px;
+  background: #0a0a14 !important;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.tarotImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+.tarotImageWrapper img {
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.4s ease;
+}
+.productCardTarot:hover .tarotImageWrapper img { transform: scale(1.04); }
+.tarotImageGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, #0a0a14 100%);
+}
+.tarotBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(90deg, #c9a84c, #e0bc5a);
+  color: #0a0a14;
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.tarotBody {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+.tarotName {
+  font-size: 17px;
+  font-weight: 700;
+  color: #c9a84c;
+  margin-bottom: 4px;
+}
+.tarotMeta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+.tarotDesc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  margin-bottom: 12px;
+}
+.tarotPoints {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+.tarotPoint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
+.tarotPoint::before {
+  content: "♦";
+  color: #c9a84c;
+  flex-shrink: 0;
+  font-size: 10px;
+  margin-top: 2px;
+}
+.tarotPriceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tarotPrice {
+  font-size: 20px;
+  font-weight: 700;
+  color: #c9a84c;
+}
+
 /* ========================================
    PREMIUM DEEP DIVE
    ======================================== */
