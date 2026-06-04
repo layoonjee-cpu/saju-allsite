@@ -18,10 +18,12 @@ const cardImages: Record<string, string | null> = {
 
 const cardGradients: Record<string, string> = {
   "today-fortune": "from-amber-100 to-teal-100",
+  "tarot-siren": "from-[#0a0a14] to-[#1a1730]",
 };
 
 const cardEmojis: Record<string, string> = {
   "today-fortune": "☀️",
+  "tarot-siren": "🃏",
 };
 
 export async function ProductLineup() {

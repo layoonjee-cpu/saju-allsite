@@ -88,7 +88,7 @@ export default function TarotPage() {
         {/* 안내 문구 */}
         <div className="text-center space-y-1">
           <p className="text-[#c9a84c] font-medium text-base leading-relaxed">
-            지금 고민을 떠올리면서<br />카드를 3장 뽑아주세요
+            3초간 고민을 떠올리면서<br />3장의 카드를 뽑아주세요
           </p>
           <p className="text-xs text-gray-500">78장 중 마음이 가는 카드 3장을 순서대로 선택하세요</p>
         </div>

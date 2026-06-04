@@ -96,21 +96,27 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </span>
         </Link>
 
-        {/* 시선스토리 — 모바일 중앙 컬러바 */}
-        <Link
-          href="/story"
-          className="md:hidden flex items-center justify-center px-4 py-1.5 rounded-xl shrink-0"
-          style={{
-            background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%)",
-          }}
-        >
-          <span
-            className="font-bold text-[17px] tracking-tight text-white"
-            style={{ fontFamily: "Georgia, serif" }}
+        {/* 모바일 중앙 — 시선스토리 + 타로의시선 */}
+        <div className="md:hidden flex items-center gap-2 shrink-0">
+          <Link
+            href="/story"
+            className="flex items-center justify-center px-3 py-1.5 rounded-xl"
+            style={{ background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%)" }}
           >
-            시선스토리
-          </span>
-        </Link>
+            <span className="font-bold text-[14px] tracking-tight text-white" style={{ fontFamily: "Georgia, serif" }}>
+              시선스토리
+            </span>
+          </Link>
+          <Link
+            href="/tarot"
+            className="flex items-center justify-center px-3 py-1.5 rounded-xl"
+            style={{ background: "linear-gradient(135deg, #c9a84c 0%, #e0bc5a 100%)" }}
+          >
+            <span className="font-bold text-[14px] tracking-tight text-[#1a1730]" style={{ fontFamily: "Georgia, serif" }}>
+              타로의시선
+            </span>
+          </Link>
+        </div>
 
         {/* 상품 메뉴 — 데스크톱만 표시 */}
         <nav className="hidden md:flex items-center gap-0.5">
