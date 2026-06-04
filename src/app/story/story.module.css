@@ -1,22 +1,22 @@
 /* ========================================
    시선사주 스토리 페이지 — CSS Module
-   참고: /Downloads/siseon_renewal/04_REFERENCE_DESIGN.html
+   참고: /Downloads/seesun_renewal/04_REFERENCE_DESIGN.html
    ======================================== */
 
 /* 브랜드 색상 변수 */
 .page {
-  --siseon-midnight: #0F1B2D;
-  --siseon-ink: #1A1F2E;
-  --siseon-paper: #FAF5E9;
-  --siseon-paper-warm: #F5EDDC;
-  --siseon-paper-deep: #EDE3CC;
-  --siseon-teal: #2A8074;
-  --siseon-teal-soft: #E1F0EE;
-  --siseon-pink: #D85A8C;
-  --siseon-pink-soft: #FBE8F0;
-  --siseon-orange: #E8954A;
-  --siseon-orange-soft: #FBEFE1;
-  --siseon-gold: #C9A455;
+  --seesun-midnight: #0F1B2D;
+  --seesun-ink: #1A1F2E;
+  --seesun-paper: #FAF5E9;
+  --seesun-paper-warm: #F5EDDC;
+  --seesun-paper-deep: #EDE3CC;
+  --seesun-teal: #2A8074;
+  --seesun-teal-soft: #E1F0EE;
+  --seesun-pink: #D85A8C;
+  --seesun-pink-soft: #FBE8F0;
+  --seesun-orange: #E8954A;
+  --seesun-orange-soft: #FBEFE1;
+  --seesun-gold: #C9A455;
   --text-primary: #1A1F2E;
   --text-secondary: #6B6863;
   --text-tertiary: #9B958B;
@@ -28,7 +28,7 @@
   --font-sans: var(--font-body, 'Pretendard Variable', 'Apple SD Gothic Neo', sans-serif);
   --font-en: 'Cormorant Garamond', serif;
 
-  background: var(--siseon-paper);
+  background: var(--seesun-paper);
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.65;
@@ -64,7 +64,7 @@
 .sectionEn {
   font-family: var(--font-en);
   font-size: 14px;
-  color: var(--siseon-orange);
+  color: var(--seesun-orange);
   letter-spacing: 6px;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -79,7 +79,7 @@
   display: block;
   width: 36px;
   height: 3px;
-  background: var(--siseon-teal);
+  background: var(--seesun-teal);
   margin: 0.6rem auto 0;
   border-radius: 2px;
 }
@@ -96,7 +96,7 @@
    HERO
    ======================================== */
 .hero {
-  background: var(--siseon-paper);
+  background: var(--seesun-paper);
   padding: 2rem 1rem 3rem;
   position: relative;
   overflow: hidden;
@@ -145,7 +145,7 @@
   line-height: 1.25;
   margin-bottom: 0.4rem;
 }
-.heroHeadline .accent { color: var(--siseon-teal); }
+.heroHeadline .accent { color: var(--seesun-teal); }
 .heroDivider {
   width: 40px;
   height: 1px;
@@ -163,7 +163,7 @@
 .heroBadge {
   margin-top: 1.5rem;
   display: inline-block;
-  background: var(--siseon-orange);
+  background: var(--seesun-orange);
   color: white;
   padding: 8px 24px;
   border-radius: 999px;
@@ -190,7 +190,7 @@
 .introQuote {
   text-align: center;
   padding: 3rem 1rem 4rem;
-  background: var(--siseon-paper);
+  background: var(--seesun-paper);
 }
 .introQuote blockquote {
   font-family: var(--font-serif);
@@ -200,7 +200,7 @@
   color: var(--text-primary);
   margin: 0;
 }
-.introQuote blockquote .accent { color: var(--siseon-orange); }
+.introQuote blockquote .accent { color: var(--seesun-orange); }
 .introQuote cite {
   display: block;
   margin-top: 1.5rem;
@@ -211,7 +211,7 @@
 }
 
 /* ========================================
-   WHY SISEON
+   WHY SEESUN
    ======================================== */
 .whyGrid {
   display: grid;
@@ -225,7 +225,7 @@
 .whyCard {
   background: white;
   border: 0.5px solid var(--border-light);
-  border-top: 3px solid var(--siseon-teal);
+  border-top: 3px solid var(--seesun-teal);
   border-radius: 12px;
   padding: 1.5rem 1.25rem;
   text-align: center;
@@ -233,7 +233,7 @@
 .whyCard .hanja {
   font-family: var(--font-serif);
   font-size: 32px;
-  color: var(--siseon-teal);
+  color: var(--seesun-teal);
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
@@ -273,14 +273,14 @@
   transition: border-color 0.2s ease, border-left-color 0.2s ease;
   min-height: 80px;
 }
-.productCard:hover { border-color: var(--border-medium); border-left-color: var(--siseon-teal); }
+.productCard:hover { border-color: var(--border-medium); border-left-color: var(--seesun-teal); }
 
 .iconHanja {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--siseon-paper-warm);
-  color: var(--siseon-teal);
+  background: var(--seesun-paper-warm);
+  color: var(--seesun-teal);
   font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 500;
@@ -293,12 +293,12 @@
   width: 64px;
   height: 64px;
   font-size: 26px;
-  background: var(--siseon-orange-soft);
-  color: var(--siseon-orange);
+  background: var(--seesun-orange-soft);
+  color: var(--seesun-orange);
 }
 .iconHanjaPink {
-  background: var(--siseon-pink-soft);
-  color: var(--siseon-pink);
+  background: var(--seesun-pink-soft);
+  color: var(--seesun-pink);
 }
 .iconHanjaSm {
   width: 28px;
@@ -318,12 +318,12 @@
 .productMeta { font-size: 12px; color: var(--text-tertiary); }
 .productDesc { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 .productPrice { text-align: right; flex-shrink: 0; font-size: 16px; font-weight: 500; }
-.productPriceFree { color: var(--siseon-teal); }
+.productPriceFree { color: var(--seesun-teal); }
 .productPrice small { font-size: 11px; color: var(--text-tertiary); margin-left: 2px; }
 
 /* VIP 강조 카드 */
 .productCardVip {
-  border: 2px solid var(--siseon-orange) !important;
+  border: 2px solid var(--seesun-orange) !important;
   padding: 1.5rem !important;
   position: relative;
   margin-top: 12px;
@@ -332,7 +332,7 @@
   position: absolute;
   top: -10px;
   left: 1.5rem;
-  background: var(--siseon-orange);
+  background: var(--seesun-orange);
   color: white;
   padding: 3px 14px;
   border-radius: 999px;
@@ -341,8 +341,8 @@
   font-weight: 600;
 }
 .productCardVip .productName { font-size: 17px; }
-.productCardVip .productMeta { color: var(--siseon-orange); font-weight: 500; }
-.productCardVipPrice { font-size: 20px; color: var(--siseon-orange); text-align: right; flex-shrink: 0; }
+.productCardVip .productMeta { color: var(--seesun-orange); font-weight: 500; }
+.productCardVipPrice { font-size: 20px; color: var(--seesun-orange); text-align: right; flex-shrink: 0; }
 
 /* ── 자미두수 카드 ── */
 .iconHanjaStar {
@@ -376,7 +376,7 @@
    PREMIUM DEEP DIVE
    ======================================== */
 .premiumBox {
-  background: var(--siseon-paper-warm);
+  background: var(--seesun-paper-warm);
   border-radius: 16px;
   padding: 2rem 1.25rem;
   margin: 3rem 0 2rem;
@@ -385,7 +385,7 @@
 .premiumLabel {
   font-family: var(--font-en);
   font-size: 13px;
-  color: var(--siseon-orange);
+  color: var(--seesun-orange);
   letter-spacing: 6px;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -414,7 +414,7 @@
 .statCard {
   background: white;
   border-radius: 8px;
-  border-top: 2px solid var(--siseon-teal-soft);
+  border-top: 2px solid var(--seesun-teal-soft);
   padding: 1rem 0.5rem;
   text-align: center;
 }
@@ -422,7 +422,7 @@
   font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 500;
-  color: var(--siseon-teal);
+  color: var(--seesun-teal);
 }
 .statValue small { font-size: 13px; color: var(--text-tertiary); margin-left: 2px; }
 .statLabel { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
@@ -446,17 +446,17 @@
 
 /* 재물운 강조 */
 .whatItemMoney {
-  background: var(--siseon-orange-soft);
+  background: var(--seesun-orange-soft);
   padding: 12px;
   border-radius: 8px;
 }
 .whatItemMoney .whatItemTitle { color: #7A3F12; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .whatItemMoney .whatItemDesc { color: #7A3F12; }
-.whatItemMoney .iconHanjaSm { background: var(--siseon-orange); color: white; }
+.whatItemMoney .iconHanjaSm { background: var(--seesun-orange); color: white; }
 
 .badgeCore {
   font-size: 11px;
-  background: var(--siseon-orange);
+  background: var(--seesun-orange);
   color: white;
   padding: 2px 7px;
   border-radius: 999px;
@@ -474,12 +474,12 @@
   gap: 12px;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--siseon-teal-soft);
+  border-bottom: 2px solid var(--seesun-teal-soft);
 }
 .toolsCategoryNum {
   width: 28px;
   height: 28px;
-  background: var(--siseon-teal);
+  background: var(--seesun-teal);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -520,7 +520,7 @@
 .toolNum {
   font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--siseon-orange);
+  color: var(--seesun-orange);
   font-weight: 600;
 }
 .toolName { font-size: 15px; font-weight: 600; }
@@ -536,23 +536,23 @@
   letter-spacing: 1px;
   font-weight: 500;
 }
-.toolCardHighlight { border-color: var(--siseon-teal) !important; border-left-color: var(--siseon-teal) !important; }
-.toolCardHighlight .toolBadge { background: var(--siseon-teal); color: white; }
+.toolCardHighlight { border-color: var(--seesun-teal) !important; border-left-color: var(--seesun-teal) !important; }
+.toolCardHighlight .toolBadge { background: var(--seesun-teal); color: white; }
 
 .toolCardMoney {
-  background: var(--siseon-orange-soft) !important;
-  border-color: var(--siseon-orange) !important;
-  border-left-color: var(--siseon-orange) !important;
+  background: var(--seesun-orange-soft) !important;
+  border-color: var(--seesun-orange) !important;
+  border-left-color: var(--seesun-orange) !important;
 }
 .toolCardMoney .toolName { color: #7A3F12; }
 .toolCardMoney .toolDesc { color: #7A3F12; }
-.toolCardMoney .toolBadge { background: var(--siseon-orange); color: white; }
+.toolCardMoney .toolBadge { background: var(--seesun-orange); color: white; }
 
 /* ========================================
    DIFFERENCE (다크 박스)
    ======================================== */
 .differenceBox {
-  background: var(--siseon-ink);
+  background: var(--seesun-ink);
   color: var(--text-on-dark);
   border-radius: 16px;
   padding: 2rem 1.25rem;
@@ -566,7 +566,7 @@
   right: 20px;
   font-family: var(--font-serif);
   font-size: 60px;
-  color: var(--siseon-paper);
+  color: var(--seesun-paper);
   opacity: 0.08;
   line-height: 1;
   font-weight: 500;
@@ -576,7 +576,7 @@
 .differenceLabel {
   font-family: var(--font-en);
   font-size: 13px;
-  color: var(--siseon-orange);
+  color: var(--seesun-orange);
   letter-spacing: 6px;
   margin-bottom: 1rem;
   font-weight: 500;
@@ -589,11 +589,11 @@
   line-height: 1.4;
 }
 .differenceList { display: flex; flex-direction: column; gap: 1.5rem; }
-.differenceItem { display: flex; gap: 14px; align-items: flex-start; padding-left: 12px; border-left: 2px solid var(--siseon-orange); }
+.differenceItem { display: flex; gap: 14px; align-items: flex-start; padding-left: 12px; border-left: 2px solid var(--seesun-orange); }
 .differenceNum {
   font-family: var(--font-serif);
   font-size: 30px;
-  color: var(--siseon-orange);
+  color: var(--seesun-orange);
   line-height: 1;
   font-weight: 500;
   flex-shrink: 0;
@@ -626,9 +626,9 @@
   .foryouGrid { grid-template-columns: repeat(2, 1fr); }
 }
 .foryouCard {
-  background: var(--siseon-paper-warm);
+  background: var(--seesun-paper-warm);
   border-radius: 8px;
-  border-left: 3px solid var(--siseon-teal);
+  border-left: 3px solid var(--seesun-teal);
   padding: 1.25rem;
   display: flex;
   gap: 10px;
@@ -637,7 +637,7 @@
 .foryouDot {
   font-family: var(--font-serif);
   font-size: 18px;
-  color: var(--siseon-teal);
+  color: var(--seesun-teal);
   font-weight: 500;
   flex-shrink: 0;
   line-height: 1;
@@ -648,7 +648,7 @@
    CTA
    ======================================== */
 .ctaSection {
-  background: var(--siseon-paper-warm);
+  background: var(--seesun-paper-warm);
   border-radius: 16px;
   padding: 2.5rem 1.5rem;
   text-align: center;
@@ -663,7 +663,7 @@
 }
 .btnCta {
   display: inline-block;
-  background: var(--siseon-orange);
+  background: var(--seesun-orange);
   color: white;
   padding: 14px 36px;
   border-radius: 999px;

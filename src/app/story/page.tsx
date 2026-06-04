@@ -24,7 +24,7 @@ export default function StoryPage() {
             />
           </div>
           <div className={styles.heroCopy}>
-            <div className={styles.heroLabelEn}>SISEON · 視線</div>
+            <div className={styles.heroLabelEn}>SEESUN · 視線</div>
             <h1 className={styles.heroHeadline}>
               시선을 사로잡는<br />
               <span className="accent" style={{ color: "#2A8074" }}>사주분석</span>
@@ -48,10 +48,10 @@ export default function StoryPage() {
         <cite>— 시선 사주 드림 —</cite>
       </section>
 
-      {/* ━━━ WHY SISEON ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* ━━━ WHY SEESUN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className={styles.container}>
         <div className={styles.sectionHeader}>
-          <div className={styles.sectionEn}>WHY SISEON</div>
+          <div className={styles.sectionEn}>WHY SEESUN</div>
           <h2 className={styles.sectionTitle}>왜 시선이어야 하는가</h2>
           <hr className={styles.divider} />
         </div>

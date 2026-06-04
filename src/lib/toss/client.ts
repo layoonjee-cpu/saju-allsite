@@ -1,7 +1,7 @@
-import { loadTossPayments, type TossPaymentsWidgets } from "@tosspayments/tosspayments-sdk";
+import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import { publicEnv } from "@/lib/env";
 
-export async function loadWidgets(customerKey: string): Promise<TossPaymentsWidgets> {
+export async function loadPayment(customerKey: string) {
   const tossPayments = await loadTossPayments(publicEnv.NEXT_PUBLIC_TOSS_CLIENT_KEY);
-  return tossPayments.widgets({ customerKey });
+  return tossPayments.payment({ customerKey });
 }

@@ -11,6 +11,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.30.1
         version: 0.30.1
+      '@fontsource/nanum-gothic':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@fontsource/noto-sans-kr':
         specifier: ^5.2.9
         version: 5.2.9
@@ -330,6 +333,9 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@fontsource/nanum-gothic@5.2.7':
+    resolution: {integrity: sha512-pJB8vp5c3XLN/pBNvlinivGBxZZkSBS4DpuGht3rOmdmOvvzNf4HUyaIINHRfZmsoCse+QXWGXamNf9JRdMLeg==}
 
   '@fontsource/noto-sans-kr@5.2.9':
     resolution: {integrity: sha512-pbF8F0rUzKkDmnk/KYGAbxjgW4TrIHdFKnV6OQ+kUC9ELCn5utrAURcEgMqq3J9SRX+FvjOz+aBCmfcC8/r7cw==}
@@ -2979,6 +2985,8 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@fontsource/nanum-gothic@5.2.7': {}
 
   '@fontsource/noto-sans-kr@5.2.9': {}
 

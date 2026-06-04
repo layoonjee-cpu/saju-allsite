@@ -15,12 +15,12 @@ export const siteConfig = {
 
 // 통신판매업 / 사업자 정보 — 법적 페이지 및 푸터에 노출됩니다.
 export const businessInfo = {
-  companyName: "시선 사주",
+  companyName: "운명론자",
   representative: "나윤지",
   businessNumber: "555-52-01094",
   mailOrderNumber: "2025-서울서초-3940",
-  address: "서울시 서초구 사임당로9길 13, 제일빌딩 4층 402호",
-  phone: "",
+  address: "서울특별시 서초구 사임당로8길 13 (서초동) 4층 402-L714호",
+  phone: "032-323-7592",
   phoneNote: "",
   email: "unmyung.official@gmail.com",
   privacyOfficer: "나윤지",
