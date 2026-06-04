@@ -33,12 +33,12 @@ export default async function ProductsPage() {
       .from("products")
       .select("slug, name, description, price")
       .eq("is_active", true)
-      .order("display_order", { ascending: true });
+      .order("price", { ascending: false });
     products = data;
   } else {
     products = productsSeed
       .filter((p) => p.is_active)
-      .sort((a, b) => a.display_order - b.display_order)
+      .sort((a, b) => b.price - a.price)
       .map(({ slug, name, description, price }) => ({ slug, name, description, price }));
   }
 

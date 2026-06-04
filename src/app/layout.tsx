@@ -44,13 +44,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 const navItems = [
   { label: "시선사주 스토리", href: "/story" },
   { label: "오늘의 운세", href: "/products/today-fortune", badge: "무료", badgeColor: "from-emerald-500 to-teal-500" },
-  { label: "꿈해몽", href: "/products/dream-reading" },
-  { label: "일주스티커", href: "/products/ilju-sticker", badge: "NEW", badgeColor: "from-amber-500 to-orange-500" },
-  { label: "타로의 시선", href: "/tarot", badge: "NEW", badgeColor: "from-[#c9a84c] to-[#e0bc5a]" },
+  { label: "깊은 시선 VIP", href: "/products/premium-saju", badge: "추천", badgeColor: "from-rose-600 to-red-500" },
+  { label: "자미두수", href: "/products/ziwei-saju" },
   { label: "가벼운 사주", href: "/products/basic-saju" },
-  { label: "연인·궁합", href: "/products/love-saju", badge: "인기", badgeColor: "from-rose-500 to-pink-500" },
-  { label: "깊은 시선 VIP", href: "/products/premium-saju", badge: "추천", badgeColor: "from-teal-600 to-cyan-600" },
-  { label: "자미두수", href: "/products/ziwei-saju", badge: "NEW", badgeColor: "from-violet-600 to-purple-600" },
+  { label: "연인·궁합", href: "/products/love-saju" },
+  { label: "타로의 시선", href: "/tarot" },
+  { label: "꿈해몽", href: "/products/dream-reading" },
+  { label: "일주스티커", href: "/products/ilju-sticker" },
 ];
 
 function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
