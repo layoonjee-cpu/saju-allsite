@@ -25,9 +25,9 @@ const productImages: Record<string, string> = {
 // 정가 표시 (할인 전 가격) — DB 실제 결제가와 별개
 const productOriginalPrices: Record<string, number> = {
   "basic-saju": 9900,
-  "love-saju": 50000,
-  "premium-saju": 60000,
-  "ziwei-saju": 60000,
+  "love-saju": 80000,
+  "premium-saju": 100000,
+  "ziwei-saju": 100000,
 };
 
 type Product = { id: string; slug: string; name: string; description: string; price: number };
@@ -200,7 +200,7 @@ export default async function ProductDetailPage({
                 {[
                   { icon: "✔", text: "사주의 모든 것 — 명식·격국·신강신약부터 월별 운세까지" },
                   { icon: "✔", text: "지금 이 시점에 꼭 필요한 실전 조언 포함" },
-                  { icon: "✔", text: "타업체 대비 절반 가격, 두 배 이상의 심층 리포트 (강추)" },
+                  { icon: "✔", text: "정가 10만원 대비 61% 할인, 두 배 이상의 심층 리포트 (강추)" },
                 ].map(({ icon, text }) => (
                   <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
                     <span className="text-teal-600 font-bold mt-0.5 shrink-0">{icon}</span>

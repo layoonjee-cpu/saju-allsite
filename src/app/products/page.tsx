@@ -18,9 +18,9 @@ const productImages: Record<string, string> = {
 
 const productOriginalPrices: Record<string, number> = {
   "basic-saju": 9900,
-  "love-saju": 50000,
-  "premium-saju": 60000,
-  "ziwei-saju": 60000,
+  "love-saju": 80000,
+  "premium-saju": 100000,
+  "ziwei-saju": 100000,
 };
 
 export const metadata = { title: "상품" };

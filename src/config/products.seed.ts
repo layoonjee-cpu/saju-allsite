@@ -48,7 +48,7 @@ export const productsSeed: ProductSeed[] = [
     slug: "premium-saju",
     name: "깊은 시선",
     description: "사주 원국 정밀 분석부터 대운·재물·연애·개운법까지. A4 80장",
-    price: 30000,
+    price: 39000,
     display_order: 40,
     is_active: true,
   },
