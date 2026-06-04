@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { tarotCards, getCardBackPath, getCardImagePath } from "@/data/tarot-cards";
+import { getCardBackPath } from "@/data/tarot-cards";
 import { cn } from "@/lib/utils";
 
 const POSITIONS = ["현재 상황", "흐름과 조언", "앞으로의 방향"];
@@ -17,12 +17,17 @@ export default function TarotPage() {
   const [guestEmail, setGuestEmail] = useState("");
   const [showEmailInput, setShowEmailInput] = useState(false);
 
-  function selectCard(id: number) {
-    if (selected.includes(id)) {
-      setSelected(selected.filter((s) => s !== id));
-    } else if (selected.length < 3) {
-      setSelected([...selected, id]);
-    }
+  function pickRandomCard() {
+    if (selected.length >= 3) return;
+    const available = Array.from({ length: 78 }, (_, i) => i).filter(
+      (id) => !selected.includes(id)
+    );
+    const randomId = available[Math.floor(Math.random() * available.length)];
+    setSelected((prev) => [...prev, randomId]);
+  }
+
+  function removeCard(slotIdx: number) {
+    setSelected((prev) => prev.filter((_, i) => i !== slotIdx));
   }
 
   async function handlePay() {
@@ -105,7 +110,7 @@ export default function TarotPage() {
           <p className="text-[#c9a84c] font-medium text-base leading-relaxed">
             3초간 고민을 떠올리면서<br />3장의 카드를 뽑아주세요
           </p>
-          <p className="text-xs text-gray-500">78장 중 마음이 가는 카드 3장을 순서대로 선택하세요</p>
+          <p className="text-xs text-gray-500">마음이 이끄는 카드를 3장 순서대로 뽑아주세요</p>
         </div>
 
         {/* 선택 슬롯 */}
@@ -115,21 +120,29 @@ export default function TarotPage() {
             return (
               <div key={i} className="flex flex-col items-center gap-1.5">
                 <div
+                  onClick={() => cardId !== undefined && removeCard(i)}
                   className={cn(
-                    "w-[72px] h-[104px] rounded-xl border-2 transition-all flex items-center justify-center overflow-hidden",
+                    "w-[72px] h-[104px] rounded-xl border-2 transition-all flex items-center justify-center overflow-hidden relative",
                     cardId !== undefined
-                      ? "border-[#c9a84c] shadow-[0_0_16px_rgba(201,168,76,0.4)]"
+                      ? "border-[#c9a84c] shadow-[0_0_16px_rgba(201,168,76,0.4)] cursor-pointer"
                       : "border-dashed border-white/25",
                   )}
                 >
                   {cardId !== undefined ? (
-                    <Image
-                      src={getCardImagePath(cardId)}
-                      alt={tarotCards.find((c) => c.id === cardId)?.nameKo ?? ""}
-                      width={72}
-                      height={104}
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <Image
+                        src={getCardBackPath()}
+                        alt={`${i + 1}번 카드`}
+                        width={72}
+                        height={104}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-[#c9a84c]/20 flex items-center justify-center">
+                        <span className="w-8 h-8 rounded-full bg-[#c9a84c] text-[#0a0a14] text-sm font-bold flex items-center justify-center shadow-lg">
+                          {i + 1}
+                        </span>
+                      </div>
+                    </>
                   ) : (
                     <span className="text-white/20 text-2xl">?</span>
                   )}
@@ -147,41 +160,28 @@ export default function TarotPage() {
             : "✓ 3장 선택 완료"}
         </p>
 
-        {/* 카드 그리드 */}
-        <div className="grid grid-cols-4 gap-2 max-h-[60vh] overflow-y-auto pr-1">
-          {tarotCards.map((card) => {
-            const isSelected = selected.includes(card.id);
-            const slotIdx = selected.indexOf(card.id);
-            return (
-              <button
-                key={card.id}
-                onClick={() => selectCard(card.id)}
-                disabled={selected.length >= 3 && !isSelected}
-                className={cn(
-                  "relative rounded-lg overflow-hidden aspect-[2/3] transition-all",
-                  isSelected
-                    ? "ring-2 ring-[#c9a84c] scale-95"
-                    : selected.length >= 3
-                      ? "opacity-25 cursor-not-allowed"
-                      : "hover:scale-105 hover:ring-1 hover:ring-white/30",
-                )}
-              >
-                <Image
-                  src={getCardBackPath()}
-                  alt="타로 카드"
-                  fill
-                  className="object-cover"
-                />
-                {isSelected && (
-                  <div className="absolute inset-0 bg-[#c9a84c]/30 flex items-center justify-center">
-                    <span className="w-7 h-7 rounded-full bg-[#c9a84c] text-[#0a0a14] text-sm font-bold flex items-center justify-center shadow-lg">
-                      {slotIdx + 1}
-                    </span>
-                  </div>
-                )}
-              </button>
-            );
-          })}
+        {/* 카드 그리드 — 20장 표시, 클릭 시 78장 중 랜덤 배정 */}
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 20 }, (_, i) => (
+            <button
+              key={i}
+              onClick={pickRandomCard}
+              disabled={selected.length >= 3}
+              className={cn(
+                "relative rounded-lg overflow-hidden aspect-[2/3] transition-all",
+                selected.length >= 3
+                  ? "opacity-30 cursor-not-allowed"
+                  : "hover:scale-105 hover:ring-1 hover:ring-white/30 active:scale-95",
+              )}
+            >
+              <Image
+                src={getCardBackPath()}
+                alt="타로 카드"
+                fill
+                className="object-cover"
+              />
+            </button>
+          ))}
         </div>
 
         {/* 비회원 이메일 */}
