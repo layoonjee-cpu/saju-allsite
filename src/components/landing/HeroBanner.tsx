@@ -165,7 +165,7 @@ export function HeroBanner() {
       >
         {/* ── 메인 카드 ── */}
         <Link
-          href={`/products/${slide.slug}`}
+          href={slide.slug === "tarot-siren" ? "/tarot" : `/products/${slide.slug}`}
           className="block relative w-full overflow-hidden rounded-3xl shadow-2xl"
           style={{ aspectRatio: "3/4", background: "linear-gradient(160deg, #1a1730 0%, #2d2050 50%, #1a3030 100%)" }}
         >

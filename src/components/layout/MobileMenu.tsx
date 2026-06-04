@@ -109,6 +109,7 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
               { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "30,000원", icon: "📜", color: "#1a4a3a", bg: "#eaf4f0" },
               { href: "/products/love-saju",     label: "연인의 시선",         price: "20,000원", icon: "💑", color: "#9d174d", bg: "#fdf2f8" },
               { href: "/products/basic-saju",    label: "가벼운 시선",         price: "4,900원",  icon: "✍️", color: "#1a4a3a", bg: "#f0f9f4" },
+              { href: "/tarot",                  label: "타로의 시선",         price: "5,000원",  icon: "🃏", color: "#8b6914", bg: "#fdf8ee" },
               { href: "/products/dream-reading", label: "꿈꾸는 시선",         price: "1,900원",  icon: "🌙", color: "#4c1d95", bg: "#f5f3ff" },
               { href: "/products/ilju-sticker",  label: "일주스티커",          price: "990원",    icon: "🔖", color: "#92400e", bg: "#fffbeb" },
               { href: "/products/today-fortune", label: "오늘의 운세",         price: "무료",     icon: "☀️", color: "#065f46", bg: "#ecfdf5" },

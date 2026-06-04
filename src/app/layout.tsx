@@ -46,6 +46,7 @@ const navItems = [
   { label: "오늘의 운세", href: "/products/today-fortune", badge: "무료", badgeColor: "from-emerald-500 to-teal-500" },
   { label: "꿈해몽", href: "/products/dream-reading" },
   { label: "일주스티커", href: "/products/ilju-sticker", badge: "NEW", badgeColor: "from-amber-500 to-orange-500" },
+  { label: "타로의 시선", href: "/tarot", badge: "NEW", badgeColor: "from-[#c9a84c] to-[#e0bc5a]" },
   { label: "가벼운 사주", href: "/products/basic-saju" },
   { label: "연인·궁합", href: "/products/love-saju", badge: "인기", badgeColor: "from-rose-500 to-pink-500" },
   { label: "깊은 시선 VIP", href: "/products/premium-saju", badge: "추천", badgeColor: "from-teal-600 to-cyan-600" },
@@ -165,7 +166,7 @@ function SiteFooter() {
   const contactLine = [
     `고객센터: ${businessInfo.email}`,
     businessInfo.phone
-      ? `핸드폰${businessInfo.phoneNote ? `(${businessInfo.phoneNote})` : ""}: ${businessInfo.phone}`
+      ? `대표번호${businessInfo.phoneNote ? `(${businessInfo.phoneNote})` : ""}: ${businessInfo.phone}`
       : null,
   ]
     .filter(Boolean)

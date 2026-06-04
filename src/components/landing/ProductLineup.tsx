@@ -65,7 +65,7 @@ export async function ProductLineup() {
             return (
               <Link
                 key={p.slug}
-                href={`/products/${p.slug}`}
+                href={p.slug === "tarot-siren" ? "/tarot" : `/products/${p.slug}`}
                 className="group flex-none w-[160px] rounded-2xl glass-card overflow-hidden snap-start
                   active:scale-[0.97] transition-transform duration-150"
               >
@@ -116,7 +116,7 @@ export async function ProductLineup() {
           return (
             <Link
               key={p.slug}
-              href={`/products/${p.slug}`}
+              href={p.slug === "tarot-siren" ? "/tarot" : `/products/${p.slug}`}
               className="group block relative rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1.5 overflow-hidden"
             >
               <div className="relative h-48 overflow-hidden">
