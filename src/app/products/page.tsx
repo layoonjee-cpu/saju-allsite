@@ -13,6 +13,7 @@ const productImages: Record<string, string> = {
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
   "ziwei-saju": "/product-ziwei.png",
+  "tarot-siren": "/product-tarot.png",
 };
 
 const productOriginalPrices: Record<string, number> = {
