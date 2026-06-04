@@ -106,7 +106,7 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
           <div className="space-y-1.5">
             {[
               { href: "/products/ziwei-saju",   label: "별의시선(자미두수)", price: "30,000원", icon: "⭐", color: "#6d28d9", bg: "#f3f0ff" },
-              { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "30,000원", icon: "📜", color: "#1a4a3a", bg: "#eaf4f0" },
+              { href: "/products/premium-saju",  label: "깊은 시선 VIP",      price: "39,000원", icon: "📜", color: "#1a4a3a", bg: "#eaf4f0" },
               { href: "/products/love-saju",     label: "연인의 시선",         price: "20,000원", icon: "💑", color: "#9d174d", bg: "#fdf2f8" },
               { href: "/products/basic-saju",    label: "가벼운 시선",         price: "4,900원",  icon: "✍️", color: "#1a4a3a", bg: "#f0f9f4" },
               { href: "/tarot",                  label: "타로의 시선",         price: "5,000원",  icon: "🃏", color: "#8b6914", bg: "#fdf8ee" },
