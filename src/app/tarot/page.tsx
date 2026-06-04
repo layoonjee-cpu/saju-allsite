@@ -212,12 +212,6 @@ export default function TarotPage() {
           {submitting ? "처리 중..." : "결제하고 리딩결과 확인하세요 · 5,000원"}
         </button>
 
-        {!canPay && (
-          <p className="text-center text-xs text-gray-500 -mt-4">
-            {!name.trim() ? "이름을 입력해주세요" : "카드 3장을 모두 선택해주세요"}
-          </p>
-        )}
-
       </div>
     </div>
   );
