@@ -114,6 +114,14 @@ export function HeroBanner() {
   const touchStartX = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // 모든 슬라이드 이미지를 미리 로드
+  useEffect(() => {
+    SLIDES.forEach((s) => {
+      const img = new window.Image();
+      img.src = s.image;
+    });
+  }, []);
+
   const goTo = useCallback((idx: number) => {
     setPrev(current);
     setFading(true);
