@@ -132,7 +132,7 @@ export default function StoryPage() {
               <div className={styles.productDesc}>두 사람의 결, 갈등의 원인과 해결의 실마리까지</div>
             </div>
             <div className={styles.productPrice} style={{ textAlign: "right" }}>
-              <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through", display: "block", lineHeight: 1.3 }}>50,000원</span>
+              <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through", display: "block", lineHeight: 1.3 }}>80,000원</span>
               20,000<small>원</small>
             </div>
           </Link>
@@ -148,8 +148,8 @@ export default function StoryPage() {
               <div className={styles.productDesc}>당신의 인생 전체를 한 권의 책처럼 펼쳐드립니다</div>
             </div>
             <div className={styles.productCardVipPrice}>
-              <span style={{ fontSize: 10, color: "#b0a89a", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>60,000원</span>
-              30,000<small style={{ fontSize: 11, color: "#9B958B", marginLeft: 2 }}>원</small>
+              <span style={{ fontSize: 10, color: "#b0a89a", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>100,000원</span>
+              39,000<small style={{ fontSize: 11, color: "#9B958B", marginLeft: 2 }}>원</small>
             </div>
           </Link>
 
@@ -164,7 +164,7 @@ export default function StoryPage() {
               <div className={styles.productDesc}>12개 별이 비추는 당신의 재물·직업·연애·건강 — 영역별 깊이 있는 분석</div>
             </div>
             <div className={styles.productCardZiweiPrice}>
-              <span style={{ fontSize: 10, color: "#b3a8d0", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>60,000원</span>
+              <span style={{ fontSize: 10, color: "#b3a8d0", textDecoration: "line-through", display: "block", lineHeight: 1.3, textAlign: "right" }}>100,000원</span>
               30,000<small style={{ fontSize: 11, color: "#9b8ec4", marginLeft: 2 }}>원</small>
             </div>
           </Link>
