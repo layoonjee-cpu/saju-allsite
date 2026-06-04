@@ -104,6 +104,22 @@ type SajuApiCallRow = {
   source: string | null;
 };
 
+type TarotReadingRow = {
+  id: string;
+  order_id: string;
+  category: "연애" | "금전" | "직업" | "기타";
+  question: string;
+  card_1_id: number;
+  card_1_reversed: boolean;
+  card_2_id: number;
+  card_2_reversed: boolean;
+  card_3_id: number;
+  card_3_reversed: boolean;
+  reading_text: string | null;
+  llm_model: string | null;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -142,6 +158,8 @@ export type Database = {
           order_id: string;
           user_id?: string | null;
           guest_email?: string | null;
+          customer_email?: string | null;
+          delivery_method?: string;
           product_id: string;
           amount: number;
           status?: OrderStatus;
@@ -221,6 +239,26 @@ export type Database = {
           source?: string | null;
         };
         Update: Partial<SajuApiCallRow>;
+        Relationships: [];
+      };
+      tarot_readings: {
+        Row: TarotReadingRow;
+        Insert: {
+          id?: string;
+          order_id: string;
+          category: "연애" | "금전" | "직업" | "기타";
+          question: string;
+          card_1_id: number;
+          card_1_reversed?: boolean;
+          card_2_id: number;
+          card_2_reversed?: boolean;
+          card_3_id: number;
+          card_3_reversed?: boolean;
+          reading_text?: string | null;
+          llm_model?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<TarotReadingRow>;
         Relationships: [];
       };
     };

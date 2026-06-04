@@ -60,4 +60,12 @@ export const productsSeed: ProductSeed[] = [
     display_order: 50,
     is_active: true,
   },
+  {
+    slug: "tarot-siren",
+    name: "타로의 시선",
+    description: "78장 오리엔탈 타로 3카드 리딩 — 현재의 고민에 대한 타로의 시선",
+    price: 5000,
+    display_order: 18,
+    is_active: true,
+  },
 ];

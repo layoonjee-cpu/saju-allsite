@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { SajuForm } from "@/components/saju/SajuForm";
@@ -18,6 +19,7 @@ const productImages: Record<string, string> = {
   "love-saju": "/product-love.png",
   "premium-saju": "/product-premium.png",
   "ziwei-saju": "/product-ziwei.png",
+  "tarot-siren": "/product-tarot.png",
 };
 
 // 정가 표시 (할인 전 가격) — DB 실제 결제가와 별개
@@ -509,8 +511,56 @@ export default async function ProductDetailPage({
         </section>
       )}
 
+      {/* 타로의 시선 전용 설명 */}
+      {product.slug === "tarot-siren" && (
+        <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-[#0a0a14] overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-white/10 bg-white/5">
+            <p className="text-sm font-semibold text-[#c9a84c]">🃏 이런 분께 추천합니다</p>
+          </div>
+          <ul className="px-5 py-4 space-y-3">
+            {[
+              { icon: "♥", text: "지금 이 사람과의 관계가 어디로 흘러가는지 궁금할 때" },
+              { icon: "◈", text: "결정을 앞두고 한 번만 더 확인하고 싶을 때" },
+              { icon: "✦", text: "요즘 일이 잘 안 풀리는 이유가 궁금할 때" },
+              { icon: "◎", text: "마음속 고민을 누군가와 나누고 싶을 때" },
+            ].map(({ icon, text }) => (
+              <li key={text} className="flex items-start gap-3 text-sm text-white/70">
+                <span className="text-[#c9a84c] shrink-0 mt-0.5">{icon}</span>
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="px-5 pb-5">
+            <div className="rounded-xl bg-white/5 border border-white/10 px-4 py-3 space-y-1.5">
+              {[
+                "고민 카테고리 선택 (연애 / 금전 / 직업 / 기타)",
+                "질문 직접 입력 (10~100자)",
+                "78장 중 카드 3장 선택",
+                "결제 후 즉시 리딩 결과 확인",
+              ].map((step, i) => (
+                <div key={step} className="flex items-center gap-3 text-xs text-white/60">
+                  <span className="w-5 h-5 rounded-full bg-[#c9a84c]/20 text-[#c9a84c] font-bold flex items-center justify-center shrink-0 text-[10px]">{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section>
-        {product.slug === "dream-reading" ? (
+        {product.slug === "tarot-siren" ? (
+          <div className="text-center">
+            <Link
+              href="/tarot"
+              className="inline-block w-full py-4 rounded-2xl text-base font-semibold text-[#0a0a14] transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #c9a84c, #e0bc5a)" }}
+            >
+              타로 시작하기 · {formatKRW(product.price)}
+            </Link>
+            <p className="text-xs text-[#888] mt-3">결제는 카드 선택 후 진행됩니다</p>
+          </div>
+        ) : product.slug === "dream-reading" ? (
           <DreamForm
             productId={product.id}
             productSlug={product.slug}

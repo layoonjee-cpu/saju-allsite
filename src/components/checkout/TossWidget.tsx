@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { loadWidgets } from "@/lib/toss/client";
+import { loadPayment } from "@/lib/toss/client";
 import { publicEnv } from "@/lib/env";
 
 type Props = {
@@ -12,60 +12,88 @@ type Props = {
   customerKey: string;
   productName: string;
   customerEmail: string | null;
+  successUrl?: string;
 };
 
-export function TossWidget({ orderId, amount, customerKey, productName, customerEmail }: Props) {
-  const paymentMethodsRef = useRef<HTMLDivElement>(null);
-  const agreementRef = useRef<HTMLDivElement>(null);
-  const widgetsRef = useRef<Awaited<ReturnType<typeof loadWidgets>> | null>(null);
-  const [ready, setReady] = useState(false);
-  const [paying, setPaying] = useState(false);
+const EASY_PAY_PROVIDERS = [
+  { code: "KAKAOPAY",  label: "카카오페이", bg: "#FEE500", textColor: "#3C1E1E" },
+  { code: "NAVERPAY",  label: "네이버페이", bg: "#03C75A", textColor: "#fff" },
+  { code: "TOSSPAY",   label: "토스페이",   bg: "#0064FF", textColor: "#fff" },
+] as const;
 
-  useEffect(() => {
-    let canceled = false;
-    (async () => {
-      const widgets = await loadWidgets(customerKey);
-      if (canceled) return;
-      widgetsRef.current = widgets;
-      await widgets.setAmount({ currency: "KRW", value: amount });
-      await Promise.all([
-        widgets.renderPaymentMethods({ selector: "#payment-methods", variantKey: "DEFAULT" }),
-        widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
-      ]);
-      setReady(true);
-    })().catch((e) => {
-      toast.error(e instanceof Error ? e.message : "결제 위젯 로드 실패");
-    });
-    return () => {
-      canceled = true;
-    };
-  }, [amount, customerKey]);
+export function TossWidget({ orderId, amount, customerKey, productName, customerEmail, successUrl }: Props) {
+  const [paying, setPaying] = useState<string | null>(null);
 
-  async function handlePay() {
-    const widgets = widgetsRef.current;
-    if (!widgets) return;
-    setPaying(true);
+  const commonArgs = {
+    amount: { currency: "KRW" as const, value: amount },
+    orderId,
+    orderName: productName,
+    successUrl: successUrl ?? `${publicEnv.NEXT_PUBLIC_SITE_URL}/checkout/success`,
+    failUrl: `${publicEnv.NEXT_PUBLIC_SITE_URL}/checkout/fail`,
+    customerEmail: customerEmail ?? undefined,
+  };
+
+  async function handleCard() {
+    setPaying("CARD");
     try {
-      await widgets.requestPayment({
-        orderId,
-        orderName: productName,
-        successUrl: `${publicEnv.NEXT_PUBLIC_SITE_URL}/checkout/success`,
-        failUrl: `${publicEnv.NEXT_PUBLIC_SITE_URL}/checkout/fail`,
-        customerEmail: customerEmail ?? undefined,
-      });
+      const payment = await loadPayment(customerKey);
+      await payment.requestPayment({ method: "CARD", ...commonArgs });
     } catch (err) {
-      setPaying(false);
+      setPaying(null);
       toast.error(err instanceof Error ? err.message : "결제 요청 실패");
     }
   }
 
+  async function handleEasyPay(easyPayCode: string) {
+    setPaying(easyPayCode);
+    try {
+      const payment = await loadPayment(customerKey);
+      await payment.requestPayment({
+        method: "CARD",
+        ...commonArgs,
+        card: { flowMode: "DIRECT", easyPay: easyPayCode },
+      });
+    } catch (err) {
+      setPaying(null);
+      toast.error(err instanceof Error ? err.message : "결제 요청 실패");
+    }
+  }
+
+  const isDisabled = paying !== null;
+
   return (
-    <div className="space-y-4">
-      <div id="payment-methods" ref={paymentMethodsRef} />
-      <div id="agreement" ref={agreementRef} />
-      <Button onClick={handlePay} disabled={!ready || paying} size="lg" className="w-full">
-        {paying ? "결제 진행 중..." : "결제하기"}
+    <div className="space-y-3">
+      {/* 카드 결제 */}
+      <Button
+        onClick={handleCard}
+        disabled={isDisabled}
+        size="lg"
+        className="w-full"
+      >
+        {paying === "CARD" ? "결제 진행 중..." : "카드로 결제하기"}
       </Button>
+
+      {/* 구분선 */}
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex-1 h-px bg-border" />
+        <span>간편결제</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
+      {/* 간편결제 버튼 */}
+      <div className="grid grid-cols-3 gap-2">
+        {EASY_PAY_PROVIDERS.map(({ code, label, bg, textColor }) => (
+          <button
+            key={code}
+            onClick={() => handleEasyPay(code)}
+            disabled={isDisabled}
+            className="flex items-center justify-center h-11 rounded-xl text-[13px] font-semibold transition-opacity disabled:opacity-50"
+            style={{ background: bg, color: textColor }}
+          >
+            {paying === code ? "..." : label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

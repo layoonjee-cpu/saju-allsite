@@ -10,15 +10,27 @@ export function TestPayButton({ orderId }: { orderId: string }) {
 
   async function handleTestPay() {
     setLoading(true);
+    const isTarot = orderId.startsWith("tarot-");
     try {
-      const res = await fetch("/api/orders/test-confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "테스트 결제 실패");
-      router.replace(`/results/${json.resultId}`);
+      if (isTarot) {
+        const res = await fetch("/api/tarot/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentKey: `test_${orderId}`, orderId, amount: 5000 }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "테스트 결제 실패");
+        router.replace(`/tarot/result/${json.readingId}`);
+      } else {
+        const res = await fetch("/api/orders/test-confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "테스트 결제 실패");
+        router.replace(`/results/${json.resultId}`);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "오류가 발생했습니다");
       setLoading(false);

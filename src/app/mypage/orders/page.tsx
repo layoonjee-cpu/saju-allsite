@@ -36,6 +36,19 @@ export default async function MyOrdersPage() {
     ? await service.from("saju_results").select("id, order_id").in("order_id", orderIds)
     : { data: [] };
   const resultMap = new Map((results ?? []).map((r) => [r.order_id, r.id]));
+
+  // 타로 리딩 결과 조회
+  const { data: tarotReadings } = orderIds.length
+    ? await service.from("tarot_readings").select("id, order_id").in("order_id", orderIds)
+    : { data: [] };
+  const tarotMap = new Map((tarotReadings ?? []).map((r) => [r.order_id, r.id]));
+
+  // 상품 slug 조회 (타로 여부 판단용)
+  const { data: productsWithSlug } = productIds.length
+    ? await service.from("products").select("id, slug").in("id", productIds)
+    : { data: [] };
+  const slugMap = new Map((productsWithSlug ?? []).map((p) => [p.id, p.slug]));
+
   const { data: reviews } = orderIds.length
     ? await service.from("reviews").select("order_id").in("order_id", orderIds)
     : { data: [] };
@@ -55,8 +68,10 @@ export default async function MyOrdersPage() {
       ) : (
         <ul className="divide-y divide-hairline border-y border-hairline">
           {orders.map((o) => {
-            const resultId = resultMap.get(o.id);
-            const canReview = o.status === "paid" && o.user_id === user.id && !reviewedSet.has(o.id);
+            const isTarot = slugMap.get(o.product_id) === "tarot-siren";
+            const resultId = isTarot ? tarotMap.get(o.id) : resultMap.get(o.id);
+            const resultHref = isTarot ? `/tarot/result/${resultId}` : `/results/${resultId}`;
+            const canReview = o.status === "paid" && o.user_id === user.id && !reviewedSet.has(o.id) && !isTarot;
             return (
               <li key={o.id} className="py-5 flex items-center justify-between gap-4">
                 <div className="min-w-0">
@@ -76,7 +91,7 @@ export default async function MyOrdersPage() {
                     {STATUS_LABEL[o.status] ?? o.status}
                   </Badge>
                   {resultId && (
-                    <Link href={`/results/${resultId}`} className="text-sm font-medium underline underline-offset-4 text-ink">
+                    <Link href={resultHref} className="text-sm font-medium underline underline-offset-4 text-ink">
                       결과 보기
                     </Link>
                   )}
