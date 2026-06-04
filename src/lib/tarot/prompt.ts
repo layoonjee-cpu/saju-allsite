@@ -7,6 +7,7 @@ export function buildTarotPrompt(
   card1: CardInput,
   card2: CardInput,
   card3: CardInput,
+  question?: string,
 ) {
   const card = (id: number) => tarotCards.find((c) => c.id === id)!;
   const dir = (r: boolean) => (r ? "역방향" : "정방향");
@@ -35,7 +36,7 @@ export function buildTarotPrompt(
 - 부정적인 카드도 성장의 관점에서 해석합니다.`;
 
   const user = `상담자 이름: ${name}
-
+${question ? `\n상담자 질문: ${question}\n` : ""}
 1번 카드 (현재 상황): ${card(card1.id).nameKo} — ${card(card1.id).name} / ${dir(card1.reversed)}
 2번 카드 (흐름과 조언): ${card(card2.id).nameKo} — ${card(card2.id).name} / ${dir(card2.reversed)}
 3번 카드 (앞으로의 방향): ${card(card3.id).nameKo} — ${card(card3.id).name} / ${dir(card3.reversed)}`;

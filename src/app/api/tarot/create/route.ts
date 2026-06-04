@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
   name: z.string().min(1).max(20),
+  question: z.string().max(300).optional(),
   card1Id: z.number().int().min(0).max(77),
   card1Reversed: z.boolean(),
   card2Id: z.number().int().min(0).max(77),
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
 
-  const { name, card1Id, card1Reversed, card2Id, card2Reversed, card3Id, card3Reversed, guestEmail } = parsed.data;
+  const { name, question, card1Id, card1Reversed, card2Id, card2Reversed, card3Id, card3Reversed, guestEmail } = parsed.data;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
       order_id: orderId,
       user_id: user?.id ?? null,
       guest_email: guestEmail ?? null,
-      customer_email: user?.email ?? guestEmail ?? null,
       product_id: product.id,
       amount: product.price,
       status: "pending",
@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
   const { error: readingErr } = await svc.from("tarot_readings").insert({
     order_id: order.id,
     name,
+    question: question ?? "",
     card_1_id: card1Id,
     card_1_reversed: card1Reversed,
     card_2_id: card2Id,

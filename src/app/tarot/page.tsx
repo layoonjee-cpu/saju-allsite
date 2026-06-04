@@ -11,6 +11,7 @@ const POSITIONS = ["현재 상황", "흐름과 조언", "앞으로의 방향"];
 export default function TarotPage() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [question, setQuestion] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [guestEmail, setGuestEmail] = useState("");
@@ -36,6 +37,7 @@ export default function TarotPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
+          question: question.trim() || undefined,
           card1Id: selected[0],
           card1Reversed: reversals[0],
           card2Id: selected[1],
@@ -80,9 +82,22 @@ export default function TarotPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 20))}
-            placeholder="예: 나윤지"
+            placeholder="예: 전지현"
             className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-base text-center placeholder:text-gray-600 focus:outline-none focus:border-[#c9a84c]"
           />
+        </div>
+
+        {/* 질문 입력 */}
+        <div>
+          <p className="text-xs text-gray-400 mb-2 text-center">고민 또는 질문 <span className="text-gray-600">(선택, 300자 이내)</span></p>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value.slice(0, 300))}
+            placeholder="예: 요즘 직장을 옮겨야 할지 고민이에요. 지금 방향이 맞는 건지 알고 싶어요."
+            rows={3}
+            className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#c9a84c] resize-none"
+          />
+          <p className="text-right text-[10px] text-gray-600 mt-1">{question.length}/300</p>
         </div>
 
         {/* 안내 문구 */}
