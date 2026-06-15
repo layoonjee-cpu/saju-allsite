@@ -79,8 +79,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const { data: orders } = await query;
   const orderIds = (orders ?? []).map((o) => o.id);
 
-  // ── saju_inputs 조인 (이름 + 생년월일 + 성별 + 음양력) ──────
-  const [{ data: inputs }, { data: results }] = await Promise.all([
+  // ── saju_inputs + saju_results + tarot_readings 조인 ────────
+  const [{ data: inputs }, { data: results }, { data: tarotReadings }] = await Promise.all([
     orderIds.length
       ? svc
           .from("saju_inputs")
@@ -93,10 +93,17 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           .select("id, order_id, generation_status, pdf_url")
           .in("order_id", orderIds)
       : { data: [] },
+    orderIds.length
+      ? svc
+          .from("tarot_readings")
+          .select("id, order_id, name, category, question")
+          .in("order_id", orderIds)
+      : { data: [] },
   ]);
 
   const inputMap = new Map((inputs ?? []).map((i) => [i.order_id, i]));
   const resultMap = new Map((results ?? []).map((r) => [r.order_id, r]));
+  const tarotMap = new Map((tarotReadings ?? []).map((r) => [r.order_id, r]));
 
   // ── 회원 이메일 조회 ─────────────────────────────────────────
   const userIds = [
@@ -212,6 +219,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 const inp = inputMap.get(o.id);
                 const result = resultMap.get(o.id);
                 const prod = prodMap.get(o.product_id);
+                const isTarot = prod?.slug === "tarot-siren";
+                const tarot = tarotMap.get(o.id);
 
                 // 시간 포맷 (PostgreSQL TIME → "HH:MM")
                 const birthTime = inp?.birth_time
@@ -235,11 +244,15 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                       })}
                     </td>
 
-                    {/* 고객명 + 성별·음양력 + 이메일 */}
+                    {/* 고객명 + (사주: 성별·음양력 / 타로: 카테고리) + 이메일 */}
                     <td className="px-4 py-3 align-top">
-                      <p className="text-xs font-semibold text-ink">{inp?.name ?? "-"}</p>
+                      <p className="text-xs font-semibold text-ink">
+                        {isTarot ? (tarot?.name ?? "-") : (inp?.name ?? "-")}
+                      </p>
                       <p className="text-[11px] text-mute mt-0.5">
-                        {[genderLabel, calLabel].filter(Boolean).join(" · ")}
+                        {isTarot
+                          ? (tarot?.category ?? "")
+                          : [genderLabel, calLabel].filter(Boolean).join(" · ")}
                       </p>
                       {email && (
                         <p className="text-[11px] text-mute truncate max-w-[160px]" title={email}>
@@ -248,10 +261,18 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                       )}
                     </td>
 
-                    {/* 생년월일 + 시간 */}
-                    <td className="px-4 py-3 whitespace-nowrap align-top">
-                      <p className="text-xs text-ink">{inp?.birth_date ?? "-"}</p>
-                      <p className="text-[11px] text-mute mt-0.5">{timeDisplay}</p>
+                    {/* 생년월일 + 시간 / 타로: 질문 */}
+                    <td className="px-4 py-3 align-top">
+                      {isTarot ? (
+                        <p className="text-xs text-ink truncate max-w-[140px]" title={tarot?.question ?? ""}>
+                          {tarot?.question ? tarot.question.slice(0, 22) + (tarot.question.length > 22 ? "…" : "") : "-"}
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-xs text-ink whitespace-nowrap">{inp?.birth_date ?? "-"}</p>
+                          <p className="text-[11px] text-mute mt-0.5">{timeDisplay}</p>
+                        </>
+                      )}
                     </td>
 
                     {/* 상품 + 금액 */}
@@ -264,56 +285,70 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                     <td className="px-4 py-3 whitespace-nowrap align-top">
                       <div className="flex flex-col gap-1">
                         <SBadge map={ORDER_STATUS} val={o.status} />
-                        {result && <SBadge map={GEN_STATUS} val={result.generation_status} />}
+                        {!isTarot && result && <SBadge map={GEN_STATUS} val={result.generation_status} />}
+                        {isTarot && tarot && <SBadge map={GEN_STATUS} val="complete" />}
                       </div>
                     </td>
 
                     {/* 액션 */}
                     <td className="px-4 py-3 align-top">
                       <div className="flex items-center gap-3 whitespace-nowrap flex-wrap">
-                        {result ? (
-                          <Link
-                            href={`/results/${result.id}`}
-                            className="text-[11px] text-[#2D5C5C] hover:underline font-medium"
-                          >
-                            🔍 분석지
-                          </Link>
+                        {isTarot ? (
+                          tarot ? (
+                            <Link
+                              href={`/tarot/result/${tarot.id}`}
+                              className="text-[11px] text-[#2D5C5C] hover:underline font-medium"
+                            >
+                              🃏 타로지
+                            </Link>
+                          ) : (
+                            <span className="text-[11px] text-mute">결과 없음</span>
+                          )
                         ) : (
-                          <span className="text-[11px] text-mute">분석지 없음</span>
-                        )}
-                        <SajuDataButton
-                          orderId={o.id}
-                          name={inp?.name ?? null}
-                          birthDate={inp?.birth_date ?? null}
-                        />
-                        {/* 분석지 없거나 generating 상태이면 재생성 버튼 표시 */}
-                        {o.status === "paid" && (!result || result.generation_status !== "complete") && (
-                          <RegenerateButton
-                            orderId={o.id}
-                            hasResult={!!result}
-                          />
-                        )}
-                        {result && result.generation_status === "complete" && (
                           <>
-                            <SendEmailButton
-                              resultId={result.id}
-                              name={inp?.name ?? "고객"}
-                              hasEmail={!!email}
+                            {result ? (
+                              <Link
+                                href={`/results/${result.id}`}
+                                className="text-[11px] text-[#2D5C5C] hover:underline font-medium"
+                              >
+                                🔍 분석지
+                              </Link>
+                            ) : (
+                              <span className="text-[11px] text-mute">분석지 없음</span>
+                            )}
+                            <SajuDataButton
+                              orderId={o.id}
+                              name={inp?.name ?? null}
+                              birthDate={inp?.birth_date ?? null}
                             />
-                            <ExtraAnalysisButton
-                              resultId={result.id}
-                              name={inp?.name ?? "고객"}
-                              hasEmail={!!email}
-                            />
+                            {o.status === "paid" && (!result || result.generation_status !== "complete") && (
+                              <RegenerateButton
+                                orderId={o.id}
+                                hasResult={!!result}
+                              />
+                            )}
+                            {result && result.generation_status === "complete" && (
+                              <>
+                                <SendEmailButton
+                                  resultId={result.id}
+                                  name={inp?.name ?? "고객"}
+                                  hasEmail={!!email}
+                                />
+                                <ExtraAnalysisButton
+                                  resultId={result.id}
+                                  name={inp?.name ?? "고객"}
+                                  hasEmail={!!email}
+                                />
+                              </>
+                            )}
+                            {result && (
+                              <GeneratePdfButton
+                                resultId={result.id}
+                                name={inp?.name ?? "고객"}
+                                hasPdf={!!result.pdf_url}
+                              />
+                            )}
                           </>
-                        )}
-                        {/* PDF 버튼: 결과가 존재하면 generation_status 무관하게 표시 */}
-                        {result && (
-                          <GeneratePdfButton
-                            resultId={result.id}
-                            name={inp?.name ?? "고객"}
-                            hasPdf={!!result.pdf_url}
-                          />
                         )}
                       </div>
                     </td>
