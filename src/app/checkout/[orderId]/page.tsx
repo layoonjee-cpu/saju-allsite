@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { TossWidget } from "@/components/checkout/TossWidget";
 import { TestPayButton } from "@/components/checkout/TestPayButton";
+import { CouponInput } from "@/components/checkout/CouponInput";
+import { FreeConfirmButton } from "@/components/checkout/FreeConfirmButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatKRW } from "@/lib/utils";
 
@@ -65,15 +67,29 @@ export default async function CheckoutPage({
             {product?.name ?? "상품"} · <span className="font-semibold text-foreground">{formatKRW(order.amount)}</span>
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <TossWidget
-            orderId={order.order_id}
-            amount={order.amount}
-            customerKey={customerKey}
-            productName={product?.name ?? "상품"}
-            customerEmail={email}
-            successUrl={successUrl}
-          />
+        <CardContent className="space-y-4">
+          {/* 쿠폰 입력 (타로 제외) */}
+          {!isTarot && order.amount > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">쿠폰 코드가 있으신가요?</p>
+              <CouponInput orderId={order.order_id} />
+            </div>
+          )}
+
+          {/* 결제 버튼 영역 */}
+          {order.amount === 0 ? (
+            <FreeConfirmButton orderId={order.order_id} />
+          ) : (
+            <TossWidget
+              orderId={order.order_id}
+              amount={order.amount}
+              customerKey={customerKey}
+              productName={product?.name ?? "상품"}
+              customerEmail={email}
+              successUrl={successUrl}
+            />
+          )}
+
           {process.env.NODE_ENV !== "production" && (
             <TestPayButton orderId={order.order_id} />
           )}

@@ -165,10 +165,11 @@ export default async function AdminDashboard() {
       </div>
 
       {/* 빠른 메뉴 */}
-      <div className="grid grid-cols-3 gap-3 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
         {[
           { href: "/admin/orders", label: "주문 관리", desc: "전체 결제 · 신청 내역" },
           { href: "/admin/vip", label: "VIP PDF 관리", desc: "생성 대기 · 완료 · 실패" },
+          { href: "/admin/coupons", label: "쿠폰 관리", desc: "인플루언서 · 이벤트 쿠폰" },
           { href: "https://app.tosspayments.com", label: "토스 대시보드 ↗", desc: "환불 · 취소 처리", ext: true },
         ].map((item) => (
           <Link

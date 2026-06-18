@@ -6,6 +6,7 @@ const adminNavItems = [
   { label: "대시보드", href: "/admin" },
   { label: "주문 관리", href: "/admin/orders" },
   { label: "VIP 관리", href: "/admin/vip" },
+  { label: "쿠폰 관리", href: "/admin/coupons" },
   { label: "후기 관리", href: "/admin/reviews" },
 ];
 

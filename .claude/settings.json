@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT=\"/Users/yoonjeela/Desktop/all_auto/saju-allsite\"; CLAUDE_MD=\"$PROJECT/CLAUDE.md\"; find \"$CLAUDE_MD\" -mmin -3 2>/dev/null | grep -q . && exit 0; CHANGES=$(git -C \"$PROJECT\" status --short 2>/dev/null | grep -v 'CLAUDE.md' | grep -E '^\\s*[MAD?]' | head -3); [ -z \"$CHANGES\" ] && exit 0; printf '{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":\"[자동알림] 소스 파일이 변경되었습니다. 작업 내용을 CLAUDE.md에 반드시 업데이트해 주세요 (새 파일, 기능, 패턴, 버그수정 등).\"}}'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
