@@ -21,8 +21,8 @@ function randomCode() {
 }
 
 function downloadCouponImage(coupon: Coupon, productName?: string) {
-  const SCALE = 2; // 레티나 해상도
-  const W = 800, H = 480;
+  const SCALE = 2;
+  const W = 800, H = 520;
 
   const canvas = document.createElement("canvas");
   canvas.width = W * SCALE;
@@ -30,57 +30,71 @@ function downloadCouponImage(coupon: Coupon, productName?: string) {
   const ctx = canvas.getContext("2d")!;
   ctx.scale(SCALE, SCALE);
 
-  // 배경 그라디언트
+  // ── 배경: 샤넬 블랙 그라디언트 ────────────────────────
   const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, "#1C3A3A");
-  bg.addColorStop(1, "#2D5C5C");
+  bg.addColorStop(0, "#111111");
+  bg.addColorStop(1, "#1A1A1A");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // 미세 격자 텍스처
-  ctx.strokeStyle = "rgba(255,255,255,0.04)";
-  ctx.lineWidth = 1;
-  for (let x = 0; x <= W; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-  for (let y = 0; y <= H; y += 40) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
-
-  // 상단 골드 라인
+  // ── 상단 골드 라인 ──────────────────────────────────
   ctx.fillStyle = "#C9A96E";
   ctx.fillRect(0, 0, W, 4);
 
-  // 브랜드 (우상단)
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  // ── 브랜드 (우상단) ──────────────────────────────────
+  ctx.fillStyle = "#C9A96E";
   ctx.font = "13px serif";
   ctx.textAlign = "right";
-  ctx.fillText("視線 시선사주", W - 48, 44);
+  ctx.fillText("視線 시선사주", W - 52, 40);
 
-  // VIP 라벨
+  // ── VIP Coupon 타이틀 ────────────────────────────────
   ctx.fillStyle = "#C9A96E";
-  ctx.font = "bold 11px sans-serif";
+  ctx.font = "bold 52px serif";
   ctx.textAlign = "left";
-  ctx.fillText("V I P   입 장 코 드", 52, 82);
+  ctx.fillText("VIP Coupon", 52, 98);
 
-  // 코드 (핵심)
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 72px monospace";
-  ctx.fillText(coupon.code, 48, 178);
-
-  // 구분선
-  ctx.strokeStyle = "rgba(201,169,110,0.35)";
+  // ── 구분선 1 ─────────────────────────────────────────
+  ctx.strokeStyle = "rgba(201,169,110,0.4)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(48, 208); ctx.lineTo(W - 48, 208);
+  ctx.moveTo(52, 118); ctx.lineTo(W - 52, 118);
   ctx.stroke();
 
-  // 세부 정보
+  // ── 인플루언서 이름 (note 있을 때만) ───────────────────
+  let codeY = 195;
+  if (coupon.note) {
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "15px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`인플루언서 이름 : ${coupon.note}`, 52, 155);
+    codeY = 205;
+  }
+
+  // ── VIP CODE 레이블 ──────────────────────────────────
+  ctx.fillStyle = "#C9A96E";
+  ctx.font = "bold 12px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("V I P   C O D E", 52, coupon.note ? 188 : 165);
+
+  // ── 쿠폰 코드 ────────────────────────────────────────
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 68px monospace";
+  ctx.fillText(coupon.code, 48, codeY + 58);
+
+  // ── 구분선 2 ─────────────────────────────────────────
+  const divY2 = codeY + 82;
+  ctx.strokeStyle = "rgba(201,169,110,0.4)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(52, divY2); ctx.lineTo(W - 52, divY2);
+  ctx.stroke();
+
+  // ── 세부 정보 ────────────────────────────────────────
   const expiry = coupon.expires_at
     ? new Date(coupon.expires_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 까지"
     : "기간 제한 없음";
   const uses = coupon.uses_left === -1 ? "무제한 사용 가능" : `${coupon.uses_left}회 사용 가능`;
-  const product = productName ? `${productName}` : "모든 상품 사용 가능";
+  const product = productName ?? "모든 상품 사용 가능";
 
   const rows = [
     { label: "사용 기한", value: expiry },
@@ -89,9 +103,9 @@ function downloadCouponImage(coupon: Coupon, productName?: string) {
   ];
 
   rows.forEach(({ label, value }, i) => {
-    const y = 248 + i * 38;
+    const y = divY2 + 36 + i * 38;
     ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = "12px sans-serif";
+    ctx.font = "13px sans-serif";
     ctx.textAlign = "left";
     ctx.fillText(label, 52, y);
     ctx.fillStyle = "rgba(255,255,255,0.9)";
@@ -99,19 +113,11 @@ function downloadCouponImage(coupon: Coupon, productName?: string) {
     ctx.fillText(value, 170, y);
   });
 
-  // 메모 (인플루언서 이름)
-  if (coupon.note) {
-    ctx.fillStyle = "rgba(201,169,110,0.75)";
-    ctx.font = "italic 13px serif";
-    ctx.textAlign = "right";
-    ctx.fillText(coupon.note, W - 48, H - 28);
-  }
-
-  // 하단 골드 라인
+  // ── 하단 골드 라인 ──────────────────────────────────
   ctx.fillStyle = "#C9A96E";
   ctx.fillRect(0, H - 4, W, 4);
 
-  // JPG 다운로드
+  // ── JPG 다운로드 ─────────────────────────────────────
   canvas.toBlob(
     (blob) => {
       if (!blob) { toast.error("이미지 생성 실패"); return; }
