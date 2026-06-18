@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
         llm_provider: llm.provider,
         llm_model: llm.model,
         raw_saju_json: rawSajuJson as never,
-        generation_status: "complete",
+        generation_status: product.slug === "premium-saju" ? "generating" : "complete",
       })
       .select("id")
       .single();

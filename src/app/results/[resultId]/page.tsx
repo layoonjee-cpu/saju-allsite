@@ -106,7 +106,7 @@ export default async function ResultPage({
 
     if (isPremiumVip || isZiwei) {
       if (result.generation_status !== "complete") return false;
-      return md.length < 200 || hasRefusal;
+      return md.length < 10000 || hasRefusal;  // VIP 17섹션 ~22,000자 기대치 — 10,000자 미만은 불완전
     }
 
     // 다른 상품: 거부 응답 문구가 있으면 불량 콘텐츠

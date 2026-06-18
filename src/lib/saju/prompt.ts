@@ -368,6 +368,13 @@ ${sajuInfo}
  * PART 01~08: 심층 인물 분석, PART 09~10: 월별/10년 요약
  */
 function buildPremiumSingleCallPrompt(sajuInfo: string, productName: string, name?: string): string {
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
+  const m2 = curMonth === 12 ? 1 : curMonth + 1;
+  const y2 = curMonth === 12 ? curYear + 1 : curYear;
+  const m3 = m2 === 12 ? 1 : m2 + 1;
+  const y3 = m2 === 12 ? y2 + 1 : y2;
   const nameRef = name?.trim() ? `${name.trim()}님` : "당신";
   return `[상품] ${productName} (₩20,000) — 심층 사주 분석 보고서
 
@@ -446,7 +453,8 @@ ${nameRef}의 용신·희신 오행을 기반으로, 유리한 색상·방향·�
 
 # PART 07. 이달부터 향후 3개월 핵심 운세
 
-[월운] 데이터를 활용하여 이달, 다음 달, 그 다음 달의 흐름을 각각 서술합니다.
+⚠️ 날짜 고정: 오늘은 ${curYear}년 ${curMonth}월입니다. 이달(${curYear}년 ${curMonth}월), 다음 달(${y2}년 ${m2}월), 그 다음 달(${y3}년 ${m3}월)로 반드시 표기하세요.
+[월운] 데이터를 활용하여 이달(${curYear}년 ${curMonth}월), 다음 달(${y2}년 ${m2}월), 그 다음 달(${y3}년 ${m3}월)의 흐름을 각각 서술합니다.
 각 달: 간지(천간·지지)와 십성 명시, 직업·재물·인간관계·건강 핵심 포인트와 실천 조언을 2~3 문단으로 서술합니다.`;
 }
 
@@ -594,6 +602,9 @@ ${nameRef}에게 맞는 재테크 방식, 최적 수익 경로, 재정 위험 �
  */
 export function buildVipTimelinePrompt(input: PromptInput): { system: string; user: string } {
   const sajuInfo = makeSajuInfo(input);
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
   const user = `[상품] ${input.productName} VIP — PART 09~10 월별·10년 운세 (8,000자 이상)
 
 ${sajuInfo}
@@ -605,6 +616,8 @@ ${sajuInfo}
 ---
 
 # PART 09. 이달부터 12개월 월별 상세 운세
+
+⚠️ 날짜 고정: 오늘은 ${curYear}년 ${curMonth}월 기준입니다. 첫 번째 월은 반드시 ${curYear}년 ${curMonth}월부터 시작하세요.
 
 각 월마다 **정확히** 아래 형식을 지키세요:
 
