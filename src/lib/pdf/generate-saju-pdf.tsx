@@ -113,9 +113,6 @@ const styles = StyleSheet.create({
     color: "#AAAAAA",
     fontFamily: FONT,
   },
-  content: {
-    flex: 1,
-  },
 });
 
 type PdfInput = {
@@ -194,8 +191,8 @@ export async function generateSajuPdf(input: PdfInput): Promise<Buffer> {
           <Text style={styles.headerText}>시선사주</Text>
         </View>
 
-        {/* 본문 콘텐츠 */}
-        <View style={styles.content}>{bodyElements}</View>
+        {/* 본문 콘텐츠 — flex:1 래퍼 없이 직접 배치해야 react-pdf가 다음 페이지로 자동 분할 */}
+        {bodyElements}
 
         {/* 푸터 */}
         <View style={styles.footer} fixed>
