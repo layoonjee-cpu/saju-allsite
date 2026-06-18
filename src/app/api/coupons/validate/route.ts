@@ -72,6 +72,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "이 상품에는 사용할 수 없는 쿠폰입니다." }, { status: 400 });
   }
 
+  // ── 쿠폰 차감 (낙관적 잠금) ─────────────────────────────────────────
+  // uses_left를 읽은 값 그대로 WHERE 조건에 포함 → 동시 요청 시 한 건만 성공
+  // (다른 요청이 먼저 차감하면 WHERE 조건 불일치 → 0 rows updated → 거부)
+  if (coupon.uses_left !== -1) {
+    const { data: claimed } = await svc
+      .from("coupons")
+      .update({ uses_left: coupon.uses_left - 1 })
+      .eq("id", coupon.id)
+      .eq("uses_left", coupon.uses_left)   // 낙관적 잠금 핵심: 읽은 값과 일치할 때만 업데이트
+      .select("id");
+
+    if (!claimed || claimed.length === 0) {
+      // 동시 요청에 의해 이미 차감된 상태
+      return NextResponse.json({ error: "이미 사용된 쿠폰입니다." }, { status: 400 });
+    }
+  }
+
   // 주문 금액 0으로 업데이트
   const { error: updateOrderError } = await svc
     .from("orders")
@@ -79,15 +96,14 @@ export async function POST(request: NextRequest) {
     .eq("id", order.id);
 
   if (updateOrderError) {
+    // 주문 업데이트 실패 시 차감한 쿠폰 횟수 복구
+    if (coupon.uses_left !== -1) {
+      await svc
+        .from("coupons")
+        .update({ uses_left: coupon.uses_left })
+        .eq("id", coupon.id);
+    }
     return NextResponse.json({ error: "쿠폰 적용에 실패했습니다." }, { status: 500 });
-  }
-
-  // 쿠폰 사용 횟수 차감
-  if (coupon.uses_left !== -1) {
-    await svc
-      .from("coupons")
-      .update({ uses_left: coupon.uses_left - 1 })
-      .eq("id", coupon.id);
   }
 
   return NextResponse.json({ ok: true });

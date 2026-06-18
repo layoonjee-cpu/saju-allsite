@@ -20,6 +20,115 @@ function randomCode() {
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+function downloadCouponImage(coupon: Coupon, productName?: string) {
+  const SCALE = 2; // 레티나 해상도
+  const W = 800, H = 480;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W * SCALE;
+  canvas.height = H * SCALE;
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(SCALE, SCALE);
+
+  // 배경 그라디언트
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#1C3A3A");
+  bg.addColorStop(1, "#2D5C5C");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 미세 격자 텍스처
+  ctx.strokeStyle = "rgba(255,255,255,0.04)";
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y <= H; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // 상단 골드 라인
+  ctx.fillStyle = "#C9A96E";
+  ctx.fillRect(0, 0, W, 4);
+
+  // 브랜드 (우상단)
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.font = "13px serif";
+  ctx.textAlign = "right";
+  ctx.fillText("視線 시선사주", W - 48, 44);
+
+  // VIP 라벨
+  ctx.fillStyle = "#C9A96E";
+  ctx.font = "bold 11px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("V I P   입 장 코 드", 52, 82);
+
+  // 코드 (핵심)
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 72px monospace";
+  ctx.fillText(coupon.code, 48, 178);
+
+  // 구분선
+  ctx.strokeStyle = "rgba(201,169,110,0.35)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(48, 208); ctx.lineTo(W - 48, 208);
+  ctx.stroke();
+
+  // 세부 정보
+  const expiry = coupon.expires_at
+    ? new Date(coupon.expires_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) + " 까지"
+    : "기간 제한 없음";
+  const uses = coupon.uses_left === -1 ? "무제한 사용 가능" : `${coupon.uses_left}회 사용 가능`;
+  const product = productName ? `${productName}` : "모든 상품 사용 가능";
+
+  const rows = [
+    { label: "사용 기한", value: expiry },
+    { label: "사용 횟수", value: uses },
+    { label: "사용 상품", value: product },
+  ];
+
+  rows.forEach(({ label, value }, i) => {
+    const y = 248 + i * 38;
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(label, 52, y);
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = "15px sans-serif";
+    ctx.fillText(value, 170, y);
+  });
+
+  // 메모 (인플루언서 이름)
+  if (coupon.note) {
+    ctx.fillStyle = "rgba(201,169,110,0.75)";
+    ctx.font = "italic 13px serif";
+    ctx.textAlign = "right";
+    ctx.fillText(coupon.note, W - 48, H - 28);
+  }
+
+  // 하단 골드 라인
+  ctx.fillStyle = "#C9A96E";
+  ctx.fillRect(0, H - 4, W, 4);
+
+  // JPG 다운로드
+  canvas.toBlob(
+    (blob) => {
+      if (!blob) { toast.error("이미지 생성 실패"); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `시선사주_VIP_${coupon.code}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    "image/jpeg",
+    0.96,
+  );
+}
+
 export function CouponManager({
   initialCoupons,
   products,
@@ -174,6 +283,7 @@ export function CouponManager({
                 {coupons.map((c) => {
                   const isExpired = c.expires_at ? new Date(c.expires_at) < new Date() : false;
                   const isUsedUp = c.uses_left !== -1 && c.uses_left <= 0;
+                  const productName = c.product_id ? prodMap.get(c.product_id) : undefined;
                   return (
                     <tr key={c.id} className={`border-b border-hairline last:border-0 ${(isExpired || isUsedUp) ? "opacity-50" : ""}`}>
                       <td className="px-4 py-3">
@@ -181,7 +291,7 @@ export function CouponManager({
                       </td>
                       <td className="px-4 py-3 text-xs text-mute">{c.note ?? "-"}</td>
                       <td className="px-4 py-3 text-xs text-mute">
-                        {c.product_id ? (prodMap.get(c.product_id) ?? "-") : "모든 상품"}
+                        {c.product_id ? (productName ?? "-") : "모든 상품"}
                       </td>
                       <td className="px-4 py-3 text-xs font-mono">
                         {c.uses_left === -1 ? "∞ 무제한" : isUsedUp ? "소진됨" : `${c.uses_left}회`}
@@ -193,12 +303,21 @@ export function CouponManager({
                         {isExpired && " (만료)"}
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleDelete(c.id, c.code)}
-                          className="text-[11px] text-red-500 hover:underline"
-                        >
-                          삭제
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => downloadCouponImage(c, productName)}
+                            className="text-[11px] text-[#2D5C5C] font-medium hover:underline whitespace-nowrap"
+                            title="VIP 입장코드 이미지 다운로드"
+                          >
+                            이미지 ↓
+                          </button>
+                          <button
+                            onClick={() => handleDelete(c.id, c.code)}
+                            className="text-[11px] text-red-500 hover:underline"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
