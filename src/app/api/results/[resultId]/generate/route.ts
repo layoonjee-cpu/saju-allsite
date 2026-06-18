@@ -302,9 +302,8 @@ export async function POST(
       const sec = sections[sectionNum - 1];
       console.log(`[generate] 섹션 ${sectionNum}/${TOTAL}: ${sec.id}`);
 
-      // 모든 섹션 2000토큰 — Vercel Hobby 60초 내 안전하게 완료
-      // (GPT-4o 기준 ~33초, Claude Haiku 기준 ~4초)
-      const tokenLimit = 2000;
+      // 월별 섹션(15-26)은 1,800-2,200자 목표이므로 3,000토큰 — 나머지는 2,000토큰
+      const tokenLimit = sectionNum >= 15 && sectionNum <= 26 ? 3000 : 2000;
       const llm = await generateInterpretation({
         system: sec.system,
         user: sec.user,
