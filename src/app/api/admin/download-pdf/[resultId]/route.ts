@@ -26,18 +26,19 @@ export async function GET(
 
   // 다운로드 파일명 구성 (상품명_고객명_날짜.pdf)
   const [{ data: input }, { data: order }] = await Promise.all([
-    svc.from("saju_inputs").select("name").eq("order_id", result.order_id).maybeSingle(),
+    svc.from("saju_inputs").select("name, birth_date").eq("order_id", result.order_id).maybeSingle(),
     svc.from("orders").select("product_id, created_at").eq("id", result.order_id).maybeSingle(),
   ]);
   const { data: product } = order
     ? await svc.from("products").select("name").eq("id", order.product_id).single()
     : { data: null };
 
-  const dateStr = (order?.created_at ?? new Date().toISOString()).slice(0, 10).replace(/-/g, "");
   const customerName = input?.name ?? "고객";
+  const birthYear = input?.birth_date ? input.birth_date.slice(0, 4) : null;
   const prodName = product?.name ?? "사주분석";
-  // 파일시스템 안전 문자만 허용 (한글 OK, 슬래시·콜론 등 제거)
-  const displayFileName = `${prodName}_${customerName}_${dateStr}.pdf`
+  // 파일명: 상품명_이름_출생년도.pdf (예: 깊은시선_홍길동_1990.pdf)
+  const namePart = birthYear ? `${customerName}_${birthYear}` : customerName;
+  const displayFileName = `${prodName}_${namePart}.pdf`
     .replace(/[/\\:*?"<>|]/g, "");
 
   const { data: signed, error } = await svc.storage
