@@ -12,6 +12,7 @@ import {
   type BirthInfo,
 } from "@/lib/saju/saju-api";
 import { buildZiweiChapterPrompt, ZIWEI_TOTAL_SECTIONS } from "@/lib/ziwei/ziwei-prompt";
+import { calcZiweiPan } from "@/lib/ziwei/iztro-calc";
 import type { ZiweiPan } from "@/lib/ziwei/iztro-calc";
 
 export const maxDuration = 300;
@@ -224,7 +225,22 @@ export async function POST(
         }
       }
 
-      const ziweiPan = (rawSajuJson as ZiweiPan | null);
+      let ziweiPan = (rawSajuJson as ZiweiPan | null);
+      // iztro pan은 circular reference로 인해 DB 직렬화 시 palaces 배열이 누락될 수 있음
+      // palaces가 없으면 출생 정보로 재계산 (same result — deterministic)
+      const hasPalaces = Array.isArray((ziweiPan as unknown as Record<string, unknown>)?.palaces);
+      if (!ziweiPan || !hasPalaces) {
+        const inp = input as SajuInputRow;
+        const bd = inp.birth_date ?? "1990-01-01";
+        const [hh] = (inp.birth_time && !inp.time_unknown) ? inp.birth_time.split(":") : ["12"];
+        const bHour = inp.time_unknown ? 12 : parseInt(hh, 10);
+        try {
+          ziweiPan = calcZiweiPan(bd, bHour, inp.gender, inp.calendar === "lunar");
+        } catch {
+          return NextResponse.json({ status: "failed", error: "명반 재계산 실패" }, { status: 500 });
+        }
+      }
+
       if (!ziweiPan) {
         return NextResponse.json({ status: "failed", error: "명반 데이터 없음" }, { status: 400 });
       }
