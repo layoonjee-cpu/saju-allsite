@@ -71,7 +71,7 @@ export default async function CheckoutPage({
           {/* 쿠폰 입력 (타로 제외) */}
           {!isTarot && order.amount > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">쿠폰 코드가 있으신가요?</p>
+              <p className="text-xs text-muted-foreground">VIP 입장코드가 있으시다면 아래에 입력해 주세요</p>
               <CouponInput orderId={order.order_id} />
             </div>
           )}
