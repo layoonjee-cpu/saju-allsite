@@ -142,14 +142,19 @@ export async function POST(
       myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
     }
 
-    // 5. DB row 확보 (LLM 이전) — 타임아웃 나도 ok:true 반환 보장
+    // 5. DB row 확보
     let resultId: string;
+
+    // VIP 상품(깊은시선·별의시선)은 섹션별 배너가 실제 생성 담당
+    // → 여기서는 상태만 "generating"으로 초기화, LLM 직접 호출 금지
+    const isVipProduct = product.slug === "premium-saju" || product.slug === "ziwei-saju";
 
     if (existingResult) {
       await svc
         .from("saju_results")
         .update({
           generation_status: "generating",
+          interpretation_md: "",   // 기존 내용 초기화 → 배너가 처음부터 재생성
           myeongsik: myeongsik as never,
           raw_saju_json: rawSajuJson as never,
         })
@@ -176,7 +181,12 @@ export async function POST(
       resultId = newRow.id;
     }
 
-    // 6. LLM 생성 시도 (실패해도 generating 상태 유지 → 버튼 재클릭으로 재시도 가능)
+    // VIP 상품은 여기서 즉시 반환 — 결과 페이지 배너가 섹션별 생성 처리
+    if (isVipProduct) {
+      return NextResponse.json({ ok: true, resultId, vipReset: true });
+    }
+
+    // 6. 일반 상품 LLM 생성 (실패해도 generating 상태 유지 → 버튼 재클릭으로 재시도 가능)
     try {
       const { system, user } = buildSajuPrompt({
         productSlug: product.slug,

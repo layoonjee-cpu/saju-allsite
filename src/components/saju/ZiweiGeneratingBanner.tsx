@@ -6,6 +6,10 @@ import { ZIWEI_SECTION_LABELS, ZIWEI_TOTAL_SECTIONS } from "@/lib/ziwei/ziwei-pr
 
 type GenState = "running" | "failed";
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 3000;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 export function ZiweiGeneratingBanner({ resultId }: { resultId: string }) {
   const router = useRouter();
   const [state, setState] = useState<GenState>("running");
@@ -22,44 +26,55 @@ export function ZiweiGeneratingBanner({ resultId }: { resultId: string }) {
 
     for (let i = startFrom; i <= ZIWEI_TOTAL_SECTIONS; i++) {
       setCurrentSection(i);
-      try {
-        const res = await fetch(
-          `/api/results/${resultId}/generate?section=${i}&product=ziwei-saju`,
-          { method: "POST" }
-        );
+      let sectionDone = false;
+      let lastError = "";
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({})) as { error?: string };
-          setErrorMsg(data.error ?? `서버 오류 (섹션 ${i})`);
-          setFailedSection(i);
-          setState("failed");
-          return;
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        if (attempt > 0) await sleep(RETRY_DELAY_MS);
+        try {
+          const res = await fetch(
+            `/api/results/${resultId}/generate?section=${i}&product=ziwei-saju`,
+            { method: "POST" }
+          );
+
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({})) as { error?: string };
+            lastError = body.error ?? `서버 오류 (섹션 ${i})`;
+            continue; // 재시도
+          }
+
+          const data = await res.json() as {
+            status: string;
+            section?: number;
+            total?: number;
+            error?: string;
+          };
+
+          if (data.status === "complete") {
+            router.refresh();
+            return;
+          }
+
+          if (data.status === "section_complete" || data.status === "section_skipped") {
+            sectionDone = true;
+            break;
+          }
+
+          if (data.status === "failed") {
+            lastError = data.error ?? "분석 생성 실패";
+            continue; // 재시도
+          }
+
+          sectionDone = true;
+          break;
+        } catch (e) {
+          lastError = e instanceof Error ? e.message : "네트워크 오류";
+          // 재시도
         }
+      }
 
-        const data = await res.json() as {
-          status: string;
-          section?: number;
-          total?: number;
-          error?: string;
-        };
-
-        if (data.status === "complete") {
-          router.refresh();
-          return;
-        }
-
-        if (data.status === "section_complete" || data.status === "section_skipped") {
-          continue;
-        }
-
-        if (data.status === "failed") {
-          setErrorMsg(data.error ?? "분석 생성 실패");
-          setFailedSection(i);
-          setState("failed");
-          return;
-        }
-      } catch (e) {
-        setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
+      if (!sectionDone) {
+        setErrorMsg(lastError);
         setFailedSection(i);
         setState("failed");
         return;

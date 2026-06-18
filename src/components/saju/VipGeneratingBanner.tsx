@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 type GenState = "running" | "failed";
 
 const TOTAL_SECTIONS = 27;
+const MAX_RETRIES = 3; // 섹션당 최대 자동 재시도 횟수
+const RETRY_DELAY_MS = 3000; // 재시도 간격 3초
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 // 월별 레이블 동적 생성 (결제 시점 기준 12개월)
 const _now = new Date();
@@ -53,48 +57,57 @@ export function VipGeneratingBanner({ resultId }: { resultId: string }) {
 
     for (let i = startFrom; i <= TOTAL_SECTIONS; i++) {
       setCurrentSection(i);
-      try {
-        const res = await fetch(
-          `/api/results/${resultId}/generate?section=${i}`,
-          { method: "POST" }
-        );
+      let sectionDone = false;
+      let lastError = "";
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({})) as { error?: string };
-          setErrorMsg(data.error ?? `서버 오류 (섹션 ${i})`);
-          setFailedSection(i); // ← 실패 지점 기억
-          setState("failed");
-          return;
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        if (attempt > 0) await sleep(RETRY_DELAY_MS);
+        try {
+          const res = await fetch(
+            `/api/results/${resultId}/generate?section=${i}`,
+            { method: "POST" }
+          );
+
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({})) as { error?: string };
+            lastError = body.error ?? `서버 오류 (섹션 ${i})`;
+            continue; // 재시도
+          }
+
+          const data = await res.json() as {
+            status: string;
+            section?: number;
+            total?: number;
+            error?: string;
+          };
+
+          if (data.status === "complete") {
+            router.refresh();
+            return;
+          }
+
+          if (data.status === "section_complete" || data.status === "section_skipped") {
+            sectionDone = true;
+            break;
+          }
+
+          if (data.status === "failed") {
+            lastError = data.error ?? "분석 생성 실패";
+            continue; // 재시도
+          }
+
+          // 예상치 못한 응답도 성공으로 처리
+          sectionDone = true;
+          break;
+        } catch (e) {
+          lastError = e instanceof Error ? e.message : "네트워크 오류";
+          // 재시도
         }
+      }
 
-        const data = await res.json() as {
-          status: string;
-          section?: number;
-          total?: number;
-          error?: string;
-        };
-
-        // 마지막 섹션 완료 → 페이지 새로고침
-        if (data.status === "complete") {
-          router.refresh();
-          return;
-        }
-
-        // section_complete / section_skipped → 다음 섹션으로 계속
-        if (data.status === "section_complete" || data.status === "section_skipped") {
-          continue;
-        }
-
-        // 예상치 못한 failed
-        if (data.status === "failed") {
-          setErrorMsg(data.error ?? "분석 생성 실패");
-          setFailedSection(i); // ← 실패 지점 기억
-          setState("failed");
-          return;
-        }
-      } catch (e) {
-        setErrorMsg(e instanceof Error ? e.message : "네트워크 오류");
-        setFailedSection(i => i); // 현재 섹션 유지
+      if (!sectionDone) {
+        setErrorMsg(lastError);
+        setFailedSection(i);
         setState("failed");
         return;
       }

@@ -218,7 +218,8 @@ export async function POST(
     if (isSectionCall && isZiwei) {
       if (result.generation_status === "complete") {
         const existingMd = (result as { interpretation_md?: string | null }).interpretation_md ?? "";
-        if (existingMd.length >= 5000) {
+        // 자미두수 16섹션 완성 기준: 40,000자 이상 (섹션당 평균 3,000자 × 16 = 48,000자 기대치)
+        if (existingMd.length >= 40000) {
           return NextResponse.json({ status: "complete" });
         }
       }
