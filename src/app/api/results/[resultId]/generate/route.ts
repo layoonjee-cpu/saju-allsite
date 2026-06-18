@@ -438,10 +438,16 @@ export async function POST(
     } else {
       // ── 단일 호출 (기본) ────────────────────────────────────────────
       const { system, user } = buildSajuPrompt(promptArgs);
+      const REGEN_TOKENS: Record<string, number> = {
+        "love-saju":     12000,
+        "basic-saju":    8000,
+        "dream-reading": 2000,
+        "ilju-sticker":  1000,
+      };
       const llm = await generateInterpretation({
         system,
         user,
-        maxTokensOverride: product.slug === "love-saju" ? 8000 : undefined,
+        maxTokensOverride: REGEN_TOKENS[product.slug],
       });
       llmText = llm.text;
       llmProvider = llm.provider;

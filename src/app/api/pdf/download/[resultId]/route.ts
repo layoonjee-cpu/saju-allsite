@@ -35,12 +35,11 @@ export async function GET(
     return NextResponse.json({ error: "결과를 찾을 수 없습니다" }, { status: 404 });
   }
 
-  // 소유권 확인 (주문의 user_id가 현재 사용자와 일치해야 함)
-  const { data: order } = await service
-    .from("orders")
-    .select("user_id")
-    .eq("id", result.order_id)
-    .maybeSingle();
+  // 소유권 확인 + 파일명 구성용 상품/입력 조회
+  const [{ data: order }, { data: inputData }] = await Promise.all([
+    service.from("orders").select("user_id, product_id").eq("id", result.order_id).maybeSingle(),
+    service.from("saju_inputs").select("name, birth_date").eq("order_id", result.order_id).maybeSingle(),
+  ]);
 
   if (!order || order.user_id !== user.id) {
     return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
@@ -54,10 +53,20 @@ export async function GET(
     return NextResponse.json({ error: "PDF가 아직 준비되지 않았습니다" }, { status: 404 });
   }
 
+  // 다운로드 파일명: 상품명_이름_출생년도.pdf
+  const { data: product } = order.product_id
+    ? await service.from("products").select("name").eq("id", order.product_id).single()
+    : { data: null };
+  const customerName = inputData?.name ?? "사주분석";
+  const birthYear = inputData?.birth_date ? inputData.birth_date.slice(0, 4) : null;
+  const prodName = product?.name ?? "사주분석";
+  const namePart = birthYear ? `${customerName}_${birthYear}` : customerName;
+  const downloadFileName = `${prodName}_${namePart}.pdf`.replace(/[/\\:*?"<>|]/g, "");
+
   // Supabase Storage 서명 URL 생성 (7일 만료)
   const { data: signedData, error: signErr } = await service.storage
     .from("vip-pdfs")
-    .createSignedUrl(result.pdf_url, 60 * 60 * 24 * 7);
+    .createSignedUrl(result.pdf_url, 60 * 60 * 24 * 7, { download: downloadFileName });
 
   if (signErr || !signedData) {
     console.error("[pdf-download] signed URL error:", signErr);

@@ -334,8 +334,18 @@ export async function POST(request: NextRequest) {
     // ── 비-VIP 상품: 인라인 LLM 호출 ────────────────────────────
     const { system, user } = buildSajuPrompt(promptArgs);
 
-    // love-saju(궁합)는 8,000~10,000자 목표 → 더 많은 토큰 할당
-    const maxTokensOverride = isLoveSaju ? 6000 : undefined;
+    // 상품별 토큰 한도 (분량 보장)
+    // love-saju: 8,000~10,000자 목표 → 12,000토큰 (≈10,000자 생성 가능)
+    // basic-saju: 5,000자 목표 → 8,000토큰 (여유 확보)
+    // dream-reading: 700~900자 목표 → 2,000토큰이면 충분
+    // ilju-sticker: JSON 12개 키워드 → 1,000토큰이면 충분
+    const PRODUCT_TOKENS: Record<string, number> = {
+      "love-saju":     12000,
+      "basic-saju":    8000,
+      "dream-reading": 2000,
+      "ilju-sticker":  1000,
+    };
+    const maxTokensOverride = PRODUCT_TOKENS[product.slug];
     const llm = await generateInterpretation({ system, user, maxTokensOverride });
 
     // LLM 거부 응답 검증 (결제는 정상 승인된 상태이므로 500 반환 후 어드민 재생성)
