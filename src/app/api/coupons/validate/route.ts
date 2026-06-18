@@ -23,21 +23,23 @@ export async function POST(request: NextRequest) {
   const { createClient: createServiceClient } = await import("@supabase/supabase-js");
   const svc = createServiceClient(supabaseUrl, supabaseKey);
 
-  // 로그인 사용자 확인 (주문 소유권)
+  // 로그인 여부 확인 (선택적 - 비회원도 쿠폰 사용 가능)
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
-  }
 
-  // 주문 조회 (소유권 + 상품 확인)
+  // 주문 조회
   const { data: order } = await svc
     .from("orders")
     .select("id, user_id, amount, status, product_id")
     .eq("order_id", orderId)
     .maybeSingle();
 
-  if (!order || order.user_id !== user.id) {
+  if (!order) {
+    return NextResponse.json({ error: "주문을 찾을 수 없습니다." }, { status: 404 });
+  }
+
+  // 소유권 확인: 로그인한 경우 본인 주문이어야 함 (게스트 주문은 orderId 자체가 인증 토큰 역할)
+  if (user && order.user_id && order.user_id !== user.id) {
     return NextResponse.json({ error: "주문을 찾을 수 없습니다." }, { status: 404 });
   }
   if (order.status === "paid") {
