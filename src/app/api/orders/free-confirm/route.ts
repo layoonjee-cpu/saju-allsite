@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-export const maxDuration = 60; // 60초 — 무료 분석 생성용
+export const maxDuration = 60; // 60초 — 무료 분석 생성용 (VIP는 LLM 없이 즉시 반환)
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { computeMyeongsik, type Myeongsik } from "@/lib/saju/manseryeok";
@@ -15,6 +15,7 @@ import {
   ALL_FIELDS,
   type BirthInfo,
 } from "@/lib/saju/saju-api";
+import { calcZiweiPan, extractMyeongsikFromPan } from "@/lib/ziwei/iztro-calc";
 
 const bodySchema = z.object({
   orderId: z.string().min(1),
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
   if (order.amount !== 0) {
     return NextResponse.json({ error: "유료 상품은 결제 후 이용하세요" }, { status: 400 });
   }
-  // 이미 처리됨
+  // 이미 처리됨 (idempotent)
   if (order.status === "paid") {
     const { data: result } = await service
       .from("saju_results")
@@ -106,50 +107,144 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ resultId: result?.id ?? null, alreadyPaid: true });
   }
 
-  // 주문 상태를 paid로 변경 (결제 없이)
-  await service
-    .from("orders")
-    .update({ status: "paid", paid_at: new Date().toISOString() })
-    .eq("id", order.id);
-
-  // 사주 생성
-  const { data: input } = await service
-    .from("saju_inputs")
-    .select("*")
-    .eq("order_id", order.id)
-    .single();
-  const { data: product } = await service
-    .from("products")
-    .select("slug, name")
-    .eq("id", order.product_id)
-    .single();
+  // 사주 입력 + 상품 조회
+  const [{ data: input }, { data: product }] = await Promise.all([
+    service.from("saju_inputs").select("*").eq("order_id", order.id).single(),
+    service.from("products").select("slug, name").eq("id", order.product_id).single(),
+  ]);
 
   if (!input || !product) {
     return NextResponse.json({ error: "사주 입력 또는 상품 조회 실패" }, { status: 500 });
   }
 
+  // 주문 상태를 paid로 변경 (결제 없이) — 상품 확인 후 진행
+  await service
+    .from("orders")
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", order.id);
+
+  // ── 자미두수: iztro 명반 계산 → generating 행 즉시 삽입 후 반환 ─────────
+  // confirm/route.ts와 동일 패턴 (luckyloveme API 불필요)
+  if (product.slug === "ziwei-saju") {
+    try {
+      const birthHour = input.birth_time && !input.time_unknown
+        ? parseInt(input.birth_time.split(":")[0], 10)
+        : 12;
+      const pan = calcZiweiPan(
+        input.birth_date ?? "1990-01-01",
+        birthHour,
+        input.gender as "male" | "female",
+        input.calendar === "lunar"
+      );
+      const myeongsik = extractMyeongsikFromPan(pan);
+
+      const { data: ziweiRow, error: ziweiErr } = await service
+        .from("saju_results")
+        .insert({
+          order_id: order.id,
+          myeongsik: myeongsik as never,
+          raw_saju_json: pan as never,
+          interpretation_md: "",
+          llm_provider: process.env.LLM_PROVIDER ?? "openai",
+          llm_model: process.env.LLM_MODEL ?? "gpt-4o",
+          generation_status: "generating",
+        })
+        .select("id")
+        .single();
+
+      if (ziweiErr || !ziweiRow) {
+        // 중복 방어: 이미 행이 있으면 반환
+        const { data: existing } = await service
+          .from("saju_results")
+          .select("id")
+          .eq("order_id", order.id)
+          .maybeSingle();
+        if (existing) return NextResponse.json({ resultId: existing.id });
+        return NextResponse.json({ error: "결과 초기화 실패", detail: ziweiErr?.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ resultId: ziweiRow.id });
+    } catch (err) {
+      console.error("[free-confirm/ziwei] iztro 계산 실패:", err);
+      return NextResponse.json({ error: "명반 계산 실패", detail: String(err) }, { status: 500 });
+    }
+  }
+
+  // ── 깊은시선(premium-saju): myeongsik 계산 후 generating 행 삽입 ─────────
+  // LLM 호출 없이 즉시 반환 → VipGeneratingBanner가 27섹션 생성 담당
+  if (product.slug === "premium-saju") {
+    try {
+      let myeongsik: Myeongsik;
+      let rawSajuJson: unknown = null;
+
+      if (isSajuApiConfigured()) {
+        try {
+          const birthInfo = toBirthInfo(input as SajuInputRow);
+          const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" });
+          rawSajuJson = analysis;
+          const converted = ganjiToMyeongsik(analysis);
+          myeongsik = converted ?? await computeMyeongsik(toComputeInput(input as SajuInputRow));
+        } catch {
+          myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
+        }
+      } else {
+        myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
+      }
+
+      const { data: vipRow, error: vipErr } = await service
+        .from("saju_results")
+        .insert({
+          order_id: order.id,
+          myeongsik: myeongsik as never,
+          interpretation_md: "",
+          llm_provider: process.env.LLM_PROVIDER ?? "openai",
+          llm_model: process.env.LLM_MODEL ?? "gpt-4o",
+          raw_saju_json: rawSajuJson as never,
+          generation_status: "generating",
+        })
+        .select("id")
+        .single();
+
+      if (vipErr || !vipRow) {
+        const { data: existing } = await service
+          .from("saju_results")
+          .select("id")
+          .eq("order_id", order.id)
+          .maybeSingle();
+        if (existing) return NextResponse.json({ resultId: existing.id });
+        return NextResponse.json({ error: "결과 초기화 실패", detail: vipErr?.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ resultId: vipRow.id });
+    } catch (err) {
+      console.error("[free-confirm/premium] 실패:", err);
+      return NextResponse.json({ error: "결과 초기화 실패", detail: String(err) }, { status: 500 });
+    }
+  }
+
+  // ── 일반 상품: 인라인 LLM 생성 ──────────────────────────────────────────
   try {
     let myeongsik: Myeongsik;
     let manseryeokText: string | undefined;
-    let rawSajuJson: unknown = null; // 운세위키 API 16종 원본 응답 (어드민 데이터 버튼용)
+    let rawSajuJson: unknown = null;
 
     if (isSajuApiConfigured()) {
       try {
-        const birthInfo = toBirthInfo(input);
-        const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" }); // 16종 전체 (gyeokgukYongsin 포함)
-        rawSajuJson = analysis; // 원본 응답 보존
+        const birthInfo = toBirthInfo(input as SajuInputRow);
+        const analysis = await fetchSajuAnalysis(birthInfo, ALL_FIELDS, { source: "confirm" });
+        rawSajuJson = analysis;
         const converted = ganjiToMyeongsik(analysis);
         if (converted) {
           myeongsik = converted;
           manseryeokText = formatSajuToManseryeok(analysis, birthInfo);
         } else {
-          myeongsik = await computeMyeongsik(toComputeInput(input));
+          myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
         }
       } catch {
-        myeongsik = await computeMyeongsik(toComputeInput(input));
+        myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
       }
     } else {
-      myeongsik = await computeMyeongsik(toComputeInput(input));
+      myeongsik = await computeMyeongsik(toComputeInput(input as SajuInputRow));
     }
 
     const { system, user: userPrompt } = buildSajuPrompt({
@@ -190,7 +285,7 @@ export async function POST(request: NextRequest) {
         llm_provider: llm.provider,
         llm_model: llm.model,
         raw_saju_json: rawSajuJson as never,
-        generation_status: product.slug === "premium-saju" ? "generating" : "complete",
+        generation_status: "complete",
       })
       .select("id")
       .single();
