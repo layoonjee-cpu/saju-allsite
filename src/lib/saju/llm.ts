@@ -58,12 +58,14 @@ async function callOpenAI(req: LlmRequest, model: string, key: string | undefine
     const text = await tryModel(model);
     return { text, provider: "openai", model };
   } catch (err: unknown) {
-    // 403: 프로젝트에 해당 모델 접근 권한 없음 → gpt-4o-mini로 재시도
+    // 403: 프로젝트에 해당 모델 접근 권한 없음 → Anthropic claude-sonnet-4-6 으로 fallback (품질 유지)
     const status = (err as { status?: number })?.status;
-    if (status === 403 && model !== "gpt-4o-mini") {
-      console.warn(`[llm] ${model} 접근 불가(403) → gpt-4o-mini 로 fallback`);
-      const text = await tryModel("gpt-4o-mini");
-      return { text, provider: "openai", model: "gpt-4o-mini" };
+    if (status === 403) {
+      const anthropicKey = process.env.ANTHROPIC_API_KEY;
+      if (anthropicKey) {
+        console.warn(`[llm] ${model} 접근 불가(403) → claude-sonnet-4-6 fallback`);
+        return callAnthropic(req, "claude-sonnet-4-6", anthropicKey);
+      }
     }
     throw err;
   }
