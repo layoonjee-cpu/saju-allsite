@@ -40,17 +40,33 @@ async function callOpenAI(req: LlmRequest, model: string, key: string | undefine
   if (!key) throw new Error("OPENAI_API_KEY is required when LLM_PROVIDER=openai");
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({ apiKey: key });
-  const completion = await client.chat.completions.create({
-    model,
-    messages: [
-      { role: "system", content: req.system },
-      { role: "user", content: req.user },
-    ],
-    temperature: 0.7,
-    max_tokens: req.maxTokensOverride ?? DEFAULT_MAX_TOKENS,
-  });
-  const text = completion.choices[0]?.message?.content ?? "";
-  return { text, provider: "openai", model };
+
+  const tryModel = async (m: string) => {
+    const completion = await client.chat.completions.create({
+      model: m,
+      messages: [
+        { role: "system", content: req.system },
+        { role: "user", content: req.user },
+      ],
+      temperature: 0.7,
+      max_tokens: req.maxTokensOverride ?? DEFAULT_MAX_TOKENS,
+    });
+    return completion.choices[0]?.message?.content ?? "";
+  };
+
+  try {
+    const text = await tryModel(model);
+    return { text, provider: "openai", model };
+  } catch (err: unknown) {
+    // 403: 프로젝트에 해당 모델 접근 권한 없음 → gpt-4o-mini로 재시도
+    const status = (err as { status?: number })?.status;
+    if (status === 403 && model !== "gpt-4o-mini") {
+      console.warn(`[llm] ${model} 접근 불가(403) → gpt-4o-mini 로 fallback`);
+      const text = await tryModel("gpt-4o-mini");
+      return { text, provider: "openai", model: "gpt-4o-mini" };
+    }
+    throw err;
+  }
 }
 
 async function callAnthropic(req: LlmRequest, model: string, key: string | undefined): Promise<LlmResponse> {
