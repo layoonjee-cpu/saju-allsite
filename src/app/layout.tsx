@@ -60,24 +60,14 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
 
         {/* 로고 — 데스크톱 */}
         <Link href="/" className="hidden md:flex items-center shrink-0">
-          <span
-            className="font-bold text-[20px] tracking-tight"
-            style={{
-              fontFamily: "Georgia, serif",
-              background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {siteConfig.name}
-          </span>
-          <span
-            className="hidden sm:block text-[11px] font-medium tracking-widest ml-1.5"
-            style={{ color: "#c4913a", opacity: 0.8 }}
-          >
-            視線
-          </span>
+          <Image
+            src="/seesun_logo_nav.png"
+            alt="시선 사주"
+            width={100}
+            height={50}
+            className="object-contain"
+            priority
+          />
         </Link>
 
         {/* 상품소개 — 모바일 좌측 */}
