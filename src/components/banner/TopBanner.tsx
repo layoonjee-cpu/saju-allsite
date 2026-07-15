@@ -27,9 +27,9 @@ function RollingAdBanner() {
     <div
       className="relative w-full overflow-hidden"
       style={{
-        background: "linear-gradient(90deg, #1a1730 0%, #1e3a3a 50%, #1a1730 100%)",
+        background: "linear-gradient(90deg, #7dd3fc 0%, #38bdf8 50%, #7dd3fc 100%)",
         height: "72px",
-        borderBottom: "1px solid rgba(196,145,58,0.15)",
+        borderBottom: "1px solid rgba(14,165,233,0.3)",
       }}
     >
       {AD_SLIDES.map((slide, i) => (
@@ -45,7 +45,7 @@ function RollingAdBanner() {
             width={slide.width}
             height={slide.height}
             className="object-contain"
-            style={{ filter: "drop-shadow(0 2px 8px rgba(196,145,58,0.35))" }}
+            style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.15))" }}
             priority={i === 0}
           />
         </Link>
