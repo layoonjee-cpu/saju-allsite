@@ -22,7 +22,7 @@ const SLIDES: Slide[] = [
     slug: "today-fortune",
     name: "오늘의 운세",
     subtitle: "당신이 마주할, 오늘 하루의 결",
-    image: "/product-hero.png",
+    image: "/product-today.png",
     price: 0,
     rank: 1,
     badgeLabel: "무료",
