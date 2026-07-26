@@ -10,3 +10,6 @@ next-env.d.ts
 .vercel
 supabase/.branches
 supabase/.temp
+
+# 대용량 아카이브 (GitHub 100MB 제한 초과 — 커밋 금지)
+public/*.zip
