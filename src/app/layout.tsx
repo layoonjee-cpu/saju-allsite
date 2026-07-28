@@ -172,25 +172,21 @@ function SiteFooter() {
     <footer className="border-t border-amber-200/50 mt-20 bg-amber-50/40 backdrop-blur-sm">
       {/* 텐핑 제휴 광고 */}
       <div className="border-b border-amber-200/30 py-3 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-sm mx-auto">
           <p className="text-[10px] text-muted-foreground text-center mb-2">광고</p>
           <a
             href="https://Ocayn.info/t8gvbrdklj"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition-all"
+            className="block rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="http://img.tenping.kr/Content/Upload/Images/2025120422540001_Squa_20251204225402.jpg?RS=170x170"
-              alt="제휴 광고"
-              width={64}
-              height={64}
-              className="rounded-lg shrink-0 object-cover"
+            <Image
+              src="/ad-tenping-mbti.jpg"
+              alt="내 MBTI와 딱 맞는 운명의 짝은 어디에? 연애스타일 테스트 GO"
+              width={400}
+              height={400}
+              className="w-full h-auto"
             />
-            <span className="text-[14px] font-bold text-gray-800 leading-snug" style={{ fontFamily: "'Malgun Gothic', '맑은고딕', sans-serif" }}>
-              내 MBTI와 딱 맞는 사람은 어딨을까? 연애스타일 테스트해보기
-            </span>
           </a>
         </div>
       </div>
