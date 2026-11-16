@@ -1,13 +1,3 @@
-import { HeroBanner } from "@/components/landing/HeroBanner";
-import { ProductLineup } from "@/components/landing/ProductLineup";
-import { CTA } from "@/components/landing/CTA";
-
-export default function HomePage() {
-  return (
-    <>
-      <HeroBanner />
-      <ProductLineup />
-      <CTA />
-    </>
-  );
-}
+import { CatalogView } from "@/components/renewal/CatalogView";
+import { getCatalog } from "@/components/renewal/catalog";
+export default async function HomePage() { return <CatalogView products={await getCatalog()} home />; }

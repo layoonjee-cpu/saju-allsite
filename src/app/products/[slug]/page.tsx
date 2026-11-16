@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
@@ -10,25 +9,7 @@ import { ZiweiForm } from "@/components/saju/ZiweiForm";
 import { formatKRW, formatDate } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { productsSeed } from "@/config/products.seed";
-
-const productImages: Record<string, string> = {
-  "today-fortune": "/product-today.png",
-  "dream-reading": "/product-dream.png",
-  "ilju-sticker": "/sticker2.png",
-  "basic-saju": "/product-basic.png",
-  "love-saju": "/product-love.png",
-  "premium-saju": "/product-premium.png",
-  "ziwei-saju": "/product-ziwei.png",
-  "tarot-siren": "/product-tarot.png",
-};
-
-// 정가 표시 (할인 전 가격) — DB 실제 결제가와 별개
-const productOriginalPrices: Record<string, number> = {
-  "basic-saju": 9900,
-  "love-saju": 80000,
-  "premium-saju": 100000,
-  "ziwei-saju": 100000,
-};
+import { editorial } from "@/components/renewal/catalog";
 
 type Product = { id: string; slug: string; name: string; description: string; price: number };
 type ProductOption = { id: string; slug: string; name: string; price: number };
@@ -86,149 +67,21 @@ export default async function ProductDetailPage({
 
   if (!product) notFound();
 
+  const presentation = editorial[product.slug];
   return (
-    <div className="container py-12 max-w-2xl">
-      {productImages[product.slug] && (
-        <div className="relative w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6]">
-          <Image
-            src={productImages[product.slug]}
-            alt={product.name}
-            fill
-            className="object-contain"
-            priority
-          />
+    <div className="mx-auto max-w-[760px] px-4 py-8 md:py-14 text-[#202b32]">
+      <nav aria-label="현재 위치" className="text-xs text-[#74807e] mb-8"><Link href="/">홈</Link> / <Link href="/products">상품</Link> / {product.name}</nav>
+      <header className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-9 items-center border-y border-[#dedbd1] py-7 md:py-9 mb-10">
+        <div aria-hidden="true" className="relative w-full max-w-[210px] mx-auto md:max-w-none aspect-[4/5] bg-[#263b42] overflow-hidden flex items-center justify-center"><span className="absolute w-36 h-36 rounded-full border border-[#9c7a49]/70"/><span className="font-display text-[90px] text-[#e9dfc8] z-10">{product.slug === "premium-saju" ? "深" : product.slug === "love-saju" ? "緣" : product.slug === "ziwei-saju" ? "星" : product.slug === "dream-reading" ? "夢" : product.slug === "basic-saju" ? "命" : "視"}</span></div>
+        <div><p className="text-xs tracking-[.16em] text-[#9c7a49] mb-4">{presentation?.eyebrow ?? "SISEON SAJU"}</p>
+          <h1 className="font-display !font-normal text-[32px] md:text-[38px] leading-[1.3] mb-3">{presentation?.question ?? product.name}</h1>
+          <p className="text-[14px] text-[#365e5e] mb-3">{product.name}</p>
+          <p className="text-sm leading-7 text-[#626c6c]">{presentation?.detail ?? product.description}</p>
+          <p className="mt-7 pt-5 border-t border-[#dedbd1] text-[26px] font-medium text-[#202b32]">{product.price === 0 ? "무료" : formatKRW(product.price)}</p>
+          <a href="#apply" className="mt-5 inline-flex items-center justify-center min-h-[48px] px-7 bg-[#263b42] text-white text-sm">{product.price === 0 ? "무료로 시작하기" : "신청 내용 입력하기"} ↗</a>
         </div>
-      )}
-      <header className="mb-10 text-center">
-        <>
-          <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#1a1730]">{product.name}</h1>
-          <p className="mt-3 text-sm text-[#4a4a6a] leading-relaxed">{product.description}</p>
-
-          {/* ziwei-saju 전용 헤더 강화 */}
-          {product.slug === "ziwei-saju" && (
-            <>
-              {/* 16챕터 강조 배지 */}
-              <div className="mt-3 inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: "linear-gradient(135deg, #1a1730, #3d2f6b)" }}>
-                <span>⭐</span>
-                <span>16챕터 자미두수 정밀 분석</span>
-              </div>
-
-              {/* 커버리지 키워드 배지들 */}
-              <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-                {["명궁·신궁", "사화분석★", "재백궁★★", "부처궁", "관록궁", "대운흐름", "유년분석", "12궁 전체"].map((kw) => (
-                  <span key={kw}
-                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                    style={{ color: "#7c3aed", background: "#f0ebff", border: "1px solid #c4b5fd" }}>
-                    {kw}
-                  </span>
-                ))}
-              </div>
-
-              {/* 핵심 포인트 3개 */}
-              <ul className="mt-4 space-y-1.5 text-left max-w-xs mx-auto">
-                {[
-                  { text: "사주와 다른 별도 명리 체계 — 12개 인생 영역 각각을 정밀하게 분석" },
-                  { text: "재백궁 강화 챕터 5,000자 — 재물 그릇·흐름·시기 집중 분석" },
-                  { text: "자미두수 정통 4×4 명반 시각화 — 별의 밝기·사화까지 한눈에" },
-                ].map(({ text }) => (
-                  <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
-                    <span className="font-bold mt-0.5 shrink-0" style={{ color: "#7c3aed" }}>✔</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {/* basic-saju 전용 헤더 강화 */}
-          {product.slug === "basic-saju" && (
-            <>
-              {/* 9챕터 강조 배지 */}
-              <div className="mt-3 inline-flex items-center gap-1.5 bg-[#1a1730] text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                <span>📝</span>
-                <span>9챕터 심층 사주 풀이</span>
-              </div>
-
-              {/* 커버리지 키워드 배지들 */}
-              <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-                {["일주 분석", "오행 분포", "성격·기질", "재물운", "연애운", "직업 적성", "올해 운세", "개운법"].map((kw) => (
-                  <span key={kw}
-                    className="text-[11px] font-semibold text-[#2D5C5C] bg-[#eaf4f4] border border-[#c0dede] px-2 py-0.5 rounded-full">
-                    {kw}
-                  </span>
-                ))}
-              </div>
-
-              {/* 핵심 포인트 3개 */}
-              <ul className="mt-4 space-y-1.5 text-left max-w-xs mx-auto">
-                {[
-                  { icon: "✔", text: "단순 나열이 아닌 — 명리학자가 당신의 인생을 통찰하는 방식으로 서술" },
-                  { icon: "✔", text: "\"이게 나 얘기네\" 싶은 일상 장면 묘사로 공감 극대화" },
-                  { icon: "✔", text: "추상적 조언 없음 — 사주 데이터로 솔직하게 짚어드립니다" },
-                ].map(({ icon, text }) => (
-                  <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
-                    <span className="text-teal-600 font-bold mt-0.5 shrink-0">{icon}</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {/* premium-saju 전용 헤더 강화 */}
-          {product.slug === "premium-saju" && (
-            <>
-              {/* 27개 섹션 강조 배지 */}
-              <div className="mt-3 inline-flex items-center gap-1.5 bg-[#1a1730] text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                <span>📑</span>
-                <span>27개 섹션으로 사주 총정리</span>
-              </div>
-
-              {/* 커버리지 키워드 배지들 */}
-              <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-                {["일주·명식", "대운", "세운", "월운", "직업운", "재물운", "연애·배우자운", "건강운", "귀인·신살", "개운법"].map((kw) => (
-                  <span key={kw}
-                    className="text-[11px] font-semibold text-[#2D5C5C] bg-[#eaf4f4] border border-[#c0dede] px-2 py-0.5 rounded-full">
-                    {kw}
-                  </span>
-                ))}
-              </div>
-
-              {/* 핵심 포인트 3개 */}
-              <ul className="mt-4 space-y-1.5 text-left max-w-xs mx-auto">
-                {[
-                  { icon: "✔", text: "사주의 모든 것 — 명식·격국·신강신약부터 월별 운세까지" },
-                  { icon: "✔", text: "지금 이 시점에 꼭 필요한 실전 조언 포함" },
-                  { icon: "✔", text: "정가 10만원 대비 61% 할인, 두 배 이상의 심층 리포트 (강추)" },
-                ].map(({ icon, text }) => (
-                  <li key={text} className="flex items-start gap-2 text-[13px] text-[#3a3a4a]">
-                    <span className="text-teal-600 font-bold mt-0.5 shrink-0">{icon}</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {productOriginalPrices[product.slug] ? (
-            <div className="mt-4 flex items-baseline gap-3 justify-center flex-wrap">
-              <span className="text-sm text-[#aaa] line-through font-mono">
-                정가 {formatKRW(productOriginalPrices[product.slug])}
-              </span>
-              <span className="text-2xl font-mono font-black text-[#2D5C5C]">
-                {formatKRW(product.price)}
-              </span>
-              <span className="text-xs font-bold text-white bg-rose-500 px-2 py-0.5 rounded-full">
-                {Math.round((1 - product.price / productOriginalPrices[product.slug]) * 100)}% OFF
-              </span>
-            </div>
-          ) : (
-            <p className="mt-4 text-2xl font-mono font-semibold text-[#2D5C5C]">{formatKRW(product.price)}</p>
-          )}
-        </>
       </header>
-
+      {presentation && <section className="border border-[#dedbd1] bg-[#fbfaf5] p-5 md:p-7 mb-10"><p className="text-xs tracking-widest text-[#9c7a49]">IN THIS READING</p><h2 className="font-display !font-normal text-[23px] my-3">이 시선에서 살펴보는 것</h2><ul className="grid md:grid-cols-2 gap-2 text-sm text-[#455359]">{presentation.includes.map((item,i)=><li key={item} className="border-t border-[#dedbd1] py-3"><span className="text-[#9c7a49] mr-3">0{i+1}</span>{item}</li>)}</ul></section>}
       {/* ── 상품별 상세 소개 ── */}
       {product.slug === "today-fortune" && (
         <section className="mb-10 rounded-2xl border border-[#e8e4dd] bg-white overflow-hidden shadow-sm">
@@ -548,7 +401,7 @@ export default async function ProductDetailPage({
         </section>
       )}
 
-      <section>
+      <section id="apply" className="scroll-mt-24">
         {product.slug === "tarot-siren" ? (
           <div className="text-center">
             <Link

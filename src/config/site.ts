@@ -4,7 +4,7 @@
 // 운영 전 본인 정보로 반드시 교체하세요. 아래는 모두 더미 데이터입니다.
 
 export const siteConfig = {
-  name: "시선",
+  name: "시선사주",
   tagline: "당신의 사주를 함께 읽다",
   description: "정통 명리학과 AI가 만나는 곳. 운명을 점치지 않습니다. 당신의 지금을 함께 읽어드립니다.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
