@@ -61,7 +61,7 @@ export default async function ProductsPage() {
               className="group block rounded-lg overflow-hidden border border-hairline bg-canvas transition-shadow hover:shadow-lg"
             >
               {productImages[p.slug] && (
-                <div className="relative w-full aspect-[3/4] bg-[#F5F0E6]">
+                <div className="relative hidden md:block w-full aspect-[3/4] bg-[#F5F0E6]">
                   <Image
                     src={productImages[p.slug]}
                     alt={p.name}
