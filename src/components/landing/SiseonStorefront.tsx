@@ -110,7 +110,7 @@ export function SiseonStorefront({ products, isLoggedIn }: { products: Product[]
         : /평생|인생|대운|전체|종합/.test(text) ? "premium-saju" : "basic-saju";
       const selected = bySlug.has(slug) ? slug : "basic-saju";
       q<HTMLElement>("#resultTitle").textContent = names[selected] ?? "시선의 풀이";
-      q<HTMLElement>("#resultDesc").textContent = bySlug.get(selected)?.description ?? "지금의 질문에 가까운 상품을 살펴보세요.";
+      q<HTMLElement>("#resultDesc").textContent = messages[selected] ?? bySlug.get(selected)?.description ?? "지금의 질문에 가까운 상품을 살펴보세요.";
       q<HTMLAnchorElement>("#resultLink").href = productUrl(selected);
       q<HTMLElement>("#questionResult").hidden = false;
     };
