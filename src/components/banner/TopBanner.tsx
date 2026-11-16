@@ -1,76 +1,13 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 
 type BannerProduct = { slug?: string };
 
-// 광고 이미지 목록 — 이미지 추가 시 여기에만 추가하면 됩니다
-const AD_SLIDES = [
-  { src: "/seesun_logo1.png", alt: "시선 사주", href: "/products", width: 200, height: 60 },
-];
-
-// ── 롤링 광고 배너 (상단 이미지 슬라이드) ─────────────────────────────
-function RollingAdBanner() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    if (AD_SLIDES.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % AD_SLIDES.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div
-      className="relative w-full overflow-hidden"
-      style={{
-        background: "linear-gradient(90deg, #7dd3fc 0%, #38bdf8 50%, #7dd3fc 100%)",
-        height: "72px",
-        borderBottom: "1px solid rgba(14,165,233,0.3)",
-      }}
-    >
-      {AD_SLIDES.map((slide, i) => (
-        <Link
-          key={i}
-          href={slide.href}
-          className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
-          style={{ opacity: i === current ? 1 : 0, pointerEvents: i === current ? "auto" : "none" }}
-        >
-          <Image
-            src={slide.src}
-            alt={slide.alt}
-            width={slide.width}
-            height={slide.height}
-            className="object-contain"
-            style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.15))" }}
-            priority={i === 0}
-          />
-        </Link>
-      ))}
-
-      {/* 인디케이터 (이미지 2개 이상일 때만 표시) */}
-      {AD_SLIDES.length > 1 && (
-        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
-          {AD_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className="w-1 h-1 rounded-full transition-colors duration-300"
-              style={{ background: i === current ? "#c4913a" : "rgba(255,255,255,0.3)" }}
-              aria-label={`슬라이드 ${i + 1}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── 메인 TopBanner ─────────────────────────────────────────────────────
+/** Brand strip shared by the storefront and product pages. */
 export function TopBanner({ products: _products }: { products?: BannerProduct[] }) {
-  if (AD_SLIDES.length === 0) return null;
-  return <RollingAdBanner />;
+  return <div className="h-14 md:h-[64px] bg-[#3c1620] border-b border-[#a77b57] flex items-center justify-center">
+    <Link href="/products" className="flex items-baseline gap-3 px-4 text-[#f5e7d3] hover:text-white transition-colors" aria-label="시선사주 상품 보러 가기">
+      <span className="text-[26px] md:text-[30px] font-medium tracking-[-.1em]" style={{ fontFamily: "'Noto Serif KR',serif" }}>시선</span>
+      <span className="text-[10px] md:text-[11px] font-semibold tracking-[.2em] text-[#d8b389]">視線 · SISEON</span>
+    </Link>
+  </div>;
 }

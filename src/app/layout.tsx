@@ -76,7 +76,7 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
             className="font-bold text-[19px] tracking-tight"
             style={{
               fontFamily: "Georgia, serif",
-              background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 60%, #c4913a 100%)",
+              background: "linear-gradient(135deg, #3c1620 0%, #7b2d36 62%, #b58b5d 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -91,7 +91,7 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Link
             href="/story"
             className="flex items-center justify-center px-3 py-1.5 rounded-xl"
-            style={{ background: "linear-gradient(135deg, #1a1730 0%, #2b6e6e 100%)" }}
+            style={{ background: "linear-gradient(135deg, #3c1620 0%, #6b2630 100%)" }}
           >
             <span className="font-bold text-[14px] tracking-tight text-white" style={{ fontFamily: "Georgia, serif" }}>
               시선스토리
@@ -114,7 +114,7 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
             <Link
               key={item.href}
               href={item.href}
-              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] text-foreground/65 hover:text-teal-700 hover:bg-teal-50/70 transition-all duration-200 whitespace-nowrap"
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] text-foreground/65 hover:text-[#7b2d36] hover:bg-[#f3e8df] transition-all duration-200 whitespace-nowrap"
               style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}
             >
               {item.label}
@@ -131,9 +131,9 @@ function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {isLoggedIn ? (
             <>
-              <Link href="/mypage" className="text-[13px] font-medium text-foreground/65 hover:text-teal-700 transition-colors px-2">마이페이지</Link>
+              <Link href="/mypage" className="text-[13px] font-medium text-foreground/65 hover:text-[#7b2d36] transition-colors px-2">마이페이지</Link>
               <form action="/api/auth/signout" method="post">
-                <button type="submit" className="text-[13px] font-medium text-foreground/65 hover:text-teal-700 transition-colors px-2">로그아웃</button>
+                <button type="submit" className="text-[13px] font-medium text-foreground/65 hover:text-[#7b2d36] transition-colors px-2">로그아웃</button>
               </form>
             </>
           ) : (

@@ -35,7 +35,7 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="메뉴 열기"
-        className="md:hidden flex flex-col justify-center items-center w-11 h-11 gap-[5px] rounded-xl hover:bg-teal-50 transition-colors shrink-0"
+        className="md:hidden flex flex-col justify-center items-center w-11 h-11 gap-[5px] rounded-xl hover:bg-[#f3e8df] transition-colors shrink-0"
       >
         <span className="block w-[22px] h-[2px] rounded-full bg-foreground/70" />
         <span className="block w-[22px] h-[2px] rounded-full bg-foreground/70" />
@@ -69,7 +69,7 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
             type="button"
             onClick={() => setOpen(false)}
             aria-label="메뉴 닫기"
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-foreground/50 hover:bg-teal-50 hover:text-teal-700 transition-colors text-lg"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-foreground/50 hover:bg-[#f3e8df] hover:text-[#7b2d36] transition-colors text-lg"
           >
             ✕
           </button>
@@ -84,8 +84,8 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
               onClick={() => setOpen(false)}
               className="flex items-center justify-between px-4 py-3.5 rounded-xl
                 text-[15px] font-semibold text-foreground/75
-                hover:bg-teal-50/80 hover:text-teal-700 transition-colors
-                active:bg-teal-100"
+                hover:bg-[#f3e8df] hover:text-[#7b2d36] transition-colors
+                active:bg-[#ead6c6]"
               style={{ fontFamily: "var(--font-body)" }}
             >
               <span>{item.label}</span>
@@ -145,7 +145,7 @@ export function MobileMenu({ navItems, isLoggedIn }: Props) {
               <Link
                 href="/reset"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center h-11 w-full rounded-xl text-[13px] font-semibold text-[#2D5C5C] border border-[#2D5C5C]/30 hover:bg-teal-50 transition-colors"
+                className="flex items-center justify-center h-11 w-full rounded-xl text-[13px] font-semibold text-[#2D5C5C] border border-[#2D5C5C]/30 hover:bg-[#f3e8df] transition-colors"
               >
                 비밀번호 재설정
               </Link>
