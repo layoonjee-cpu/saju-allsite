@@ -89,7 +89,7 @@ export default async function ProductDetailPage({
   return (
     <div className="container py-12 max-w-2xl">
       {productImages[product.slug] && (
-        <div className="relative w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6]">
+        <div className="relative hidden md:block w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6]">
           <Image
             src={productImages[product.slug]}
             alt={product.name}

@@ -110,6 +110,7 @@
   align-items: center;
 }
 .heroIllustration {
+  display: none;
   width: 100%;
   aspect-ratio: 16 / 10;
   background: linear-gradient(135deg, #1A2940 0%, #0F1B2D 100%);
@@ -177,7 +178,11 @@
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
   }
-  .heroIllustration { aspect-ratio: 3/4; }
+  .heroIllustration {
+    display: block;
+    aspect-ratio: 3/4;
+    background: url('/profile_image.png') center / cover no-repeat;
+  }
   .heroCopy { text-align: left; }
   .heroDivider { margin-left: 0; }
   .heroSubcopy { margin-left: 0; }

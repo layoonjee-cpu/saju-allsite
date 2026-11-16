@@ -14,15 +14,7 @@ export default function StoryPage() {
       {/* ━━━ HERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroIllustration}>
-            <Image
-              src="/profile_image.png"
-              alt="시선 사주 — 한복을 입은 인물"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          <div className={styles.heroIllustration} aria-hidden="true" />
           <div className={styles.heroCopy}>
             <div className={styles.heroLabelEn}>SEESUN · 視線</div>
             <h1 className={styles.heroHeadline}>
