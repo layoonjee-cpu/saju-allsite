@@ -179,7 +179,9 @@ export default async function ResultPage({
             <p className="mt-1 text-sm text-muted-foreground">{product?.name}</p>
           </>
         ) : (
-          <h1 className="text-3xl font-semibold tracking-tight">{product?.name ?? "사주 풀이"}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {sajuInput?.name ? `${sajuInput.name}님의 ${product?.name ?? "사주 풀이"}` : product?.name ?? "사주 풀이"}
+          </h1>
         )}
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>

@@ -37,11 +37,17 @@ export default async function MyOrdersPage() {
     : { data: [] };
   const resultMap = new Map((results ?? []).map((r) => [r.order_id, r.id]));
 
+  const { data: sajuInputs } = orderIds.length
+    ? await service.from("saju_inputs").select("order_id, name").in("order_id", orderIds)
+    : { data: [] };
+  const inputNameMap = new Map((sajuInputs ?? []).map((i) => [i.order_id, i.name]));
+
   // 타로 리딩 결과 조회
   const { data: tarotReadings } = orderIds.length
-    ? await service.from("tarot_readings").select("id, order_id").in("order_id", orderIds)
+    ? await service.from("tarot_readings").select("id, order_id, name").in("order_id", orderIds)
     : { data: [] };
   const tarotMap = new Map((tarotReadings ?? []).map((r) => [r.order_id, r.id]));
+  const tarotNameMap = new Map((tarotReadings ?? []).map((r) => [r.order_id, r.name]));
 
   // 상품 slug 조회 (타로 여부 판단용)
   const { data: productsWithSlug } = productIds.length
@@ -71,6 +77,7 @@ export default async function MyOrdersPage() {
             const isTarot = slugMap.get(o.product_id) === "tarot-siren";
             const resultId = isTarot ? tarotMap.get(o.id) : resultMap.get(o.id);
             const resultHref = isTarot ? `/tarot/result/${resultId}` : `/results/${resultId}`;
+            const recipientName = isTarot ? tarotNameMap.get(o.id) : inputNameMap.get(o.id);
             const canReview = o.status === "paid" && o.user_id === user.id && !reviewedSet.has(o.id) && !isTarot;
             return (
               <li key={o.id} className="py-5 flex items-center justify-between gap-4">
@@ -78,6 +85,9 @@ export default async function MyOrdersPage() {
                   <p className="font-medium text-ink truncate">
                     {productMap.get(o.product_id) ?? "-"}
                   </p>
+                  {recipientName && (
+                    <p className="mt-1 text-sm font-semibold text-[#6D3045]">분석 대상: {recipientName}님</p>
+                  )}
                   <p className="text-xs text-body mt-1">
                     {formatDate(o.created_at)} · <span className="font-mono">{formatKRW(o.amount)}</span>
                   </p>
@@ -92,7 +102,7 @@ export default async function MyOrdersPage() {
                   </Badge>
                   {resultId && (
                     <Link href={resultHref} className="text-sm font-medium underline underline-offset-4 text-ink">
-                      결과 보기
+                      {recipientName ? `${recipientName}님 결과 보기` : "결과 보기"}
                     </Link>
                   )}
                   {canReview && (
