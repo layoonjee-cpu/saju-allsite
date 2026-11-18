@@ -17,6 +17,7 @@ import { ZiweiGeneratingBanner } from "@/components/saju/ZiweiGeneratingBanner";
 import { SajuRegenerateBanner } from "@/components/saju/SajuRegenerateBanner";
 import type { Myeongsik } from "@/lib/saju/manseryeok";
 import { formatDate } from "@/lib/utils";
+import { assertPdfCustomerIdentity } from "@/lib/pdf/identity-guard";
 
 export const metadata = { title: "결과지" };
 
@@ -72,6 +73,17 @@ export default async function ResultPage({
     .eq("order_id", result.order_id)
     .maybeSingle();
 
+  try {
+    await assertPdfCustomerIdentity(service, result.interpretation_md ?? "", sajuInput?.name, sajuInput?.partner_name);
+  } catch {
+    return (
+      <div className="container max-w-md py-24 text-center">
+        <h1 className="text-xl font-semibold text-ink">분석지 내용을 확인하고 있습니다</h1>
+        <p className="mt-3 text-sm text-mute">고객명 대조가 필요해 결과 표시와 다운로드를 잠시 중단했습니다. 고객센터에 문의해 주세요.</p>
+      </div>
+    );
+  }
+
   // 후기 작성 여부 (추가 질문 잠금 해제 조건)
   const { data: existingReview } = await service
     .from("reviews")
@@ -88,6 +100,7 @@ export default async function ResultPage({
   const isBasicSaju = product?.slug === "basic-saju";
   const isZiwei = product?.slug === "ziwei-saju";
   const isGenerating = result.generation_status === "generating";
+  const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
   // 추가 질문 기능: 결제금액 1900원 이상 상품에 한해 표시
   const showExtraQuestion = (order?.amount ?? 0) >= 1900 && !isTodayFortune && !isIljuSticker && !isZiwei;
@@ -112,7 +125,8 @@ export default async function ResultPage({
   })();
 
   // 배너 표시 조건: 생성중이거나 불량 콘텐츠 감지됨
-  const showBanner = isPremiumVip && (isGenerating || isBadContent);
+  // 저장된 PDF가 있으면 짧은 화면 본문 때문에 완성된 보고서를 숨기거나 재생성하지 않는다.
+  const showBanner = isPremiumVip && (isGenerating || (isBadContent && !hasPdf));
   const showZiweiBanner = isZiwei && (isGenerating || isBadContent);
   // basic-saju 등 일반 상품에서 불량 콘텐츠 감지 시 자동 재생성 배너
   const showRegenerateBanner = !isPremiumVip && !isZiwei && isBadContent;
@@ -170,7 +184,7 @@ export default async function ResultPage({
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
-      {!isFree && result.generation_status === "complete" && !isBadContent && (
+      {!isFree && result.generation_status === "complete" && (!isBadContent || hasPdf) && (
         <ResultShareButtons resultId={resultId} productName={product?.name ?? "사주 분석"} />
       )}
 

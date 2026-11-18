@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateSajuPdf } from "@/lib/pdf/generate-saju-pdf";
+import { assertPdfCustomerIdentity } from "@/lib/pdf/identity-guard";
 
 export const maxDuration = 60;
 
@@ -36,7 +37,7 @@ export async function POST(
   // 2. 주문·입력·상품 조회
   const [{ data: order }, { data: input }] = await Promise.all([
     svc.from("orders").select("product_id, created_at").eq("id", result.order_id).single(),
-    svc.from("saju_inputs").select("name, birth_date, birth_time, time_unknown, gender, calendar").eq("order_id", result.order_id).maybeSingle(),
+    svc.from("saju_inputs").select("name, partner_name, birth_date, birth_time, time_unknown, gender, calendar").eq("order_id", result.order_id).maybeSingle(),
   ]);
 
   const { data: product } = order
@@ -52,6 +53,7 @@ export async function POST(
   // 3. PDF 생성
   let pdfBuffer: Buffer;
   try {
+    await assertPdfCustomerIdentity(svc, result.interpretation_md, input?.name, input?.partner_name);
     pdfBuffer = await generateSajuPdf({
       interpretationMd: result.interpretation_md,
       productName,

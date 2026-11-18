@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { sendResendEmail, emailWrapper, resultLinkButton, SITE_URL } from "@/lib/email";
+import { assertPdfCustomerIdentity } from "@/lib/pdf/identity-guard";
 
 const bodySchema = z.object({
   email: z.string().email().max(200),
@@ -27,7 +28,7 @@ export async function POST(
   // 결과 + 상품명 조회
   const { data: result } = await service
     .from("saju_results")
-    .select("id, order_id, email_sent_at")
+    .select("id, order_id, email_sent_at, interpretation_md")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -48,6 +49,14 @@ export async function POST(
   }
   if (result.email_sent_at && Date.now() - new Date(result.email_sent_at).getTime() > 7 * 24 * 60 * 60 * 1000) {
     return NextResponse.json({ error: "분석지 열람 기간이 만료되었습니다" }, { status: 410 });
+  }
+
+  const { data: input } = await service.from("saju_inputs")
+    .select("name, partner_name").eq("order_id", result.order_id).maybeSingle();
+  try {
+    await assertPdfCustomerIdentity(service, result.interpretation_md ?? "", input?.name, input?.partner_name);
+  } catch {
+    return NextResponse.json({ error: "고객명 대조가 필요해 발송을 중단했습니다. 고객센터에 문의해 주세요." }, { status: 409 });
   }
 
   const { data: product } = order

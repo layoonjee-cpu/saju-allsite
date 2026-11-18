@@ -26,6 +26,15 @@ export function ResultShareButtons({ resultId, productName }: Props) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body.error ?? "PDF를 준비하지 못했습니다.");
     }
+    // An already-produced VIP PDF is fetched from a five-minute signed Storage URL.
+    // This avoids streaming multi-megabyte reports through a Vercel function.
+    if (res.headers.get("content-type")?.includes("application/json")) {
+      const data = await res.json();
+      if (!data.url) throw new Error("PDF 주소를 불러오지 못했습니다.");
+      const fileRes = await fetch(data.url, { cache: "no-store" });
+      if (!fileRes.ok) throw new Error("기존 PDF를 다운로드하지 못했습니다.");
+      return fileRes.blob();
+    }
     return res.blob();
   }
 

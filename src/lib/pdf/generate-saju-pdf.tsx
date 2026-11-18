@@ -20,62 +20,71 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 56,
     paddingHorizontal: 56,
-    color: "#2A2A2A",
+    color: "#30262B",
+    backgroundColor: "#FFFCF8",
   },
-  // ── 표지 ──
+  // ── 표지: 시선사주 와인·골드 리포트 ──
   coverPage: {
     fontFamily: FONT,
-    paddingTop: 120,
+    paddingTop: 148,
     paddingBottom: 80,
-    paddingHorizontal: 72,
-    backgroundColor: "#F8F9F9",
+    paddingHorizontal: 78,
+    backgroundColor: "#371C29",
+  },
+  coverFrame: {
+    position: "absolute", top: 35, bottom: 35, left: 35, right: 35,
+    borderWidth: 1, borderColor: "#A48459",
+  },
+  coverMark: {
+    position: "absolute", top: 57, right: 76,
+    fontFamily: FONT, fontSize: 11, color: "#D6B17A", letterSpacing: 2,
   },
   coverBrand: {
     fontFamily: FONT,
     fontSize: 11,
     fontWeight: 700,
-    color: "#2D5C5C",
+    color: "#D6B17A",
     letterSpacing: 3,
-    marginBottom: 40,
+    marginBottom: 50,
   },
   coverTitle: {
     fontFamily: FONT,
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: 700,
-    color: "#1A1A1A",
-    marginBottom: 8,
+    color: "#FFF8EF",
+    marginBottom: 12,
     lineHeight: 1.4,
   },
   coverSubtitle: {
     fontFamily: FONT,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 400,
-    color: "#555555",
-    marginBottom: 48,
+    color: "#E9D8C9",
+    marginBottom: 58,
   },
   coverDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#2D5C5C",
-    width: 48,
-    marginBottom: 32,
+    borderBottomWidth: 2,
+    borderBottomColor: "#D6B17A",
+    width: 74,
+    marginBottom: 36,
   },
   coverInfoRow: {
     fontFamily: FONT,
     fontSize: 11,
-    color: "#444444",
-    marginBottom: 8,
+    color: "#F1E6DC",
+    marginBottom: 12,
     fontWeight: 400,
   },
   coverInfoLabel: {
     fontFamily: FONT,
     fontWeight: 700,
-    color: "#2D5C5C",
+    color: "#D6B17A",
   },
   coverFooter: {
     position: "absolute",
-    bottom: 48,
-    left: 72,
-    right: 72,
+    bottom: 68,
+    left: 78,
+    right: 78,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -83,7 +92,7 @@ const styles = StyleSheet.create({
   coverFooterText: {
     fontFamily: FONT,
     fontSize: 9,
-    color: "#AAAAAA",
+    color: "#C5AB9C",
   },
   // ── 본문 ──
   header: {
@@ -93,10 +102,13 @@ const styles = StyleSheet.create({
     right: 56,
     flexDirection: "row",
     justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "#D9C4A6",
+    paddingBottom: 7,
   },
   headerText: {
     fontSize: 8,
-    color: "#AAAAAA",
+    color: "#6D3D4E",
     fontFamily: FONT,
   },
   footer: {
@@ -110,7 +122,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 8,
-    color: "#AAAAAA",
+    color: "#A4816F",
     fontFamily: FONT,
   },
 });
@@ -159,6 +171,8 @@ export async function generateSajuPdf(input: PdfInput): Promise<Buffer> {
     <Document title={`${productName} — ${nameDisplay}`} author="시선사주">
       {/* ── 표지 ── */}
       <Page size="A4" style={styles.coverPage}>
+        <View style={styles.coverFrame} />
+        <Text style={styles.coverMark}>視線 · SISEON</Text>
         <Text style={styles.coverBrand}>시선사주  ·  視線四柱</Text>
         <Text style={styles.coverTitle}>{productName}</Text>
         <Text style={styles.coverSubtitle}>{nameDisplay}님의 분석 보고서</Text>

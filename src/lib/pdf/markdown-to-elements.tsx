@@ -5,17 +5,17 @@ import { Text, View } from "@react-pdf/renderer";
 type Style = Record<string, any>;
 
 const FONT = "NotoSansKR";
-const COLOR_TEAL = "#2D5C5C";
-const COLOR_BODY = "#2A2A2A";
-const COLOR_MUTE = "#888888";
+const COLOR_WINE = "#6D3045";
+const COLOR_BODY = "#30262B";
+const COLOR_MUTE = "#9E8779";
 
 const s = {
-  h1: { fontFamily: FONT, fontWeight: 700, fontSize: 16, color: COLOR_TEAL, marginTop: 20, marginBottom: 6 } as Style,
-  h2: { fontFamily: FONT, fontWeight: 700, fontSize: 14, color: COLOR_TEAL, marginTop: 16, marginBottom: 5 } as Style,
-  h3: { fontFamily: FONT, fontWeight: 700, fontSize: 12, color: "#333333", marginTop: 12, marginBottom: 4 } as Style,
+  h1: { fontFamily: FONT, fontWeight: 700, fontSize: 17, color: COLOR_WINE, marginTop: 24, marginBottom: 9, borderBottomWidth: 1, borderBottomColor: "#D6B17A", paddingBottom: 6 } as Style,
+  h2: { fontFamily: FONT, fontWeight: 700, fontSize: 14, color: COLOR_WINE, marginTop: 19, marginBottom: 7 } as Style,
+  h3: { fontFamily: FONT, fontWeight: 700, fontSize: 12, color: "#72505D", marginTop: 14, marginBottom: 5 } as Style,
   p:  { fontFamily: FONT, fontWeight: 400, fontSize: 10.5, color: COLOR_BODY, lineHeight: 1.75, marginBottom: 6 } as Style,
   bullet: { fontFamily: FONT, fontWeight: 400, fontSize: 10.5, color: COLOR_BODY, lineHeight: 1.75, marginBottom: 3, marginLeft: 12 } as Style,
-  divider: { borderBottomWidth: 1, borderBottomColor: "#DDDDDD", marginTop: 10, marginBottom: 10 } as Style,
+  divider: { borderBottomWidth: 1, borderBottomColor: "#D9C4A6", marginTop: 13, marginBottom: 13 } as Style,
   mute: { fontFamily: FONT, fontWeight: 400, fontSize: 9, color: COLOR_MUTE } as Style,
 };
 

@@ -74,12 +74,17 @@ export async function POST(
   // 1. 결과 조회
   const { data: result } = await svc
     .from("saju_results")
-    .select("id, generation_status, myeongsik, raw_saju_json, order_id, interpretation_md")
+    .select("id, generation_status, myeongsik, raw_saju_json, order_id, interpretation_md, pdf_url")
     .eq("id", resultId)
     .maybeSingle();
 
   if (!result) {
     return NextResponse.json({ status: "failed", error: "not found" }, { status: 404 });
+  }
+
+  // 기존 PDF가 완성된 결과는 화면용 본문 길이 때문에 다시 생성하지 않는다.
+  if (result.generation_status === "complete" && result.pdf_url) {
+    return NextResponse.json({ status: "complete" });
   }
 
   // 이미 완료 → 섹션 호출이 아닌 경우에만 콘텐츠 품질 확인 후 즉시 반환
