@@ -60,16 +60,7 @@ export default async function ProductsPage() {
               href={`/products/${p.slug}`}
               className="group block rounded-lg overflow-hidden border border-hairline bg-canvas transition-shadow hover:shadow-lg"
             >
-              {productImages[p.slug] && (
-                <div className="relative hidden md:block w-full aspect-[3/4] bg-[#F5F0E6]">
-                  <Image
-                    src={productImages[p.slug]}
-                    alt={p.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              )}
+              {/* 상품 이미지 블록 제거됨 (구형 이미지 정리) */}
               <div className="p-5">
                 <p className="text-base font-semibold text-[#1a1730]">{p.name}</p>
                 <p className="mt-1.5 text-sm text-[#4a4a6a] leading-relaxed line-clamp-2">

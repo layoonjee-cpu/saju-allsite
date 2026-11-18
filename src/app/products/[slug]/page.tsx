@@ -88,17 +88,7 @@ export default async function ProductDetailPage({
 
   return (
     <div className="container py-12 max-w-2xl">
-      {productImages[product.slug] && (
-        <div className="relative hidden md:block w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6]">
-          <Image
-            src={productImages[product.slug]}
-            alt={product.name}
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      )}
+      {/* 상품 이미지 블록 제거됨 (구형 이미지 정리) */}
       <header className="mb-10 text-center">
         <>
           <p className="text-xs font-mono text-[#888] mb-2">PRODUCT / {product.slug}</p>
