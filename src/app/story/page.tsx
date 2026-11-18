@@ -164,16 +164,7 @@ export default function StoryPage() {
           {/* ── 타로의 시선 ── */}
           <Link href="/tarot" className={`${styles.productCard} ${styles.productCardTarot}`}>
             <div className={styles.tarotBadge}>TAROT · 타로의 시선</div>
-            <div className={styles.tarotImageWrapper}>
-              <Image
-                src="/product-tarot.png"
-                alt="타로의 시선"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              <div className={styles.tarotImageGradient} />
-            </div>
+            {/* 구형 이미지 제거됨 */}
             <div className={styles.tarotBody}>
               <div className={styles.tarotName}>타로의 시선</div>
               <div className={styles.tarotMeta}>78장 오리엔탈 타로 · 3카드 리딩</div>

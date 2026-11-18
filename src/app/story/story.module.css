@@ -179,9 +179,7 @@
     gap: 3rem;
   }
   .heroIllustration {
-    display: block;
-    aspect-ratio: 3/4;
-    background: url('/profile_image.png') center / cover no-repeat;
+    display: none; /* 구형 이미지 제거됨 */
   }
   .heroCopy { text-align: left; }
   .heroDivider { margin-left: 0; }
