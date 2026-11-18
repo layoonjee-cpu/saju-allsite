@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { sendResendEmail, emailWrapper, resultLinkButton, SITE_URL } from "@/lib/email";
 
 const bodySchema = z.object({
@@ -18,12 +18,16 @@ export async function POST(
   }
   const { email } = parsed.data;
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
+
   const service = createServiceClient();
 
   // 결과 + 상품명 조회
   const { data: result } = await service
     .from("saju_results")
-    .select("id, order_id")
+    .select("id, order_id, email_sent_at")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -33,9 +37,18 @@ export async function POST(
 
   const { data: order } = await service
     .from("orders")
-    .select("product_id")
+    .select("user_id, guest_email, product_id")
     .eq("id", result.order_id)
     .single();
+
+  const isOwner = order && (order.user_id === user.id ||
+    (!!order.guest_email && !!user.email && order.guest_email.toLowerCase() === user.email.toLowerCase()));
+  if (!isOwner) {
+    return NextResponse.json({ error: "본인 주문의 결과지만 발송할 수 있습니다" }, { status: 403 });
+  }
+  if (result.email_sent_at && Date.now() - new Date(result.email_sent_at).getTime() > 7 * 24 * 60 * 60 * 1000) {
+    return NextResponse.json({ error: "분석지 열람 기간이 만료되었습니다" }, { status: 410 });
+  }
 
   const { data: product } = order
     ? await service.from("products").select("name").eq("id", order.product_id).single()
@@ -59,11 +72,12 @@ export async function POST(
     return NextResponse.json({ error: "이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요." }, { status: 500 });
   }
 
-  // email_sent_at 업데이트
-  await service
-    .from("saju_results")
-    .update({ email_sent_at: new Date().toISOString() })
-    .eq("id", resultId);
+  // 최초 발송일은 유지하여 재전송으로 7일 기한이 연장되지 않도록 한다.
+  if (!result.email_sent_at) {
+    await service.from("saju_results")
+      .update({ email_sent_at: new Date().toISOString() })
+      .eq("id", resultId);
+  }
 
   return NextResponse.json({ ok: true });
 }

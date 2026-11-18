@@ -8,7 +8,6 @@ import { VipVisuals } from "@/components/saju/VipVisuals";
 import { ResultBody } from "@/components/saju/ResultBody";
 import { ResultShareButtons } from "@/components/saju/ResultShareButtons";
 import { VipGeneratingBanner } from "@/components/saju/VipGeneratingBanner";
-import { VipDownloadButton } from "@/components/saju/VipDownloadButton";
 import { SipsinChart } from "@/components/saju/SipsinChart";
 import { TodayFortuneCard, type TodayFortuneData } from "@/components/saju/TodayFortuneCard";
 import { IljuStickerCard, type IljuStickerData } from "@/components/saju/IljuStickerCard";
@@ -89,7 +88,6 @@ export default async function ResultPage({
   const isBasicSaju = product?.slug === "basic-saju";
   const isZiwei = product?.slug === "ziwei-saju";
   const isGenerating = result.generation_status === "generating";
-  const hasPdf = !!result.pdf_url;
   const isFree = (order?.amount ?? 0) === 0;
   // 추가 질문 기능: 결제금액 1900원 이상 상품에 한해 표시
   const showExtraQuestion = (order?.amount ?? 0) >= 1900 && !isTodayFortune && !isIljuSticker && !isZiwei;
@@ -172,6 +170,10 @@ export default async function ResultPage({
         <p className="mt-2 text-xs text-muted-foreground">{formatDate(result.created_at)}</p>
       </header>
 
+      {!isFree && result.generation_status === "complete" && !isBadContent && (
+        <ResultShareButtons resultId={resultId} productName={product?.name ?? "사주 분석"} />
+      )}
+
       {/* ── 자미두수 명반 차트 + 배너 ──────────────────────────────────────── */}
       {isZiwei && result.raw_saju_json && !showZiweiBanner && (
         <section className="mb-6">
@@ -193,11 +195,6 @@ export default async function ResultPage({
       {/* VIP 생성 중 배너 (생성중 OR 불량 콘텐츠 감지) */}
       {showBanner && (
         <VipGeneratingBanner resultId={resultId} />
-      )}
-
-      {/* VIP PDF 다운로드 버튼 */}
-      {isPremiumVip && hasPdf && (
-        <VipDownloadButton resultId={resultId} />
       )}
 
       {/* 사주 명식표 (꿈해몽·일주스티커·자미두수·VIP 생성중·불량 콘텐츠 제외) */}
@@ -357,14 +354,6 @@ export default async function ResultPage({
             </Link>
           </div>
         </section>
-      )}
-
-      {/* 분析 결과 저장 버튼 (유료 상품만, 배너 숨김 상태에서만) */}
-      {!isFree && !showBanner && (
-        <ResultShareButtons
-          resultId={resultId}
-          productName={product?.name ?? "사주 분析"}
-        />
       )}
 
       {/* 추가 질문 섹션 (1900원 이상 결제 상품, 배너·오류 상태 제외) */}

@@ -27,7 +27,7 @@ export async function GET(
   // 결과 조회 + 소유권 확인
   const { data: result } = await service
     .from("saju_results")
-    .select("id, order_id, generation_status, pdf_url")
+    .select("id, order_id, generation_status, pdf_url, email_sent_at")
     .eq("id", resultId)
     .maybeSingle();
 
@@ -37,12 +37,18 @@ export async function GET(
 
   // 소유권 확인 + 파일명 구성용 상품/입력 조회
   const [{ data: order }, { data: inputData }] = await Promise.all([
-    service.from("orders").select("user_id, product_id").eq("id", result.order_id).maybeSingle(),
+    service.from("orders").select("user_id, guest_email, product_id").eq("id", result.order_id).maybeSingle(),
     service.from("saju_inputs").select("name, birth_date").eq("order_id", result.order_id).maybeSingle(),
   ]);
 
-  if (!order || order.user_id !== user.id) {
+  const isOwner = order && (order.user_id === user.id ||
+    (!!order.guest_email && !!user.email && order.guest_email.toLowerCase() === user.email.toLowerCase()));
+  if (!isOwner) {
     return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
+  }
+
+  if (result.email_sent_at && Date.now() - new Date(result.email_sent_at).getTime() > 7 * 24 * 60 * 60 * 1000) {
+    return NextResponse.json({ error: "분석지 열람 기간이 만료되었습니다" }, { status: 410 });
   }
 
   if (result.generation_status === "generating") {
@@ -63,10 +69,10 @@ export async function GET(
   const namePart = birthYear ? `${customerName}_${birthYear}` : customerName;
   const downloadFileName = `${prodName}_${namePart}.pdf`.replace(/[/\\:*?"<>|]/g, "");
 
-  // Supabase Storage 서명 URL 생성 (7일 만료)
+  // 짧은 서명 URL: 결과지의 7일 열람 기한 이후 재사용할 수 없도록 제한
   const { data: signedData, error: signErr } = await service.storage
     .from("vip-pdfs")
-    .createSignedUrl(result.pdf_url, 60 * 60 * 24 * 7, { download: downloadFileName });
+    .createSignedUrl(result.pdf_url, 5 * 60, { download: downloadFileName });
 
   if (signErr || !signedData) {
     console.error("[pdf-download] signed URL error:", signErr);

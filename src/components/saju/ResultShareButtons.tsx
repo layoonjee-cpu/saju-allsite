@@ -1,98 +1,82 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Script from "next/script";
+import Link from "next/link";
+import { useState } from "react";
 
 type Props = {
   resultId: string;
   productName: string;
 };
 
-declare global {
-  interface Window {
-    Kakao: {
-      isInitialized: () => boolean;
-      init: (key: string) => void;
-      Share: {
-        sendDefault: (options: {
-          objectType: string;
-          content: {
-            title: string;
-            description: string;
-            imageUrl: string;
-            link: { mobileWebUrl: string; webUrl: string };
-          };
-          buttons?: Array<{
-            title: string;
-            link: { mobileWebUrl: string; webUrl: string };
-          }>;
-        }) => void;
-      };
-    };
-  }
-}
-
 export function ResultShareButtons({ resultId, productName }: Props) {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState("");
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [kakaoReady, setKakaoReady] = useState(false);
+  const [busy, setBusy] = useState<"download" | "share" | null>(null);
+  const [error, setError] = useState("");
+  const [needsLogin, setNeedsLogin] = useState(false);
 
-  const resultUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/results/${resultId}`
-      : `https://www.saju7.kr/results/${resultId}`;
+  const filename = `${productName.replace(/[\\/:*?"<>|\r\n]/g, "")}_시선사주.pdf`;
 
-  // Kakao SDK 초기화
-  function initKakao() {
-    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
-    if (!jsKey || typeof window === "undefined" || !window.Kakao) return;
-    if (!window.Kakao.isInitialized()) {
-      window.Kakao.init(jsKey);
+  async function getPdf(): Promise<Blob> {
+    const res = await fetch(`/api/results/${resultId}/pdf`, { cache: "no-store" });
+    if (!res.ok) {
+      if (res.status === 401) setNeedsLogin(true);
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error ?? "PDF를 준비하지 못했습니다.");
     }
-    setKakaoReady(true);
+    return res.blob();
   }
 
-  function handleKakaoShare() {
-    if (!window?.Kakao?.Share) {
-      // SDK 없으면 URL 복사로 대체
-      navigator.clipboard
-        .writeText(resultUrl)
-        .then(() => alert("링크가 복사되었습니다. 카카오톡에 붙여넣기 해주세요."))
-        .catch(() => alert("링크: " + resultUrl));
-      return;
+  function savePdf(blob: Blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
+  async function handlePdf(action: "download" | "share") {
+    setBusy(action);
+    setError("");
+    try {
+      const blob = await getPdf();
+      if (action === "download") {
+        savePdf(blob);
+        return;
+      }
+      // Native file sharing keeps the PDF private; users select KakaoTalk as recipient.
+      const file = new File([blob], filename, { type: "application/pdf" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `${productName} 분석 결과` });
+        } catch (err) {
+          if (err instanceof Error && err.name === "AbortError") return;
+          throw err;
+        }
+      } else {
+        savePdf(blob);
+        setError("이 기기는 PDF 파일 공유를 지원하지 않아 다운로드했습니다. 카카오톡에서 파일을 첨부해 주세요.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "PDF 처리 중 오류가 발생했습니다.");
+    } finally {
+      setBusy(null);
     }
-    window.Kakao.Share.sendDefault({
-      objectType: "feed",
-      content: {
-        title: `[시선] ${productName} 결과`,
-        description: "나의 사주 분석 결과를 확인해 보세요.",
-        imageUrl: "https://www.saju7.kr/og-image.png",
-        link: {
-          mobileWebUrl: resultUrl,
-          webUrl: resultUrl,
-        },
-      },
-      buttons: [
-        {
-          title: "결과 확인하기",
-          link: {
-            mobileWebUrl: resultUrl,
-            webUrl: resultUrl,
-          },
-        },
-      ],
-    });
   }
 
   async function handleEmailSend(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert("올바른 이메일 주소를 입력해 주세요");
+      setError("올바른 이메일 주소를 입력해 주세요.");
       return;
     }
     setEmailSending(true);
+    setError("");
     try {
       const res = await fetch(`/api/results/${resultId}/send-email`, {
         method: "POST",
@@ -105,82 +89,51 @@ export function ResultShareButtons({ resultId, productName }: Props) {
       }
       setEmailSent(true);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "이메일 발송 중 오류가 발생했습니다");
+      setError(err instanceof Error ? err.message : "이메일 발송 중 오류가 발생했습니다.");
     } finally {
       setEmailSending(false);
     }
   }
 
   return (
-    <>
-      {/* Kakao SDK */}
-      <Script
-        src="https://developers.kakao.com/sdk/js/kakao.min.js"
-        strategy="afterInteractive"
-        onLoad={initKakao}
-      />
-
-      <div className="mt-10 border-t border-[#e8e4dd] pt-8">
-        <p className="text-sm font-bold text-[#1a1730] mb-4">분석 결과 저장하기</p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          {/* 카카오톡 나에게 보내기 */}
-          <button
-            type="button"
-            onClick={handleKakaoShare}
-            className="flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-[#FEE500] text-[#1a1730] text-sm font-bold hover:bg-[#F9D800] active:scale-[0.98] transition-all"
-          >
-            <span className="text-base">💬</span>
-            카카오톡으로 저장
+    <section className="my-8 rounded-2xl border border-[#e6d6cb] bg-[#fffaf6] p-5 sm:p-6" aria-label="결과지 저장 및 공유">
+      <h2 className="text-base font-bold text-[#4a1d2c]">분석 결과 저장하기</h2>
+      <p className="mt-1 text-xs leading-relaxed text-[#745b61]">
+        PDF로 보관하거나 파일 공유 메뉴에서 카카오톡을 선택하세요. 분석 내용은 본인이 공유할 때만 전달됩니다.
+      </p>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <button type="button" onClick={() => handlePdf("download")} disabled={busy !== null}
+          className="flex h-12 flex-1 items-center justify-center rounded-xl bg-[#4a1d2c] px-4 text-sm font-bold text-white hover:bg-[#60293b] disabled:opacity-60">
+          {busy === "download" ? "PDF 준비 중..." : "PDF 다운로드"}
+        </button>
+        <button type="button" onClick={() => handlePdf("share")} disabled={busy !== null}
+          className="flex h-12 flex-1 items-center justify-center rounded-xl bg-[#FEE500] px-4 text-sm font-bold text-[#2b2412] hover:bg-[#f9d800] disabled:opacity-60">
+          {busy === "share" ? "공유 준비 중..." : "카카오톡으로 공유"}
+        </button>
+        {!showEmailInput && !emailSent && (
+          <button type="button" onClick={() => setShowEmailInput(true)}
+            className="flex h-12 flex-1 items-center justify-center rounded-xl border border-[#a88b79] px-4 text-sm font-bold text-[#4a1d2c] hover:bg-white">
+            이메일로 받기
           </button>
-
-          {/* 이메일로 받기 */}
-          {!showEmailInput && !emailSent && (
-            <button
-              type="button"
-              onClick={() => setShowEmailInput(true)}
-              className="flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-[#2D5C5C] text-[#2D5C5C] text-sm font-bold hover:bg-[#2D5C5C]/5 active:scale-[0.98] transition-all"
-            >
-              <span className="text-base">📧</span>
-              이메일로 받기
-            </button>
-          )}
-
-          {/* 이메일 발송 완료 */}
-          {emailSent && (
-            <div className="flex items-center gap-2 h-12 px-5 rounded-xl bg-[#f0f9f6] border border-[#2D5C5C]/25 text-[#2D5C5C] text-sm font-semibold">
-              <span>✅</span> 이메일을 발송했습니다
-            </div>
-          )}
-        </div>
-
-        {/* 이메일 입력 폼 */}
-        {showEmailInput && !emailSent && (
-          <form onSubmit={handleEmailSend} className="mt-3 flex gap-2">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일 주소 입력"
-              autoFocus
-              className="flex-1 h-12 px-4 rounded-xl border border-[#ddd] bg-white text-[#1a1730] text-sm placeholder:text-[#bbb] focus:outline-none focus:border-[#2D5C5C] focus:ring-2 focus:ring-[#2D5C5C]/15 transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={emailSending}
-              className="h-12 px-5 rounded-xl bg-[#2D5C5C] text-white text-sm font-bold hover:bg-[#245050] disabled:opacity-60 transition-colors"
-            >
-              {emailSending ? "발송 중..." : "발송"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowEmailInput(false)}
-              className="h-12 px-4 rounded-xl border border-[#ddd] text-[#888] text-sm hover:bg-gray-50 transition-colors"
-            >
-              취소
-            </button>
-          </form>
         )}
+        {emailSent && <p className="flex h-12 items-center text-sm text-[#4a1d2c]">이메일을 발송했습니다</p>}
       </div>
-    </>
+      {showEmailInput && !emailSent && (
+        <form onSubmit={handleEmailSend} className="mt-3 flex flex-wrap gap-2">
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일 주소" aria-label="이메일 주소" required
+            className="h-12 min-w-0 flex-1 rounded-xl border border-[#cbbeb8] bg-white px-3 text-sm" />
+          <button type="submit" disabled={emailSending}
+            className="h-12 rounded-xl bg-[#4a1d2c] px-4 text-sm font-bold text-white disabled:opacity-60">
+            {emailSending ? "발송 중..." : "발송"}
+          </button>
+          <button type="button" onClick={() => setShowEmailInput(false)}
+            className="h-12 rounded-xl border border-[#cbbeb8] px-3 text-sm">취소</button>
+        </form>
+      )}
+      {error && <p role="alert" className="mt-3 text-sm text-[#a43138]">{error}</p>}
+      {needsLogin && <Link href={`/login?redirect=${encodeURIComponent(`/results/${resultId}`)}`}
+        className="mt-2 inline-block text-sm font-bold text-[#4a1d2c] underline">로그인하고 다시 저장하기</Link>}
+    </section>
   );
 }
