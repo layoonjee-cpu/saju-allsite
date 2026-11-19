@@ -173,7 +173,7 @@ function loadCoverImage(productName: string): string | null {
     const imagePath = getCoverImagePath(productName);
     if (fs.existsSync(imagePath)) {
       const imageBuffer = fs.readFileSync(imagePath);
-      return \`data:image/png;base64,\${imageBuffer.toString("base64")}\`;
+      return `data:image/png;base64,${imageBuffer.toString("base64")}`;
     }
   } catch (e) {
     console.error("표지 이미지 로드 실패:", e);
@@ -213,7 +213,7 @@ export async function generateSajuPdf(input: PdfInput): Promise<Buffer> {
   const bodyElements = markdownToElements(interpretationMd);
 
   const doc = (
-    <Document title={\`\${productName} — \${nameDisplay}\`} author="시선사주">
+    <Document title={`${productName} — ${nameDisplay}`} author="시선사주">
       {/* ── 표지 (이미지 배경) ── */}
       {coverImageSrc ? (
         <Page size="A4" style={styles.coverPage}>
@@ -249,7 +249,7 @@ export async function generateSajuPdf(input: PdfInput): Promise<Buffer> {
           <Text style={styles.footerText}>© 시선사주 · saju7.kr</Text>
           <Text
             style={styles.footerPage}
-            render={({ pageNumber, totalPages }) => \`\${pageNumber} / \${totalPages}\`}
+            render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
           />
         </View>
       </Page>
